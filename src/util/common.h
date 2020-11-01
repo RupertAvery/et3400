@@ -3,10 +3,12 @@
 
 #include <iostream>
 #include <thread>
-#include <Windows.h>
 
 #define LOG(x) std::cout << x << std::endl;
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif //_WIN32
 
 #ifdef _WINDOWS_
 static void
@@ -47,14 +49,14 @@ sleep(long long useconds) //const struct timespec *requested_delay)
 	}
 }
 #else
-static void sleep(int millisec)
+static void sleep(long long useconds)
 {
 	struct timespec req = { 0 };
-	req.tv_sec = 0;
-	req.tv_nsec = millisec * 1000000L;
-	nanosleep(&req, (struct timespec*)NULL);
+	req.tv_sec = useconds / 1000000;
+	req.tv_nsec = useconds * 1000;
+	nanosleep(&req, &req);
 }
 #endif // _WINDOWS_
 
 
-#endif COMMON_H
+#endif // COMMON_H

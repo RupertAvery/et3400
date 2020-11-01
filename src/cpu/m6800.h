@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string>
 
-#define logerror(x) printf(x);
+#define logerror(x,y,z) printf(x,y,z);
 using offs_t = uint32_t;
 #define LSB_FIRST
 
@@ -185,11 +185,11 @@ public:
 	// memory_access<16, 0, 0, ENDIANNESS_BIG>::cache m_cprogram, m_copcodes;
 	// memory_access<16, 0, 0, ENDIANNESS_BIG>::specific m_program;
 
-	uint8_t *m6800_cpu_device::memory;
-	uint8_t m6800_cpu_device::read_byte(offs_t address);
-	uint8_t *m6800_cpu_device::read_bytes(offs_t address, size_t size);
-	void m6800_cpu_device::write_byte(offs_t address, uint8_t data);
-	void m6800_cpu_device::write_bytes(offs_t address, uint8_t *data, size_t size);
+	uint8_t *memory;
+	uint8_t read_byte(offs_t address);
+	uint8_t *read_bytes(offs_t address, size_t size);
+	void write_byte(offs_t address, uint8_t data);
+	void write_bytes(offs_t address, uint8_t *data, size_t size);
 
 	const op_func *m_insn;
 	const uint8_t *m_cycles; /* clock cycle of instruction table */
