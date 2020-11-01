@@ -1,0 +1,11 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>images/hr_on.png</file>
+    <file>images/hr_off.png</file>
+    <file>images/vt_on.png</file>
+    <file>images/vt_off.png</file>
+    <file>images/dp_on.png</file>
+    <file>images/dp_off.png</file>
+    <file>rom/monitor.bin</file>
+</qresource>
+</RCC>
