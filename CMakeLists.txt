@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
+set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
 project(et3400 VERSION 0.1.0)
 
 set(CMAKE_AUTOMOC ON)
@@ -7,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt5 COMPONENTS Core Widgets Gui REQUIRED)
 find_package(Threads REQUIRED)
 
-set(WIDGETS_SRC src/windows/display.cpp)
+set(WIDGETS_SRC src/windows/display.cpp src/windows/keypad.cpp)
 set(EMUSRC src/cpu/m6800.cpp src/emu/et3400.cpp)
 set(SOURCES src/main.cpp src/util/srec.cpp src/windows/mainwindow.cpp ${EMUSRC} ${WIDGETS_SRC} src/resources/resources.qrc)
 

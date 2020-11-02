@@ -7,7 +7,6 @@ int main(int argc, char* argv[])
 
 	MainWindow window;
 
-	window.resize(350, 500);
 	window.setWindowTitle("ET-3400 Emulator");
 	window.show();
 

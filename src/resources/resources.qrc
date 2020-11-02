@@ -1,11 +1,29 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-    <file>images/hr_on.png</file>
-    <file>images/hr_off.png</file>
-    <file>images/vt_on.png</file>
-    <file>images/vt_off.png</file>
-    <file>images/dp_on.png</file>
-    <file>images/dp_off.png</file>
-    <file>rom/monitor.bin</file>
-</qresource>
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource>
+        <file>images/hr_on.png</file>
+        <file>images/hr_off.png</file>
+        <file>images/vt_on.png</file>
+        <file>images/vt_off.png</file>
+        <file>images/dp_on.png</file>
+        <file>images/dp_off.png</file>
+        <file>buttons/0.bmp</file>
+        <file>buttons/1.bmp</file>
+        <file>buttons/2.bmp</file>
+        <file>buttons/3.bmp</file>
+        <file>buttons/4.bmp</file>
+        <file>buttons/5.bmp</file>
+        <file>buttons/6.bmp</file>
+        <file>buttons/7.bmp</file>
+        <file>buttons/8.bmp</file>
+        <file>buttons/9.bmp</file>
+        <file>buttons/key A.bmp</file>
+        <file>buttons/key B.bmp</file>
+        <file>buttons/key C.bmp</file>
+        <file>buttons/key D.bmp</file>
+        <file>buttons/key E.bmp</file>
+        <file>buttons/key F.bmp</file>
+        <file>buttons/Reset.bmp</file>
+        <file>rom/monitor.bin</file>
+    </qresource>
 </RCC>

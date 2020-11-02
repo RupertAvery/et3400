@@ -22,6 +22,8 @@ Display::Display(QWidget *parent)
     //thread = std::thread(&Display::update, this);
     m_paintTimer->start(17);
     connect(this->m_paintTimer, SIGNAL(timeout()), this, SLOT(redraw()));
+
+    this->setFixedSize(QSize(320, 85));
 }
 
 void Display::set_memory(uint8_t *ptr)

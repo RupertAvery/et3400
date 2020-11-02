@@ -3,6 +3,7 @@
 
 #include "../emu/et3400.h"
 #include "display.h"
+#include "keypad.h"
 
 #include <fstream>
 #include <QMainWindow>
@@ -26,6 +27,7 @@ private:
   void load_ram();
   void updatecps();
   Display *display;
+  Keypad *keypad;
   et3400emu *emu;
 };
 

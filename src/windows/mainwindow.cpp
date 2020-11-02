@@ -10,7 +10,6 @@ using namespace std;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-
   QAction *open = new QAction("&Load RAM", this);
   QAction *quit = new QAction("&Quit", this);
 
@@ -21,15 +20,19 @@ MainWindow::MainWindow(QWidget *parent)
   file->addAction(quit);
 
   display = new Display;
+  keypad = new Keypad;
 
   connect(quit, &QAction::triggered, qApp, QApplication::quit);
   connect(open, &QAction::triggered, this, &MainWindow::load_ram);
 
   QGridLayout *mainLayout = new QGridLayout;
-  //! [9] //! [10]
+
   mainLayout->setColumnStretch(0, 1);
-  mainLayout->setColumnStretch(3, 1);
-  mainLayout->addWidget(display, 0, 0, 1, 4);
+  mainLayout->setColumnStretch(1, 1);
+  mainLayout->setRowStretch(0, 1);
+  mainLayout->setRowStretch(1, 3);
+  mainLayout->addWidget(display, 0, 0, 1, 2, Qt::AlignTop);
+  mainLayout->addWidget(keypad, 1, 1, 1, 1, Qt::AlignRight | Qt::AlignTop);
 
   auto central = new QWidget;
   central->setLayout(mainLayout);
@@ -38,6 +41,8 @@ MainWindow::MainWindow(QWidget *parent)
 
   setWindowTitle(tr("ET-3400 Emulator"));
   last_cycles = 0;
+
+  this->setFixedSize(QSize(350, 500));
 
   execute_emu();
 }
@@ -73,7 +78,6 @@ void MainWindow::load_ram()
 
   emu->reset();
   emu->start();
-
 }
 
 void MainWindow::updatecps()
@@ -228,6 +232,7 @@ void MainWindow::execute_emu()
   emu->loadROM(ROM_ADDR, (uint8_t *)buffer, ROM_SIZE);
 
   display->set_memory(emu->get_memory());
+  keypad->set_emulator(emu);
 
   emu->init();
   emu->start();
