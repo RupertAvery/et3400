@@ -4,21 +4,29 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QtWidgets>
+#include <iostream>
 
 using namespace std;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+  settings = new SettingsDialog;
+
   QAction *open = new QAction("&Load .S19", this);
   QAction *quit = new QAction("&Quit", this);
   QAction *about = new QAction("&About", this);
+  QAction *settings = new QAction("&Settings", this);
 
   QMenu *file;
   file = menuBar()->addMenu("&File");
   file->addAction(open);
   file->addSeparator();
   file->addAction(quit);
+
+  QMenu *config;
+  config = menuBar()->addMenu("&Config");
+  config->addAction(settings);
 
   QMenu *help;
   help = menuBar()->addMenu("&Help");
@@ -30,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(quit, &QAction::triggered, qApp, QApplication::quit);
   connect(open, &QAction::triggered, this, &MainWindow::load_ram);
   connect(about, &QAction::triggered, this, &MainWindow::show_about);
+  connect(settings, &QAction::triggered, this, &MainWindow::show_settings);
 
   QGridLayout *mainLayout = new QGridLayout;
 
@@ -51,12 +60,39 @@ MainWindow::MainWindow(QWidget *parent)
   this->setFixedSize(QSize(350, 500));
 
   execute_emu();
+
+  // QTimer *timer = new QTimer(this);
+  // connect(timer, &QTimer::timeout, this, QOverload<>::of(&MainWindow::fps));
+  // timer->start(1000);
 }
+
+// void MainWindow::fps()
+// {
+//   int cps = 0;
+//   if (last_cycles == 0)
+//   {
+//     cps = emu->total_cycles;
+//   }
+//   else
+//   {
+//     cps = emu->total_cycles - last_cycles;
+//   }
+
+//   std::cout << cps << std::endl;
+
+//   last_cycles = emu->total_cycles;
+// }
 
 void MainWindow::show_about()
 {
   AboutDialog dialog;
   dialog.exec();
+}
+
+void MainWindow::show_settings()
+{
+  settings->set_emulator(emu);
+  settings->show();
 }
 
 void MainWindow::load_ram()
@@ -90,7 +126,7 @@ void MainWindow::load_ram()
     free(it->data);
   }
 
-  free(blocks);
+  delete blocks;
 
   // reset and resume emulation
   emu->reset();
@@ -107,6 +143,8 @@ void MainWindow::updatecps()
 MainWindow::~MainWindow()
 {
   emu->stop();
+  delete emu;
+  delete settings;
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *ev)

@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt5 COMPONENTS Core Widgets Gui REQUIRED)
 find_package(Threads REQUIRED)
 
-set(WIDGETS_SRC src/windows/display.cpp src/windows/keypad.cpp src/windows/about.cpp)
+set(WIDGETS_SRC src/windows/display.cpp src/windows/keypad.cpp src/windows/about.cpp src/windows/settings.cpp)
 set(EMUSRC src/cpu/m6800.cpp src/emu/et3400.cpp)
 set(SOURCES src/main.cpp src/util/srec.cpp src/windows/mainwindow.cpp ${EMUSRC} ${WIDGETS_SRC} src/resources/resources.qrc src/resources/resources.rc)
 

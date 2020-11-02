@@ -9,13 +9,17 @@ class et3400emu
 
 public:
 	et3400emu();
+	~et3400emu();
+
 	void init();
 	void start();
 	void stop();
 	void reset();
-	void loadROM(offs_t address, uint8_t* buffer, size_t size);
-	void loadRAM(offs_t address, uint8_t* buffer, size_t size);
-	uint8_t* get_memory();
+
+	void loadROM(offs_t address, uint8_t *buffer, size_t size);
+	void loadRAM(offs_t address, uint8_t *buffer, size_t size);
+
+	uint8_t *get_memory();
 	bool get_running();
 	int get_cycles();
 
@@ -42,13 +46,14 @@ public:
 
 	void press_key(Keys key);
 	void release_key(Keys key);
-
-protected:
-	~et3400emu();
+	void set_clock_rate(int clock_rate);
+	int get_clock_rate();
+	unsigned long long total_cycles;
 
 private:
 	int cycles;
-	m6800_cpu_device* device;
+	int clock_rate;
+	m6800_cpu_device *device;
 	void worker();
 	bool running;
 	std::thread thread;

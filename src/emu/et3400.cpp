@@ -1,14 +1,16 @@
 #include "et3400.h"
+#include <iostream>
 
 et3400emu::et3400emu()
 {
-    this->device = new m6800_cpu_device;
-    this->running = false;
+    clock_rate = 100;
+    device = new m6800_cpu_device;
+    running = false;
 }
 
 et3400emu::~et3400emu()
 {
-    free(this->device);
+    delete device;
 }
 
 void et3400emu::loadROM(offs_t address, uint8_t *buffer, size_t size)
@@ -40,9 +42,11 @@ uint8_t *et3400emu::get_memory()
 
 void et3400emu::init()
 {
+    total_cycles = 0;
+
     // clear memory
     memset(device->memory, 0, 0xFC00);
-    
+
     // pull keyboard lines high
     device->memory[0xC003] = 0xFF;
     device->memory[0xC005] = 0xFF;
@@ -70,17 +74,34 @@ int et3400emu::get_cycles()
     return device->m_icount;
 }
 
+void et3400emu::set_clock_rate(int new_clock_rate)
+{
+    clock_rate = new_clock_rate;
+}
+
+int et3400emu::get_clock_rate()
+{
+    return clock_rate;
+}
+
 void et3400emu::worker()
 {
     device->device_start();
     device->device_reset();
 
+    const int sleep_ns = 16667;
+    const int base_cycles = 16667;
+    const float hundred_percent = 100;
+    int ctr = 60;
+
     while (this->running)
     {
-        device->m_icount = 1667;
+        int cycles_per_frame = (int)(base_cycles * (float)clock_rate / hundred_percent);
+        device->m_icount = cycles_per_frame;
         device->pre_execute_run();
         device->execute_run();
-        sleep(1667);
+        sleep(sleep_ns);
+        total_cycles += cycles_per_frame - device->m_icount;
     }
 
     LOG("emulator thread exited");

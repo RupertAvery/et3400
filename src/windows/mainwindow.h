@@ -5,10 +5,12 @@
 #include "display.h"
 #include "keypad.h"
 #include "about.h"
+#include "settings.h"
 
 #include <fstream>
 #include <QMainWindow>
 #include <QApplication>
+#include <QTimer>
 
 class MainWindow : public QMainWindow
 {
@@ -24,13 +26,18 @@ public:
   void execute_emu();
 
 private:
-  int last_cycles;
-  void load_ram();
-  void show_about();
-  void updatecps();
+  long long last_cycles;
+
   Display *display;
   Keypad *keypad;
+  SettingsDialog *settings;
   et3400emu *emu;
+
+  void load_ram();
+  void show_about();
+  void show_settings();
+  void updatecps();
+  void fps();
 };
 
 #endif // MAINWINDOW_H
