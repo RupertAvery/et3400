@@ -40,6 +40,14 @@ uint8_t *et3400emu::get_memory()
 
 void et3400emu::init()
 {
+    // clear memory
+    memset(device->memory, 0, 0xFC00);
+    
+    // pull keyboard lines high
+    device->memory[0xC003] = 0xFF;
+    device->memory[0xC005] = 0xFF;
+    device->memory[0xC006] = 0xFF;
+
     device->device_start();
     device->device_reset();
 }

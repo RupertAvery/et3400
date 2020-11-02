@@ -479,6 +479,7 @@ const m6800_cpu_device::op_func m6800_cpu_device::nsc8105_insn[0x100] = {
 m6800_cpu_device::m6800_cpu_device()
 {
 	this->memory = (uint8_t *)malloc(0x10000);
+	verbose = false;
 	m_insn = m6800_insn;
 	m_cycles = cycles_6800;
 }

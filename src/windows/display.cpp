@@ -19,8 +19,7 @@ Display::Display(QWidget *parent)
     running = true;
 
     m_paintTimer = new QTimer(this);
-    //thread = std::thread(&Display::update, this);
-    m_paintTimer->start(17);
+    m_paintTimer->start(17); // 17ms, or every 1/60th of a second
     connect(this->m_paintTimer, SIGNAL(timeout()), this, SLOT(redraw()));
 
     this->setFixedSize(QSize(320, 85));
@@ -39,20 +38,38 @@ Display::~Display()
 void Display::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
-    // painter.setPen(pen);
-    // painter.setBrush(brush);
-    // if (antialiased)
-    //     painter.setRenderHint(QPainter::Antialiasing, true);
-    painter.setBrush(QBrush(Qt::black));
-    painter.fillRect(this->rect(), painter.brush());
 
+    // Clear display
+    painter.setBrush(QBrush(Qt::black));
+
+    // painter.fillRect(this->rect(), painter.brush());
+
+    // Clear segment area only
+    painter.save();
     for (int address = 0xC16F; address >= 0xC110; address--)
     {
         if ((address & 0x08) != 0x08)
         {
             int position = 6 - ((address & 0xF0) >> 4);
+            painter.save();
+            painter.translate(20 + position * 45, 10);
+            painter.fillRect(QRect(0, 0, 38, 54), painter.brush());
+            painter.restore();
+        }
+    }
+    painter.restore();
+
+    painter.save();
+    for (int address = 0xC16F; address >= 0xC110; address--)
+    {
+        // prevent writing on all addresses, minor performance increase
+        if ((address & 0x08) != 0x08)
+        {
+
+            int position = 6 - ((address & 0xF0) >> 4);
             int segment = address & 0x7;
             uint8_t segdata = memptr[address];
+
             painter.save();
             painter.translate(20 + position * 45, 10);
 
@@ -85,22 +102,12 @@ void Display::paintEvent(QPaintEvent * /* event */)
                 painter.drawPixmap(31, 42, dp[state]);
                 break;
             }
-
             painter.restore();
         }
     }
+    painter.restore();
 
     painter.end();
-}
-
-QSize Display::minimumSizeHint() const
-{
-    return QSize(100, 100);
-}
-
-QSize Display::sizeHint() const
-{
-    return QSize(400, 200);
 }
 
 void Display::redraw()

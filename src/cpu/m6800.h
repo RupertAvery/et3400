@@ -195,7 +195,8 @@ public:
 	const uint8_t *m_cycles; /* clock cycle of instruction table */
 	int m_icount;
 	int reset_line;
-
+	bool verbose;
+	
 protected:
 	PAIR m_ea; /* effective address */
 

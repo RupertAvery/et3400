@@ -60,7 +60,7 @@ Perform a standard out-of-source build.
 ```
 md build
 cd build
-cmake .. "-DCMAKE_TOOLCHAIN_FILE=<path-to-vckpkg>\scripts\buildsystems\vcpkg.cmake" -A Win32
+cmake .. "-DCMAKE_TOOLCHAIN_FILE=<path-to-vckpkg>\scripts\buildsystems\vcpkg.cmake" -A Win32 -DCMAKE_BUILD_TYPE=Debug
 ```
 
 **x64**
@@ -68,16 +68,19 @@ cmake .. "-DCMAKE_TOOLCHAIN_FILE=<path-to-vckpkg>\scripts\buildsystems\vcpkg.cma
 ```
 md build
 cd build
-cmake .. "-DCMAKE_TOOLCHAIN_FILE=<path-to-vckpkg>\scripts\buildsystems\vcpkg.cmake" -A x64
+cmake .. "-DCMAKE_TOOLCHAIN_FILE=<path-to-vckpkg>\scripts\buildsystems\vcpkg.cmake" -A x64 -DCMAKE_BUILD_TYPE=Debug
 ```
 
+For Release mode, change CMAKE_BUILD_TYPE accordingly.
 
+Remember to clear out the build folder, or use a different folder if changing architectures or build types.
+ 
 This will generate a `.sln` and all necessary files in the `build` folder.
 
 You should be able to compile the solution into an executable with
 
 ```
-cmake --build .
+cmake --build . --config Debug
 ```
 
 CMake should launch msbuild for you.
@@ -119,4 +122,3 @@ make
 ```
 
 The executable `et3400` will be created in the `build` directory.
-

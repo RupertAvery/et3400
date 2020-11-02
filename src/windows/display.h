@@ -15,8 +15,6 @@ class Display : public QWidget
 
 public:
     explicit Display(QWidget *parent = nullptr);
-    QSize minimumSizeHint() const override;
-    QSize sizeHint() const override;
     void set_memory(uint8_t *ptr);
 
 public slots:

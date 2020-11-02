@@ -10,8 +10,9 @@ using namespace std;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-  QAction *open = new QAction("&Load RAM", this);
+  QAction *open = new QAction("&Load .S19", this);
   QAction *quit = new QAction("&Quit", this);
+  QAction *about = new QAction("&About", this);
 
   QMenu *file;
   file = menuBar()->addMenu("&File");
@@ -19,11 +20,16 @@ MainWindow::MainWindow(QWidget *parent)
   file->addSeparator();
   file->addAction(quit);
 
+  QMenu *help;
+  help = menuBar()->addMenu("&Help");
+  help->addAction(about);
+
   display = new Display;
   keypad = new Keypad;
 
   connect(quit, &QAction::triggered, qApp, QApplication::quit);
   connect(open, &QAction::triggered, this, &MainWindow::load_ram);
+  connect(about, &QAction::triggered, this, &MainWindow::show_about);
 
   QGridLayout *mainLayout = new QGridLayout;
 
@@ -47,28 +53,38 @@ MainWindow::MainWindow(QWidget *parent)
   execute_emu();
 }
 
+void MainWindow::show_about()
+{
+  AboutDialog dialog;
+  dialog.exec();
+}
+
 void MainWindow::load_ram()
 {
   QString fileName = QFileDialog::getOpenFileName(this,
-                                                  tr("Open RAM File"), "", tr("Assembly Files (*.obj *.s19 *.bmp)"));
+                                                  tr("Open .S19 File"), "", tr("Assembly Files (*.obj *.s19)"));
 
   std::vector<srec_block> *blocks = new std::vector<srec_block>;
 
+  // pause emulation to avoid overwriting memory while executing
   emu->stop();
 
+  // load S19 blocks
   if (Srec::Read(fileName, blocks))
   {
-    uint8_t *ram = emu->get_memory();
+    uint8_t *memory = emu->get_memory();
 
+    // write blocks to memory
     for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
     {
       for (int i = 0; i < it->bytecount; ++i)
       {
-        ram[it->address + i] = it->data[i];
+        memcpy(&memory[it->address], it->data, it->bytecount);
       }
     }
   }
 
+  // clean up
   for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
   {
     free(it->data);
@@ -76,6 +92,7 @@ void MainWindow::load_ram()
 
   free(blocks);
 
+  // reset and resume emulation
   emu->reset();
   emu->start();
 }
