@@ -346,7 +346,8 @@ uint8_t m6800_cpu_device::read_byte(offs_t address)
 
 void m6800_cpu_device::write_byte(offs_t address, uint8_t data)
 {
-	if (address < 0xFC00 && address > 0) {
+	// TODO: Better memory mapping to protect ROM / simulate unmapped memory
+	if (address < 0xFC00 && address >= 0) {
 		this->memory[address & 0xFFFF] = data & 0xFF;
 	}
 }
