@@ -24,7 +24,7 @@ public slots:
 
 private:
     et3400emu *emu_ptr;
-    QPushButton *Keypad::create_button(QString name, QString icon, et3400emu::Keys key);
+    QPushButton *create_button(QString name, QString icon, et3400emu::Keys key);
 };
 
 #endif // KEYPAD_H
