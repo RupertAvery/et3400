@@ -1,9 +1,12 @@
+#include <QDebug>
 #include "windows/mainwindow.h"
 #include <QApplication>
 
 int main(int argc, char* argv[])
 {
 	QApplication app(argc, argv);
+
+ 	//qRegisterMetaType<MemoryLocation>();
 
 	MainWindow window;
 

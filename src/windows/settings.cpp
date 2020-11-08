@@ -2,6 +2,10 @@
 
 SettingsDialog::SettingsDialog()
 {
+}
+
+SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
+{
     label = new QLabel("Clock Rate");
 
     QWidget *mainwidget = new QWidget;

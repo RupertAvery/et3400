@@ -1,6 +1,6 @@
 #include "about.h"
 
-AboutDialog::AboutDialog()
+AboutDialog::AboutDialog(): QDialog(0, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
     QWidget *mainwidget = new QWidget;
     QVBoxLayout *textLayout = new QVBoxLayout(mainwidget);

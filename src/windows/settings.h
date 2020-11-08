@@ -29,6 +29,7 @@ class SettingsDialog : public QDialog
 
 public:
     SettingsDialog();
+    SettingsDialog(QWidget *parent);
     void set_emulator(et3400emu *emu);
 
 signals:

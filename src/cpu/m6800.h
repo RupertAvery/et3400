@@ -9,109 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include "defs.h"
+#include "../dev/memory_map.h"
 
-#define logerror(x,y,z) printf(x,y,z);
-using offs_t = uint32_t;
-#define LSB_FIRST
-
-// I/O line states
-enum line_state
-{
-	CLEAR_LINE = 0, // clear (a fired or held) line
-	ASSERT_LINE,	// assert an interrupt immediately
-	HOLD_LINE		// hold interrupt line until acknowledged
-};
-
-// I/O line definitions
-enum
-{
-	// input lines
-	MAX_INPUT_LINES = 64 + 3,
-	INPUT_LINE_IRQ0 = 0,
-	INPUT_LINE_IRQ1 = 1,
-	INPUT_LINE_IRQ2 = 2,
-	INPUT_LINE_IRQ3 = 3,
-	INPUT_LINE_IRQ4 = 4,
-	INPUT_LINE_IRQ5 = 5,
-	INPUT_LINE_IRQ6 = 6,
-	INPUT_LINE_IRQ7 = 7,
-	INPUT_LINE_IRQ8 = 8,
-	INPUT_LINE_IRQ9 = 9,
-	INPUT_LINE_NMI = MAX_INPUT_LINES - 3,
-
-	// special input lines that are implemented in the core
-	INPUT_LINE_RESET = MAX_INPUT_LINES - 2,
-	INPUT_LINE_HALT = MAX_INPUT_LINES - 1
-};
-
-union PAIR
-{
-#ifdef LSB_FIRST
-	struct
-	{
-		uint8_t l, h, h2, h3;
-	} b;
-	struct
-	{
-		uint16_t l, h;
-	} w;
-	struct
-	{
-		int8_t l, h, h2, h3;
-	} sb;
-	struct
-	{
-		int16_t l, h;
-	} sw;
-#else
-	struct
-	{
-		uint8_t h3, h2, h, l;
-	} b;
-	struct
-	{
-		int8_t h3, h2, h, l;
-	} sb;
-	struct
-	{
-		uint16_t h, l;
-	} w;
-	struct
-	{
-		int16_t h, l;
-	} sw;
-#endif
-	uint32_t d;
-	int32_t sd;
-};
-
-#pragma once
-
-enum
-{
-	M6800_PC = 1,
-	M6800_S,
-	M6800_A,
-	M6800_B,
-	M6800_X,
-	M6800_CC,
-	M6800_WAI_STATE
-};
-
-enum
-{
-	M6800_IRQ_LINE = 0 /* IRQ line number */
-};
-
-enum
-{
-	M6802_IRQ_LINE = M6800_IRQ_LINE
-};
-
-enum
-{
-	M6808_IRQ_LINE = M6800_IRQ_LINE
-};
 
 // class cpu_device
 // {
@@ -134,7 +34,7 @@ public:
 
 	// construction/destruction
 	// m6800_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
-	m6800_cpu_device();
+	m6800_cpu_device(memory_map *memory_map);
 
 	enum
 	{
@@ -185,7 +85,7 @@ public:
 	// memory_access<16, 0, 0, ENDIANNESS_BIG>::cache m_cprogram, m_copcodes;
 	// memory_access<16, 0, 0, ENDIANNESS_BIG>::specific m_program;
 
-	uint8_t *memory;
+	memory_map *memory_map;
 	uint8_t read_byte(offs_t address);
 	uint8_t *read_bytes(offs_t address, size_t size);
 	void write_byte(offs_t address, uint8_t data);
@@ -196,7 +96,7 @@ public:
 	int m_icount;
 	int reset_line;
 	bool verbose;
-	
+
 protected:
 	PAIR m_ea; /* effective address */
 
@@ -467,49 +367,5 @@ protected:
 	void btst_ix();
 	void stx_nsc();
 };
-
-// class m6802_cpu_device : public m6800_cpu_device
-// {
-// public:
-// 	m6802_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
-
-// 	void set_ram_enable(bool re) { assert(!configured()); m_ram_enable = re; }
-
-// protected:
-// 	m6802_cpu_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock, const m6800_cpu_device::op_func *insn, const uint8_t *cycles);
-
-// 	virtual uint64_t execute_clocks_to_cycles(uint64_t clocks) const noexcept override { return (clocks + 4 - 1) / 4; }
-// 	virtual uint64_t execute_cycles_to_clocks(uint64_t cycles) const noexcept override { return (cycles * 4); }
-// 	virtual std::unique_ptr<util::disasm_interface> create_disassembler() override;
-
-// 	bool m_ram_enable;
-
-// private:
-// 	void ram_map(address_map &map);
-// };
-
-// class m6808_cpu_device : public m6802_cpu_device
-// {
-// public:
-// 	m6808_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
-
-// protected:
-// 	virtual std::unique_ptr<util::disasm_interface> create_disassembler() override;
-// 	virtual void device_validity_check(validity_checker &valid) const override;
-// };
-
-// class nsc8105_cpu_device : public m6802_cpu_device
-// {
-// public:
-// 	nsc8105_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
-
-// protected:
-// 	virtual std::unique_ptr<util::disasm_interface> create_disassembler() override;
-// };
-
-// DECLARE_DEVICE_TYPE(M6800, m6800_cpu_device)
-// DECLARE_DEVICE_TYPE(M6802, m6802_cpu_device)
-// DECLARE_DEVICE_TYPE(M6808, m6808_cpu_device)
-// DECLARE_DEVICE_TYPE(NSC8105, nsc8105_cpu_device)
 
 #endif // MAME_CPU_M6800_M6800_H

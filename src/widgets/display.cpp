@@ -18,21 +18,20 @@ Display::Display(QWidget *parent)
     setAutoFillBackground(true);
     running = true;
 
-    m_paintTimer = new QTimer(this);
-    m_paintTimer->start(17); // 17ms, or every 1/60th of a second
-    connect(this->m_paintTimer, SIGNAL(timeout()), this, SLOT(redraw()));
+    // m_paintTimer = new QTimer(this);
+    // m_paintTimer->start(17); // 17ms, or every 1/60th of a second
+    // connect(this->m_paintTimer, SIGNAL(timeout()), this, SLOT(redraw()));
+    device = new display_io;
+
+    action = new QAction;
+    connect(action, &QAction::triggered, this, &Display::redraw);
 
     this->setFixedSize(QSize(320, 85));
 }
 
-void Display::set_memory(uint8_t *ptr)
-{
-    memptr = ptr;
-}
-
 Display::~Display()
 {
-    m_paintTimer->stop();
+    delete (action);
 }
 
 void Display::paintEvent(QPaintEvent * /* event */)
@@ -42,22 +41,22 @@ void Display::paintEvent(QPaintEvent * /* event */)
     // Clear display
     painter.setBrush(QBrush(Qt::black));
 
-    // painter.fillRect(this->rect(), painter.brush());
+    painter.fillRect(this->rect(), painter.brush());
 
-    // Clear segment area only
-    painter.save();
-    for (int address = 0xC16F; address >= 0xC110; address--)
-    {
-        if ((address & 0x08) != 0x08)
-        {
-            int position = 6 - ((address & 0xF0) >> 4);
-            painter.save();
-            painter.translate(20 + position * 45, 10);
-            painter.fillRect(QRect(0, 0, 38, 54), painter.brush());
-            painter.restore();
-        }
-    }
-    painter.restore();
+    // // Clear segment area only
+    // painter.save();
+    // for (int address = 0xC16F; address >= 0xC110; address--)
+    // {
+    //     if ((address & 0x08) != 0x08)
+    //     {
+    //         int position = 6 - ((address & 0xF0) >> 4);
+    //         painter.save();
+    //         painter.translate(20 + position * 45, 10);
+    //         painter.fillRect(QRect(0, 0, 38, 54), painter.brush());
+    //         painter.restore();
+    //     }
+    // }
+    // painter.restore();
 
     painter.save();
     for (int address = 0xC16F; address >= 0xC110; address--)
@@ -68,7 +67,7 @@ void Display::paintEvent(QPaintEvent * /* event */)
 
             int position = 6 - ((address & 0xF0) >> 4);
             int segment = address & 0x7;
-            uint8_t segdata = memptr[address];
+            uint8_t segdata = device->read(address);
 
             painter.save();
             painter.translate(20 + position * 45, 10);
@@ -113,4 +112,8 @@ void Display::paintEvent(QPaintEvent * /* event */)
 void Display::redraw()
 {
     this->update();
+}
+
+void Display::update_display(){
+    action->trigger();
 }

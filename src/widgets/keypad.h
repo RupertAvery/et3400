@@ -3,6 +3,7 @@
 
 #include "../emu/et3400.h"
 #include "../util/common.h"
+#include "../dev/keypad_dev.h"
 #include <thread>
 #include <QPushButton>
 #include <QSize>
@@ -16,15 +17,15 @@ class Keypad : public QWidget
 
 public:
     explicit Keypad(QWidget *parent = nullptr);
-    void set_emulator(et3400emu *emu);
+    ~Keypad();
+    keypad_io *device;
 
 public slots:
-    void press_key(et3400emu::Keys key);
-    void release_key(et3400emu::Keys key);
+    void press_key(keypad_io::Keys key);
+    void release_key(keypad_io::Keys key);
 
 private:
-    et3400emu *emu_ptr;
-    QPushButton *create_button(QString name, QString icon, et3400emu::Keys key);
+    QPushButton *create_button(QString name, QString icon, keypad_io::Keys key);
 };
 
 #endif // KEYPAD_H

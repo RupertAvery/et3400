@@ -2,15 +2,18 @@
 #define MAINWINDOW_H
 
 #include "../emu/et3400.h"
-#include "display.h"
-#include "keypad.h"
+#include "../widgets/display.h"
+#include "../widgets/keypad.h"
+#include "../util/srec.h"
 #include "about.h"
+#include "debugger.h"
 #include "settings.h"
 
 #include <fstream>
 #include <QMainWindow>
 #include <QApplication>
 #include <QTimer>
+#include <QCloseEvent>
 
 class MainWindow : public QMainWindow
 {
@@ -20,8 +23,9 @@ class MainWindow : public QMainWindow
 public:
   MainWindow(QWidget *parent = 0);
   ~MainWindow();
-  void keyPressEvent(QKeyEvent * ev) override;
-  void keyReleaseEvent(QKeyEvent * ev) override;
+  void keyPressEvent(QKeyEvent *event) override;
+  void keyReleaseEvent(QKeyEvent *event) override;
+  void closeEvent(QCloseEvent *event) override;
 
   void execute_emu();
 
@@ -30,12 +34,14 @@ private:
 
   Display *display;
   Keypad *keypad;
-  SettingsDialog *settings;
+  SettingsDialog *settings_dialog;
+  DebuggerDialog *debugger_dialog;
   et3400emu *emu;
 
   void load_ram();
   void show_about();
   void show_settings();
+  void show_debugger();
   void updatecps();
   void fps();
 };

@@ -341,22 +341,20 @@ const uint8_t m6800_cpu_device::flags8d[256] = /* decrement */
 
 uint8_t m6800_cpu_device::read_byte(offs_t address)
 {
-	return this->memory[address & 0xFFFF];
+	return memory_map->read(address & 0xFFFF);
 }
 
 void m6800_cpu_device::write_byte(offs_t address, uint8_t data)
 {
 	// TODO: Better memory mapping to protect ROM / simulate unmapped memory
-	if (address < 0xFC00 && address >= 0) {
-		this->memory[address & 0xFFFF] = data & 0xFF;
-	}
+	this->memory_map->write(address & 0xFFFF, data & 0xFF);
 }
 
 void m6800_cpu_device::write_bytes(offs_t address, uint8_t *data, size_t size)
 {
 	for (int i = 0; i < size; i++)
 	{
-		this->memory[address + i] = data[i];
+		this->memory_map->write(address + i, data[i]);
 	}
 }
 
@@ -476,9 +474,9 @@ const m6800_cpu_device::op_func m6800_cpu_device::nsc8105_insn[0x100] = {
 // DEFINE_DEVICE_TYPE(M6802, m6802_cpu_device, "m6802", "Motorola MC6802")
 // DEFINE_DEVICE_TYPE(M6808, m6808_cpu_device, "m6808", "Motorola MC6808")
 // DEFINE_DEVICE_TYPE(NSC8105, nsc8105_cpu_device, "nsc8105", "NSC8105")
-m6800_cpu_device::m6800_cpu_device()
+m6800_cpu_device::m6800_cpu_device(::memory_map *memory_map)
 {
-	this->memory = (uint8_t *)malloc(0x10000);
+	this->memory_map = memory_map;
 	verbose = false;
 	m_insn = m6800_insn;
 	m_cycles = cycles_6800;

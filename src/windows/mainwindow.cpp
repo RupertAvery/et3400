@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "../util/srec.h"
 #include <QFile>
 #include <QMenu>
 #include <QMenuBar>
@@ -11,34 +10,39 @@ using namespace std;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-  settings = new SettingsDialog;
+  settings_dialog = new SettingsDialog(this);
+  debugger_dialog = new DebuggerDialog;
 
-  QAction *open = new QAction("&Load .S19", this);
-  QAction *quit = new QAction("&Quit", this);
-  QAction *about = new QAction("&About", this);
-  QAction *settings = new QAction("&Settings", this);
+  QAction *settings_action = new QAction("&Settings", this);
+  QAction *about_action = new QAction("&About", this);
+  QAction *debugger_action = new QAction("&Debugger", this);
 
+  QAction *open_action = new QAction("&Load .S19", this);
+  QAction *quit_action = new QAction("&Quit", this);
   QMenu *file;
   file = menuBar()->addMenu("&File");
-  file->addAction(open);
+  file->addAction(open_action);
   file->addSeparator();
-  file->addAction(quit);
+  file->addAction(quit_action);
 
-  QMenu *config;
-  config = menuBar()->addMenu("&Config");
-  config->addAction(settings);
+  menuBar()->addAction(debugger_action);
 
-  QMenu *help;
-  help = menuBar()->addMenu("&Help");
-  help->addAction(about);
+  QMenu *config_menu;
+  config_menu = menuBar()->addMenu("&Config");
+  config_menu->addAction(settings_action);
+
+  QMenu *help_menu;
+  help_menu = menuBar()->addMenu("&Help");
+  help_menu->addAction(about_action);
 
   display = new Display;
   keypad = new Keypad;
 
-  connect(quit, &QAction::triggered, qApp, QApplication::quit);
-  connect(open, &QAction::triggered, this, &MainWindow::load_ram);
-  connect(about, &QAction::triggered, this, &MainWindow::show_about);
-  connect(settings, &QAction::triggered, this, &MainWindow::show_settings);
+  connect(quit_action, &QAction::triggered, qApp, QApplication::quit);
+  connect(open_action, &QAction::triggered, this, &MainWindow::load_ram);
+  connect(debugger_action, &QAction::triggered, this, &MainWindow::show_debugger);
+  connect(settings_action, &QAction::triggered, this, &MainWindow::show_settings);
+  connect(about_action, &QAction::triggered, this, &MainWindow::show_about);
 
   QGridLayout *mainLayout = new QGridLayout;
 
@@ -61,27 +65,36 @@ MainWindow::MainWindow(QWidget *parent)
 
   execute_emu();
 
-  // QTimer *timer = new QTimer(this);
-  // connect(timer, &QTimer::timeout, this, QOverload<>::of(&MainWindow::fps));
-  // timer->start(1000);
+  //setAttribute(Qt::WA_DeleteOnClose);
+  //connect( widget, SIGNAL(destroyed(QObject*)), this, SLOT(widgetDestroyed(QObject*)) );
+
+  QTimer *timer = new QTimer(this);
+  connect(timer, &QTimer::timeout, this, QOverload<>::of(&MainWindow::fps));
+  timer->start(1000);
 }
 
-// void MainWindow::fps()
-// {
-//   int cps = 0;
-//   if (last_cycles == 0)
-//   {
-//     cps = emu->total_cycles;
-//   }
-//   else
-//   {
-//     cps = emu->total_cycles - last_cycles;
-//   }
+void MainWindow::fps()
+{
+  int cps = 0;
+  if (last_cycles == 0)
+  {
+    cps = emu->total_cycles;
+  }
+  else
+  {
+    cps = emu->total_cycles - last_cycles;
+  }
 
-//   std::cout << cps << std::endl;
+  std::cout << cps << std::endl;
 
-//   last_cycles = emu->total_cycles;
-// }
+  last_cycles = emu->total_cycles;
+}
+
+void MainWindow::show_debugger()
+{
+  debugger_dialog->set_emulator(emu);
+  debugger_dialog->show();
+}
 
 void MainWindow::show_about()
 {
@@ -91,8 +104,8 @@ void MainWindow::show_about()
 
 void MainWindow::show_settings()
 {
-  settings->set_emulator(emu);
-  settings->show();
+  settings_dialog->set_emulator(emu);
+  settings_dialog->show();
 }
 
 void MainWindow::load_ram()
@@ -108,15 +121,11 @@ void MainWindow::load_ram()
   // load S19 blocks
   if (Srec::Read(fileName, blocks))
   {
-    uint8_t *memory = emu->get_memory();
 
     // write blocks to memory
     for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
     {
-      for (int i = 0; i < it->bytecount; ++i)
-      {
-        memcpy(&memory[it->address], it->data, it->bytecount);
-      }
+      emu->loadRAM(it->address, it->data, it->bytecount);
     }
   }
 
@@ -140,11 +149,21 @@ void MainWindow::updatecps()
   cout << cps << endl;
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+  debugger_dialog->close();
+}
+
 MainWindow::~MainWindow()
 {
+  qDebug() << "Main destroy";
   emu->stop();
   delete emu;
-  delete settings;
+  delete display;
+  delete keypad;
+  delete settings_dialog;
+  delete debugger_dialog;
+  qDebug() << "Main destroy done";
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *ev)
@@ -152,55 +171,55 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
   switch (ev->key())
   {
   case Qt::Key_0:
-    emu->press_key(et3400emu::Key0);
+    emu->keypad->press_key(keypad_io::Key0);
     break;
   case Qt::Key_1:
-    emu->press_key(et3400emu::Key1);
+    emu->keypad->press_key(keypad_io::Key1);
     break;
   case Qt::Key_2:
-    emu->press_key(et3400emu::Key2);
+    emu->keypad->press_key(keypad_io::Key2);
     break;
   case Qt::Key_3:
-    emu->press_key(et3400emu::Key3);
+    emu->keypad->press_key(keypad_io::Key3);
     break;
   case Qt::Key_4:
-    emu->press_key(et3400emu::Key4);
+    emu->keypad->press_key(keypad_io::Key4);
     break;
   case Qt::Key_5:
-    emu->press_key(et3400emu::Key5);
+    emu->keypad->press_key(keypad_io::Key5);
     break;
   case Qt::Key_6:
-    emu->press_key(et3400emu::Key6);
+    emu->keypad->press_key(keypad_io::Key6);
     break;
   case Qt::Key_7:
-    emu->press_key(et3400emu::Key7);
+    emu->keypad->press_key(keypad_io::Key7);
     break;
   case Qt::Key_8:
-    emu->press_key(et3400emu::Key8);
+    emu->keypad->press_key(keypad_io::Key8);
     break;
   case Qt::Key_9:
-    emu->press_key(et3400emu::Key9);
+    emu->keypad->press_key(keypad_io::Key9);
     break;
   case Qt::Key_A:
-    emu->press_key(et3400emu::KeyA);
+    emu->keypad->press_key(keypad_io::KeyA);
     break;
   case Qt::Key_B:
-    emu->press_key(et3400emu::KeyB);
+    emu->keypad->press_key(keypad_io::KeyB);
     break;
   case Qt::Key_C:
-    emu->press_key(et3400emu::KeyC);
+    emu->keypad->press_key(keypad_io::KeyC);
     break;
   case Qt::Key_D:
-    emu->press_key(et3400emu::KeyD);
+    emu->keypad->press_key(keypad_io::KeyD);
     break;
   case Qt::Key_E:
-    emu->press_key(et3400emu::KeyE);
+    emu->keypad->press_key(keypad_io::KeyE);
     break;
   case Qt::Key_F:
-    emu->press_key(et3400emu::KeyF);
+    emu->keypad->press_key(keypad_io::KeyF);
     break;
   case Qt::Key_Escape:
-    emu->press_key(et3400emu::KeyReset);
+    emu->keypad->press_key(keypad_io::KeyReset);
     break;
   }
 }
@@ -210,55 +229,55 @@ void MainWindow::keyReleaseEvent(QKeyEvent *ev)
   switch (ev->key())
   {
   case Qt::Key_0:
-    emu->release_key(et3400emu::Key0);
+    emu->keypad->release_key(keypad_io::Key0);
     break;
   case Qt::Key_1:
-    emu->release_key(et3400emu::Key1);
+    emu->keypad->release_key(keypad_io::Key1);
     break;
   case Qt::Key_2:
-    emu->release_key(et3400emu::Key2);
+    emu->keypad->release_key(keypad_io::Key2);
     break;
   case Qt::Key_3:
-    emu->release_key(et3400emu::Key3);
+    emu->keypad->release_key(keypad_io::Key3);
     break;
   case Qt::Key_4:
-    emu->release_key(et3400emu::Key4);
+    emu->keypad->release_key(keypad_io::Key4);
     break;
   case Qt::Key_5:
-    emu->release_key(et3400emu::Key5);
+    emu->keypad->release_key(keypad_io::Key5);
     break;
   case Qt::Key_6:
-    emu->release_key(et3400emu::Key6);
+    emu->keypad->release_key(keypad_io::Key6);
     break;
   case Qt::Key_7:
-    emu->release_key(et3400emu::Key7);
+    emu->keypad->release_key(keypad_io::Key7);
     break;
   case Qt::Key_8:
-    emu->release_key(et3400emu::Key8);
+    emu->keypad->release_key(keypad_io::Key8);
     break;
   case Qt::Key_9:
-    emu->release_key(et3400emu::Key9);
+    emu->keypad->release_key(keypad_io::Key9);
     break;
   case Qt::Key_A:
-    emu->release_key(et3400emu::KeyA);
+    emu->keypad->release_key(keypad_io::KeyA);
     break;
   case Qt::Key_B:
-    emu->release_key(et3400emu::KeyB);
+    emu->keypad->release_key(keypad_io::KeyB);
     break;
   case Qt::Key_C:
-    emu->release_key(et3400emu::KeyC);
+    emu->keypad->release_key(keypad_io::KeyC);
     break;
   case Qt::Key_D:
-    emu->release_key(et3400emu::KeyD);
+    emu->keypad->release_key(keypad_io::KeyD);
     break;
   case Qt::Key_E:
-    emu->release_key(et3400emu::KeyE);
+    emu->keypad->release_key(keypad_io::KeyE);
     break;
   case Qt::Key_F:
-    emu->release_key(et3400emu::KeyF);
+    emu->keypad->release_key(keypad_io::KeyF);
     break;
   case Qt::Key_Escape:
-    emu->release_key(et3400emu::KeyReset);
+    emu->keypad->release_key(keypad_io::KeyReset);
     break;
   }
 }
@@ -282,12 +301,13 @@ void MainWindow::execute_emu()
 
   file.close();
 
-  emu = new et3400emu;
+  emu = new et3400emu(keypad->device, display->device);
 
   emu->loadROM(ROM_ADDR, (uint8_t *)buffer, ROM_SIZE);
 
-  display->set_memory(emu->get_memory());
-  keypad->set_emulator(emu);
+  debugger_dialog->set_emulator(emu);
+  keypad->device->on_reset_press = [this] { emu->reset(); };
+  emu->on_render_frame = [this] { display->update_display(); };
 
   emu->init();
   emu->start();
