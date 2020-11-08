@@ -6,7 +6,7 @@ srec_block make_block(int bytecount, int address, uint8_t *data)
     return block;
 }
 
-bool Srec::Read(QString path, std::vector<srec_block> *blocks)
+bool SrecReader::Read(QString path, std::vector<srec_block> *blocks)
 {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly))

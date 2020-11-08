@@ -27,8 +27,8 @@ Keypad::Keypad(QWidget *parent)
     mainLayout->addWidget(create_button(QString::fromUtf8("F"), QString::fromUtf8(":/buttons/key F.bmp"), keypad_io::KeyF), 0, 2, 1, 1);
 
     device = new keypad_io;
-    this->setStyleSheet("QPushButton { margin: 0 0 0 0; padding 0 0 0 0 }");
-    this->setFixedSize(QSize(175, 300));
+    setStyleSheet("QPushButton { margin: 0 0 0 0; padding 0 0 0 0 }");
+    setFixedSize(QSize(175, 300));
     setLayout(mainLayout);
 }
 

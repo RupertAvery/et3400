@@ -8,11 +8,11 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt5 COMPONENTS Core Widgets Gui REQUIRED)
 find_package(Threads REQUIRED)
 
-set(WIDGETS_SRC src/widgets/display.cpp src/widgets/keypad.cpp src/widgets/memory_view.cpp src/widgets/disassembly_view.cpp)
+set(WIDGETS_SRC src/widgets/display.cpp src/widgets/keypad.cpp src/widgets/memory_view.cpp src/widgets/disassembly_view.cpp src/widgets/status_view.cpp)
 set(WINDOWS_SRC ${WIDGETS_SRC} src/windows/mainwindow.cpp src/windows/about.cpp src/windows/settings.cpp  src/windows/debugger.cpp)
 set(DEVSRC src/dev/memory_map.cpp src/dev/memory_dev.cpp src/dev/keypad_dev.cpp src/dev/display_dev.cpp)
 set(EMUSRC src/cpu/m6800.cpp src/emu/et3400.cpp)
-set(TOOLSRC src/util/srec.cpp src/dasm/disassembler.cpp )
+set(TOOLSRC src/util/srec.cpp src/util/map.cpp src/dasm/disassembler.cpp )
 set(SOURCES src/main.cpp ${TOOLSRC} ${DEVSRC} ${EMUSRC} ${WINDOWS_SRC} src/resources/resources.qrc src/resources/resources.rc)
 
 add_executable(et3400 ${SOURCES} ${PROJECT_RESOURCES})

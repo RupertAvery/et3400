@@ -57,6 +57,8 @@ public:
 	void execute_step();
 	void execute_set_input(int inputnum, int state);
 	void pre_execute_run();
+
+	CpuStatus get_status();
 	// device_memory_interface overrides
 	//virtual space_config_vector memory_space_config() const override;
 

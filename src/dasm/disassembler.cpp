@@ -428,8 +428,9 @@ int Disassembler::table[258][3] = {
             is_illegal,
             operand,
             instruction,
-            byteLength,
-            flags | DASMFLAG_SUPPORTED};
+            flags | DASMFLAG_SUPPORTED,
+            byteLength
+        };
         // return new DasmResult(){
         //     Instruction = instruction,
         //     Operand = operand,

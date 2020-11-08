@@ -97,7 +97,6 @@ void MemoryView::bufferDraw()
     QFont font("Courier", 12);
 
     font.setStyleStrategy(QFont::NoAntialias);
-    ;
 
     painter.setFont(font);
 

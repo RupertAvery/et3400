@@ -10,7 +10,7 @@ struct srec_block
     uint8_t *data;
 };
 
-class Srec
+class SrecReader
 {
 public:
     static bool Read(QString file, std::vector<srec_block> *blocks);

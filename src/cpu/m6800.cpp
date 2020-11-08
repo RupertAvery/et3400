@@ -791,6 +791,11 @@ void m6800_cpu_device::execute_step()
 	}
 }
 
+CpuStatus m6800_cpu_device::get_status()
+{
+	return CpuStatus{m_pc.d, m_s.d, m_x.d, m_d.b.h, m_d.b.l, m_cc};
+}
+
 // std::unique_ptr<util::disasm_interface> m6800_cpu_device::create_disassembler()
 // {
 // 	return std::make_unique<m680x_disassembler>(6800);

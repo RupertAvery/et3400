@@ -19,6 +19,8 @@ et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
     memory_map->map(et3400emu::MONITOR_ROM, rom);
     memory_map->map(et3400emu::KEYPAD, keypad);
     memory_map->map(et3400emu::DISPLAY, display);
+
+    maps = new std::vector<Map>;
 }
 
 et3400emu::~et3400emu()
@@ -40,9 +42,24 @@ void et3400emu::loadRAM(offs_t address, uint8_t *buffer, size_t size)
     ram->load(address, buffer, size);
 }
 
+void et3400emu::loadMap()
+{
+    maps->push_back(Map{0xFC06, 0xFC0B, DATA, QString("CPU UP")});
+    maps->push_back(Map{0xFF76, 0xFF95, DATA, QString("OP TABLE")});
+    maps->push_back(Map{0xFF96, 0xFFA5, DATA, QString("HEX DISPLAY CODE TABLE")});
+    maps->push_back(Map{0xFFA6, 0xFFB5, DATA, QString("KEY VALUE TABLE")});
+    maps->push_back(Map{0xFFB6, 0xFFF7, DATA, QString("COMMAND HANDLER ENTRY POINT TABLE")});
+    maps->push_back(Map{0xFFF8, 0xFFFF, DATA, QString("INTERRUPT VECTORS")});
+}
+
 bool et3400emu::get_running()
 {
     return running;
+}
+
+CpuStatus et3400emu::get_status()
+{
+    return device->get_status();
 }
 
 void et3400emu::stop()

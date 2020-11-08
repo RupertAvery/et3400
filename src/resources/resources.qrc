@@ -24,6 +24,17 @@
         <file>buttons/key E.bmp</file>
         <file>buttons/key F.bmp</file>
         <file>buttons/Reset.bmp</file>
+        <file>buttons/Add_16x.png</file>
+        <file>buttons/BreakpointDisable_16x.png</file>
+        <file>buttons/BreakpointEnable_16x.png</file>
+        <file>buttons/ClearCollection_16x.png</file>
+        <file>buttons/GoToDefinition_16x.png</file>
+        <file>buttons/GoToSourceCode_16x.png</file>
+        <file>buttons/Remove_16x.png</file>
+        <file>buttons/Restart_16x.png</file>
+        <file>buttons/Run_16x.png</file>
+        <file>buttons/StepIntoArrow_16x.png</file>
+        <file>buttons/Stop_16x.png</file>
         <file>rom/monitor.bin</file>
     </qresource>
 </RCC>

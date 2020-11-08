@@ -119,7 +119,7 @@ void MainWindow::load_ram()
   emu->stop();
 
   // load S19 blocks
-  if (Srec::Read(fileName, blocks))
+  if (SrecReader::Read(fileName, blocks))
   {
 
     // write blocks to memory
@@ -304,6 +304,7 @@ void MainWindow::execute_emu()
   emu = new et3400emu(keypad->device, display->device);
 
   emu->loadROM(ROM_ADDR, (uint8_t *)buffer, ROM_SIZE);
+  emu->loadMap();
 
   debugger_dialog->set_emulator(emu);
   keypad->device->on_reset_press = [this] { emu->reset(); };

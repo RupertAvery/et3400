@@ -1,87 +1,71 @@
 #include "debugger.h"
+#include "debugger_ui.h"
 
 DebuggerDialog::DebuggerDialog() : DebuggerDialog(nullptr)
 {
+    setupUI();
+    emu_set = false;
 }
 
 DebuggerDialog::DebuggerDialog(QWidget *parent) : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
-    // label = new QLabel("Clock Rate");
+}
 
-    // QWidget *mainwidget = new QWidget;
-    // QVBoxLayout *layout = new QVBoxLayout(mainwidget);
+void DebuggerDialog::start(bool checked)
+{
+    qDebug() << "start";
+}
 
-    // slider = new QSlider(Qt::Horizontal);
-    // slider->setFocusPolicy(Qt::StrongFocus);
-    // slider->setTickPosition(QSlider::TicksBothSides);
-    // slider->setTickInterval(10);
-    // slider->setSingleStep(1);
-    // slider->setMinimum(1);
-    // slider->setMaximum(400);
+void DebuggerDialog::stop(bool checked)
+{
+    qDebug() << "stop";
+}
 
-    // connect(slider, &QSlider::valueChanged, this, &SettingsDialog::setClockRate);
+void DebuggerDialog::step(bool checked)
+{
+    qDebug() << "step";
+}
 
-    // layout->addWidget(label);
-    // layout->addWidget(slider);
-    // mainwidget->setFixedHeight(150);
-    // MemoryLocation ram("RAM", 0x0000);
-    // MemoryLocation rom("ROM", 0xFC00);
+void DebuggerDialog::reset(bool checked)
+{
+    qDebug() << "reset";
+}
 
-    QToolBar *toolbar = new QToolBar(this);
-    QLabel *memory_label = new QLabel("Memory");
+int DebuggerDialog::count_open_panels()
+{
+    return (toggle_memory_action->isChecked() ? 1 : 0) +
+           (toggle_disassembly_action->isChecked() ? 1 : 0) +
+           (toggle_status_action->isChecked() ? 1 : 0);
+}
 
-    memory_selector = new QComboBox(toolbar);
-    memory_selector->addItem("RAM");
-    memory_selector->addItem("ROM");
+void DebuggerDialog::toggle_memory_panel(bool checked)
+{
+    if (count_open_panels() == 0)
+    {
+        toggle_memory_action->setChecked(true);
+        return;
+    }
+    memory_groupBox->setVisible(checked);
+}
 
-    QGroupBox *memory_groupBox = new QGroupBox("Memory", this);
-    QGroupBox *disassembly_groupBox = new QGroupBox("Disassembly", this);
+void DebuggerDialog::toggle_disassembly_panel(bool checked)
+{
+    if (count_open_panels() == 0)
+    {
+        toggle_disassembly_action->setChecked(true);
+        return;
+    }
+    disassembly_groupBox->setVisible(checked);
+}
 
-    toolbar->addWidget(memory_label);
-    toolbar->addWidget(memory_selector);
-
-    memmory_scrollbar = new QScrollBar(Qt::Orientation::Vertical);
-    disassembly_scrollbar = new QScrollBar(Qt::Orientation::Vertical);
-
-    memory_view = new MemoryView(this);
-    disassembler_view = new DisassemblyView(this);
-
-    QHBoxLayout *memory_groupBox_layout = new QHBoxLayout(this);
-    memory_groupBox_layout->addWidget(memory_view);
-    memory_groupBox_layout->addWidget(memmory_scrollbar);
-    memory_groupBox_layout->setMargin(10);
-    memory_groupBox->setLayout(memory_groupBox_layout);
-
-    QHBoxLayout *disassembly_groupBox_layout = new QHBoxLayout(this);
-    disassembly_groupBox_layout->addWidget(disassembler_view);
-    disassembly_groupBox_layout->addWidget(disassembly_scrollbar);
-    disassembly_groupBox_layout->setMargin(10);
-    disassembly_groupBox->setLayout(disassembly_groupBox_layout);
-
-    QWidget *panels = new QWidget(this);
-    QHBoxLayout *panels_layout = new QHBoxLayout(this);
-    panels_layout->addWidget(memory_groupBox);
-    panels_layout->addWidget(disassembly_groupBox);
-    panels_layout->setMargin(10);
-    panels->setLayout(panels_layout);
-
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->addWidget(toolbar);
-    mainLayout->addWidget(panels);
-
-    setLayout(mainLayout);
-
-    connect(memmory_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::memory_slider_moved);
-    connect(disassembly_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::disassembly_slider_moved);
-    // this->setStyleSheet("QLabel { font-size:12px; height: 20px }");
-
-    connect(memory_view, &MemoryView::on_scroll, this, &DebuggerDialog::update_memory_scrollbar);
-    connect(disassembler_view, &DisassemblyView::on_scroll, this, &DebuggerDialog::update_disassembly_scrollbar);
-    connect(memory_view, &MemoryView::on_size, this, &DebuggerDialog::update_memory_scrollbar_max);
-    connect(memory_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_memory_location);
-
-    setFixedSize(QSize(985, 721));
-    setWindowTitle("Debugger");
+void DebuggerDialog::toggle_status_panel(bool checked)
+{
+    if (count_open_panels() == 0)
+    {
+        toggle_status_action->setChecked(true);
+        return;
+    }
+    status_groupBox->setVisible(checked);
 }
 
 DebuggerDialog::~DebuggerDialog()
@@ -90,8 +74,9 @@ DebuggerDialog::~DebuggerDialog()
     delete memory_view;
     delete memmory_scrollbar;
     delete memory_selector;
-    delete disassembler_view;
+    delete disassembly_view;
     delete disassembly_scrollbar;
+    delete disassembly_selector;
     qDebug() << "Destroying debugger done";
 }
 
@@ -120,6 +105,31 @@ void DebuggerDialog::select_memory_location(int index)
     memory_view->set_range(start, end, memory);
 }
 
+void DebuggerDialog::select_disassembly_location(int index)
+{
+    QVariant v = disassembly_selector->itemText(index);
+    QString s = v.value<QString>();
+
+    qDebug() << v;
+
+    int sstart = 0;
+    if (s == "RAM")
+    {
+        sstart = 0x0000;
+    }
+    else if (s == "ROM")
+    {
+        sstart = 0xFC00;
+    }
+
+    memory_mapped_device *device = emu_ptr->memory_map->get_block_device(sstart);
+    int start = device->get_start();
+    int end = device->get_end();
+    uint8_t *memory = device->get_mapped_memory();
+
+    disassembly_view->set_range(start, end, memory);
+}
+
 void DebuggerDialog::update_memory_scrollbar(int value)
 {
     memmory_scrollbar->setValue(memmory_scrollbar->value() - value);
@@ -138,18 +148,18 @@ void DebuggerDialog::update_disassembly_scrollbar(int value)
 
 void DebuggerDialog::set_emulator(et3400emu *emu)
 {
-    emu_ptr = emu;
-    memory_view->set_emulator(emu);
-    disassembler_view->set_emulator(emu);
-
-    select_memory_location(0);
-
-    memory_mapped_device *device = emu_ptr->memory_map->get_block_device(0xFC00);
-    int start = device->get_start();
-    int end = device->get_end();
-    uint8_t *memory = device->get_mapped_memory();
-
-    disassembler_view->set_range(start, end, memory);
+    if (!emu_set)
+    {
+        emu_ptr = emu;
+        emu_set = true;
+        memory_view->set_emulator(emu);
+        disassembly_view->set_emulator(emu);
+        status_view->set_emulator(emu);
+        memory_selector->setCurrentIndex(0);
+        disassembly_selector->setCurrentIndex(1);
+        select_memory_location(0);
+        select_disassembly_location(1);
+    }
 }
 
 void DebuggerDialog::memory_slider_moved(int value)
@@ -159,7 +169,7 @@ void DebuggerDialog::memory_slider_moved(int value)
 
 void DebuggerDialog::disassembly_slider_moved(int value)
 {
-    disassembler_view->scrollTo(value);
+    disassembly_view->scrollTo(value);
 }
 
 void DebuggerDialog::keyPressEvent(QKeyEvent *event)

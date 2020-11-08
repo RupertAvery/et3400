@@ -49,18 +49,22 @@ protected:
 private:
     QScrollBar *scrollbar;
     QAction *action;
+    QPixmap *buffer;
+    QTimer *m_paintTimer;
+
+    et3400emu *emu_ptr;
+
     bool running;
     offs_t start;
     offs_t end;
+    uint8_t *memory;
+
+    bool is_memory_set;
     int offset;
     int visible_items;
     int item_height = 20;
     int max_vscroll;
-    et3400emu *emu_ptr;
-    uint8_t *memory;
-    QPixmap *buffer;
-    QTimer *m_paintTimer;
-    bool is_memory_set;
+
     void bufferDraw();
 };
 
