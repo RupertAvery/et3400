@@ -140,6 +140,7 @@ void MainWindow::load_ram()
   // reset and resume emulation
   emu->reset();
   emu->start();
+  debugger_dialog->update_button_state();
 }
 
 void MainWindow::updatecps()

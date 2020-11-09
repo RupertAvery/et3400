@@ -7,9 +7,9 @@
 #include <vector>
 
 enum map_type {
-    CODE,
-    DATA,
-    COMMENT
+    COMMENT,
+    ASSEMBLY,
+    DATA
 };
 
 struct Map

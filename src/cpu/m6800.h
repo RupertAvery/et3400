@@ -11,8 +11,11 @@
 #include <string>
 #include "defs.h"
 #include "../dev/memory_map.h"
+#include <functional>
+#include <vector>
+#include <mutex>
 
-
+extern std::mutex bplocks;
 // class cpu_device
 // {
 // 	virtual void device_start();
@@ -34,7 +37,7 @@ public:
 
 	// construction/destruction
 	// m6800_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
-	m6800_cpu_device(memory_map *memory_map);
+	m6800_cpu_device(memory_map *memory_map, std::vector<BreakPoint> *breakpoints);
 
 	enum
 	{
@@ -53,10 +56,12 @@ public:
 	uint32_t execute_max_cycles() const noexcept { return 12; }
 	uint32_t execute_input_lines() const noexcept { return 2; }
 	bool execute_input_edge_triggered(int inputnum) const noexcept { return inputnum == INPUT_LINE_NMI; }
-	void execute_run();
+	void execute_run(bool resume = false);
 	void execute_step();
 	void execute_set_input(int inputnum, int state);
 	void pre_execute_run();
+	std::vector<BreakPoint> *breakpoints;
+	bool has_breakpoint(offs_t);
 
 	CpuStatus get_status();
 	// device_memory_interface overrides
@@ -98,6 +103,7 @@ public:
 	int m_icount;
 	int reset_line;
 	bool verbose;
+	bool is_break;
 
 protected:
 	PAIR m_ea; /* effective address */

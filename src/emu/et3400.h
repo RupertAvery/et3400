@@ -2,6 +2,7 @@
 #define ET3400EMU_H
 
 #include "../util/common.h"
+#include "../util/disassembly_builder.h"
 #include "../cpu/m6800.h"
 #include "../dev/memory_map.h"
 #include "../dev/memory_dev.h"
@@ -10,6 +11,9 @@
 #include "../util/map.h"
 
 #include <functional>
+#include <mutex>
+
+extern std::mutex bplocks;
 
 class et3400emu
 {
@@ -39,11 +43,16 @@ public:
 	bool get_running();
 	int get_cycles();
 	CpuStatus get_status();
+	void add_breakpoint(offs_t address);
+	void remove_breakpoint(offs_t address);
+	bool has_breakpoint(offs_t address);
+	void handle_breakpoint();
 
 	void set_clock_rate(int clock_rate);
 	int get_clock_rate();
 	unsigned long long total_cycles;
 	std::function<void()> on_render_frame;
+	std::function<void()> on_breakpoint;
 
 	memory_device *ram;
 	memory_device *rom;
@@ -51,6 +60,7 @@ public:
 	keypad_io *keypad;
 	memory_map *memory_map;
 	std::vector<Map> *maps;
+	std::vector<BreakPoint> *breakpoints;
 
 private:
 	void render_frame();
@@ -59,6 +69,7 @@ private:
 	m6800_cpu_device *device;
 	void worker();
 	bool running;
+	bool resumed;
 	std::thread thread;
 };
 

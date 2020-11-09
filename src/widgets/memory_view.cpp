@@ -73,30 +73,14 @@ void MemoryView::scrollTo(int value)
 void MemoryView::bufferDraw()
 {
     QPainter painter(buffer);
-    painter.setRenderHint(QPainter::TextAntialiasing);
+    //painter.setRenderHint(QPainter::TextAntialiasing);
     // Clear display
     painter.setBrush(QBrush(Qt::white));
-
     painter.fillRect(contentsRect(), painter.brush());
 
-    // // Clear segment area only
-    // painter.save();
-    // for (int address = 0xC16F; address >= 0xC110; address--)
-    // {
-    //     if ((address & 0x08) != 0x08)
-    //     {
-    //         int position = 6 - ((address & 0xF0) >> 4);
-    //         painter.save();
-    //         painter.translate(20 + position * 45, 10);
-    //         painter.fillRect(QRect(0, 0, 38, 54), painter.brush());
-    //         painter.restore();
-    //     }
-    // }
-    // painter.restore(); *
-    /* set the modified font to the painter */
     QFont font("Courier", 12);
-
-    font.setStyleStrategy(QFont::NoAntialias);
+    font.setWeight(QFont::Medium);
+    //font.setStyleStrategy(QFont::NoAntialias);
 
     painter.setFont(font);
 
@@ -104,7 +88,13 @@ void MemoryView::bufferDraw()
     int e = s + visible_items * 8;
     e = e > end ? end : e;
 
-    int y = 20;
+    int y = 15;
+
+
+    QColor darkblue = QColor("#00018B");
+    QColor black = QColor("#000000");
+    QColor darkred = QColor("#8B0000");
+    QColor green = QColor("#7db700");
 
     // QString addr = QString("$%1:");
     // QString data = QString("%1 %2 %3 %4 %5 %6 %7 %8");
@@ -113,9 +103,8 @@ void MemoryView::bufferDraw()
     painter.save();
     for (int address = s; address <= e; address += 8)
     {
-        painter.setPen(Qt::blue);
-        painter.drawText(0, y, QString("$%1:").arg(address, 4, 16, filler));
-        painter.setPen(Qt::blue);
+        painter.setPen(darkblue);
+        painter.drawText(5, y, QString("$%1:").arg(address, 4, 16, filler));
 
         QString data = QString("%1 %2 %3 %4 %5 %6 %7 %8");
         int i = 0;
@@ -129,14 +118,7 @@ void MemoryView::bufferDraw()
             data = data.arg(0, 2, 16, filler);
             i++;
         }
-        //    .arg(memory[address + 1], 2, 16, QLatin1Char('0'))
-        //    .arg(memory[address + 2], 2, 16, QLatin1Char('0'))
-        //    .arg(memory[address + 3], 2, 16, QLatin1Char('0'))
-        //    .arg(memory[address + 4], 2, 16, QLatin1Char('0'))
-        //    .arg(memory[address + 5], 2, 16, QLatin1Char('0'))
-        //    .arg(memory[address + 6], 2, 16, QLatin1Char('0'))
-        //    .arg(memory[address + 7], 2, 16, QLatin1Char('0'));
-
+        painter.setPen(darkred);
         painter.drawText(80, y, data);
         y += item_height;
     }

@@ -1,73 +1,74 @@
 // license:BSD-3-Clause
 // copyright-holders:Aaron Giles
 /*** m6800: Portable 6800 class  emulator *************************************
-    m68xx.c
-    References:
-        6809 Simulator V09, By L.C. Benschop, Eindhoven The Netherlands.
-        m6809: Portable 6809 emulator, DS (6809 code in MAME, derived from
-            the 6809 Simulator V09)
-        6809 Microcomputer Programming & Interfacing with Experiments"
-            by Andrew C. Staugaard, Jr.; Howard W. Sams & Co., Inc.
-    System dependencies:    uint16_t must be 16 bit unsigned int
-                            uint8_t must be 8 bit unsigned int
-                            uint32_t must be more than 16 bits
-                            arrays up to 65536 bytes must be supported
-                            machine must be twos complement
+	m68xx.c
+	References:
+		6809 Simulator V09, By L.C. Benschop, Eindhoven The Netherlands.
+		m6809: Portable 6809 emulator, DS (6809 code in MAME, derived from
+			the 6809 Simulator V09)
+		6809 Microcomputer Programming & Interfacing with Experiments"
+			by Andrew C. Staugaard, Jr.; Howard W. Sams & Co., Inc.
+	System dependencies:    uint16_t must be 16 bit unsigned int
+							uint8_t must be 8 bit unsigned int
+							uint32_t must be more than 16 bits
+							arrays up to 65536 bytes must be supported
+							machine must be twos complement
 History
 991031  ZV
-    Added NSC-8105 support
+	Added NSC-8105 support
 990319  HJB
-    Fixed wrong LSB/MSB order for push/pull word.
-    Subtract .extra_cycles at the beginning/end of the exectution loops.
+	Fixed wrong LSB/MSB order for push/pull word.
+	Subtract .extra_cycles at the beginning/end of the exectution loops.
 990316  HJB
-    Renamed to 6800, since that's the basic CPU.
-    Added different cycle count tables for M6800/2/8, M6801/3 and m68xx.
+	Renamed to 6800, since that's the basic CPU.
+	Added different cycle count tables for M6800/2/8, M6801/3 and m68xx.
 990314  HJB
-    Also added the M6800 subtype.
+	Also added the M6800 subtype.
 990311  HJB
-    Added _info functions. Now uses static m6808_Regs struct instead
-    of single statics. Changed the 16 bit registers to use the generic
-    PAIR union. Registers defined using macros. Split the core into
-    four execution loops for M6802, M6803, M6808 and HD63701.
-    TST, TSTA and TSTB opcodes reset carry flag.
+	Added _info functions. Now uses static m6808_Regs struct instead
+	of single statics. Changed the 16 bit registers to use the generic
+	PAIR union. Registers defined using macros. Split the core into
+	four execution loops for M6802, M6803, M6808 and HD63701.
+	TST, TSTA and TSTB opcodes reset carry flag.
 TODO:
-    Verify invalid opcodes for the different CPU types.
-    Add proper credits to _info functions.
-    Integrate m6808_Flags into the registers (multiple m6808 type CPUs?)
+	Verify invalid opcodes for the different CPU types.
+	Add proper credits to _info functions.
+	Integrate m6808_Flags into the registers (multiple m6808 type CPUs?)
 990301  HJB
-    Modified the interrupt handling. No more pending interrupt checks.
-    WAI opcode saves state, when an interrupt is taken (IRQ or OCI),
-    the state is only saved if not already done by WAI.
+	Modified the interrupt handling. No more pending interrupt checks.
+	WAI opcode saves state, when an interrupt is taken (IRQ or OCI),
+	the state is only saved if not already done by WAI.
 *****************************************************************************/
 
 /*
-    Chip                RAM     NVRAM   ROM     SCI     r15-f   ports
-    -----------------------------------------------------------------
-    MC6800              -       -       -       no      no      -
-    MC6802              128     32      -       no      no      -
-    MC6802NS            128     -       -       no      no      -
-    MC6808              -       -       -       no      no      -
-    MC6801              128     64      2K      yes     no      4
-    MC68701             128     64      2K      yes     no      4
-    MC6803              128     64      -       yes     no      4
-    MC6803NR            -       -       -       yes     no      4
-    MC6801U4            192     32      4K      yes     yes     4
-    MC6803U4            192     32      -       yes     yes     4
-    MC68120             128(DP) -       2K      yes     IPC     3
-    MC68121             128(DP) -       -       yes     IPC     3
-    HD6801              128     64      2K      yes     no      4
-    HD6301V             128     -       4K      yes     no      4
-    HD63701V            192     -       4K      yes     no      4
-    HD6303R             128     -       -       yes     no      4
-    HD6301X             192     -       4K      yes     yes     6
-    HD6301Y             256     -       16K     yes     yes     6
-    HD6303X             192     -       -       yes     yes     6
-    HD6303Y             256     -       -       yes     yes     6
-    NSC8105
-    MS2010-A
+	Chip                RAM     NVRAM   ROM     SCI     r15-f   ports
+	-----------------------------------------------------------------
+	MC6800              -       -       -       no      no      -
+	MC6802              128     32      -       no      no      -
+	MC6802NS            128     -       -       no      no      -
+	MC6808              -       -       -       no      no      -
+	MC6801              128     64      2K      yes     no      4
+	MC68701             128     64      2K      yes     no      4
+	MC6803              128     64      -       yes     no      4
+	MC6803NR            -       -       -       yes     no      4
+	MC6801U4            192     32      4K      yes     yes     4
+	MC6803U4            192     32      -       yes     yes     4
+	MC68120             128(DP) -       2K      yes     IPC     3
+	MC68121             128(DP) -       -       yes     IPC     3
+	HD6801              128     64      2K      yes     no      4
+	HD6301V             128     -       4K      yes     no      4
+	HD63701V            192     -       4K      yes     no      4
+	HD6303R             128     -       -       yes     no      4
+	HD6301X             192     -       4K      yes     yes     6
+	HD6301Y             256     -       16K     yes     yes     6
+	HD6303X             192     -       -       yes     yes     6
+	HD6303Y             256     -       -       yes     yes     6
+	NSC8105
+	MS2010-A
 */
 
 #include "m6800.h"
+//#include "../util/mutex.hpp"
 
 #define VERBOSE 0
 
@@ -160,7 +161,7 @@ TODO:
 	}
 
 /* CC masks                       HI NZVC
-                                7654 3210   */
+								7654 3210   */
 #define CLR_HNZVC CC &= 0xd0
 #define CLR_NZV CC &= 0xf1
 #define CLR_HNZC CC &= 0xd2
@@ -169,7 +170,7 @@ TODO:
 #define CLR_ZC CC &= 0xfa
 #define CLR_C CC &= 0xfe
 
-/* macros for CC -- CC bits affected should be reset before calling */
+								/* macros for CC -- CC bits affected should be reset before calling */
 #define SET_Z(a) \
 	if (!(a))    \
 	SEZ
@@ -184,42 +185,42 @@ TODO:
 #define SET_V16(a, b, r) CC |= ((((a) ^ (b) ^ (r) ^ ((r) >> 1)) & 0x8000) >> 14)
 
 const uint8_t m6800_cpu_device::flags8i[256] = /* increment */
-	{
-		0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x0a, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08};
+{
+	0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x0a, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08 };
 
 const uint8_t m6800_cpu_device::flags8d[256] = /* decrement */
-	{
-		0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
-		0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08};
+{
+	0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
+	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08 };
 
 #define SET_FLAGS8I(a)           \
 	{                            \
@@ -350,7 +351,7 @@ void m6800_cpu_device::write_byte(offs_t address, uint8_t data)
 	this->memory_map->write(address & 0xFFFF, data & 0xFF);
 }
 
-void m6800_cpu_device::write_bytes(offs_t address, uint8_t *data, size_t size)
+void m6800_cpu_device::write_bytes(offs_t address, uint8_t* data, size_t size)
 {
 	for (int i = 0; i < size; i++)
 	{
@@ -362,44 +363,44 @@ void m6800_cpu_device::write_bytes(offs_t address, uint8_t *data, size_t size)
 /* hang in an infinite loop if we hit one */
 #define XX 5 // invalid opcode unknown cc
 const uint8_t m6800_cpu_device::cycles_6800[256] =
-	{
-		/* 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
-		/*0*/ XX, 2, XX, XX, XX, XX, 2, 2, 4, 4, 2, 2, 2, 2, 2, 2,
-		/*1*/ 2, 2, XX, XX, XX, XX, 2, 2, XX, 2, XX, 2, XX, XX, XX, XX,
-		/*2*/ 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-		/*3*/ 4, 4, 4, 4, 4, 4, 4, 4, XX, 5, XX, 10, XX, XX, 9, 12,
-		/*4*/ 2, XX, XX, 2, 2, XX, 2, 2, 2, 2, 2, XX, 2, 2, XX, 2,
-		/*5*/ 2, XX, XX, 2, 2, XX, 2, 2, 2, 2, 2, XX, 2, 2, XX, 2,
-		/*6*/ 7, XX, XX, 7, 7, XX, 7, 7, 7, 7, 7, XX, 7, 7, 4, 7,
-		/*7*/ 6, XX, XX, 6, 6, XX, 6, 6, 6, 6, 6, XX, 6, 6, 3, 6,
-		/*8*/ 2, 2, 2, XX, 2, 2, 2, 3, 2, 2, 2, 2, 3, 8, 3, 4,
-		/*9*/ 3, 3, 3, XX, 3, 3, 3, 4, 3, 3, 3, 3, 4, 6, 4, 5,
-		/*A*/ 5, 5, 5, XX, 5, 5, 5, 6, 5, 5, 5, 5, 6, 8, 6, 7,
-		/*B*/ 4, 4, 4, XX, 4, 4, 4, 5, 4, 4, 4, 4, 5, 9, 5, 6,
-		/*C*/ 2, 2, 2, XX, 2, 2, 2, 3, 2, 2, 2, 2, XX, XX, 3, 4,
-		/*D*/ 3, 3, 3, XX, 3, 3, 3, 4, 3, 3, 3, 3, XX, XX, 4, 5,
-		/*E*/ 5, 5, 5, XX, 5, 5, 5, 6, 5, 5, 5, 5, XX, XX, 6, 7,
-		/*F*/ 4, 4, 4, XX, 4, 4, 4, 5, 4, 4, 4, 4, XX, XX, 5, 6};
+{
+	/* 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
+	/*0*/ XX, 2, XX, XX, XX, XX, 2, 2, 4, 4, 2, 2, 2, 2, 2, 2,
+	/*1*/ 2, 2, XX, XX, XX, XX, 2, 2, XX, 2, XX, 2, XX, XX, XX, XX,
+	/*2*/ 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+	/*3*/ 4, 4, 4, 4, 4, 4, 4, 4, XX, 5, XX, 10, XX, XX, 9, 12,
+	/*4*/ 2, XX, XX, 2, 2, XX, 2, 2, 2, 2, 2, XX, 2, 2, XX, 2,
+	/*5*/ 2, XX, XX, 2, 2, XX, 2, 2, 2, 2, 2, XX, 2, 2, XX, 2,
+	/*6*/ 7, XX, XX, 7, 7, XX, 7, 7, 7, 7, 7, XX, 7, 7, 4, 7,
+	/*7*/ 6, XX, XX, 6, 6, XX, 6, 6, 6, 6, 6, XX, 6, 6, 3, 6,
+	/*8*/ 2, 2, 2, XX, 2, 2, 2, 3, 2, 2, 2, 2, 3, 8, 3, 4,
+	/*9*/ 3, 3, 3, XX, 3, 3, 3, 4, 3, 3, 3, 3, 4, 6, 4, 5,
+	/*A*/ 5, 5, 5, XX, 5, 5, 5, 6, 5, 5, 5, 5, 6, 8, 6, 7,
+	/*B*/ 4, 4, 4, XX, 4, 4, 4, 5, 4, 4, 4, 4, 5, 9, 5, 6,
+	/*C*/ 2, 2, 2, XX, 2, 2, 2, 3, 2, 2, 2, 2, XX, XX, 3, 4,
+	/*D*/ 3, 3, 3, XX, 3, 3, 3, 4, 3, 3, 3, 3, XX, XX, 4, 5,
+	/*E*/ 5, 5, 5, XX, 5, 5, 5, 6, 5, 5, 5, 5, XX, XX, 6, 7,
+	/*F*/ 4, 4, 4, XX, 4, 4, 4, 5, 4, 4, 4, 4, XX, XX, 5, 6 };
 
 const uint8_t m6800_cpu_device::cycles_nsc8105[256] =
-	{
-		/* 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
-		/*0*/ 5, XX, 2, XX, XX, 2, XX, 2, 4, 2, 4, 2, 2, 2, 2, 2,
-		/*1*/ 2, XX, 2, XX, XX, 2, XX, 2, XX, XX, 2, 2, XX, XX, XX, XX,
-		/*2*/ 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-		/*3*/ 4, 4, 4, 4, 4, 4, 4, 4, XX, XX, 5, 10, XX, 9, XX, 12,
-		/*4*/ 2, 2, 2, XX, 2, 2, 2, 3, 2, 2, 2, 2, 3, 3, 8, 4,
-		/*5*/ 3, 3, 3, XX, 3, 3, 3, 4, 3, 3, 3, 3, 4, 4, 6, 5,
-		/*6*/ 5, 5, 5, XX, 5, 5, 5, 6, 5, 5, 5, 5, 6, 6, 8, 7,
-		/*7*/ 4, 4, 4, XX, 4, 4, 4, 5, 4, 4, 4, 4, 5, 5, 9, 6,
-		/*8*/ 2, XX, XX, 2, 2, 2, XX, 2, 2, 2, 2, XX, 2, XX, 2, 2,
-		/*9*/ 2, XX, XX, 2, 2, 2, XX, 2, 2, 2, 2, XX, 2, XX, 2, 2,
-		/*A*/ 7, XX, XX, 7, 7, 7, XX, 7, 7, 7, 7, XX, 7, 4, 7, 7,
-		/*B*/ 6, XX, XX, 6, 6, 6, XX, 6, 6, 6, 6, 5, 6, 3, 6, 6,
-		/*C*/ 2, 2, 2, XX, 2, 2, 2, 3, 2, 2, 2, 2, XX, 3, XX, 4,
-		/*D*/ 3, 3, 3, XX, 3, 3, 3, 4, 3, 3, 3, 3, XX, 4, XX, 5,
-		/*E*/ 5, 5, 5, XX, 5, 5, 5, 6, 5, 5, 5, 5, 5, 6, XX, 7,
-		/*F*/ 4, 4, 4, XX, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, XX, 6};
+{
+	/* 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F */
+	/*0*/ 5, XX, 2, XX, XX, 2, XX, 2, 4, 2, 4, 2, 2, 2, 2, 2,
+	/*1*/ 2, XX, 2, XX, XX, 2, XX, 2, XX, XX, 2, 2, XX, XX, XX, XX,
+	/*2*/ 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+	/*3*/ 4, 4, 4, 4, 4, 4, 4, 4, XX, XX, 5, 10, XX, 9, XX, 12,
+	/*4*/ 2, 2, 2, XX, 2, 2, 2, 3, 2, 2, 2, 2, 3, 3, 8, 4,
+	/*5*/ 3, 3, 3, XX, 3, 3, 3, 4, 3, 3, 3, 3, 4, 4, 6, 5,
+	/*6*/ 5, 5, 5, XX, 5, 5, 5, 6, 5, 5, 5, 5, 6, 6, 8, 7,
+	/*7*/ 4, 4, 4, XX, 4, 4, 4, 5, 4, 4, 4, 4, 5, 5, 9, 6,
+	/*8*/ 2, XX, XX, 2, 2, 2, XX, 2, 2, 2, 2, XX, 2, XX, 2, 2,
+	/*9*/ 2, XX, XX, 2, 2, 2, XX, 2, 2, 2, 2, XX, 2, XX, 2, 2,
+	/*A*/ 7, XX, XX, 7, 7, 7, XX, 7, 7, 7, 7, XX, 7, 4, 7, 7,
+	/*B*/ 6, XX, XX, 6, 6, 6, XX, 6, 6, 6, 6, 5, 6, 3, 6, 6,
+	/*C*/ 2, 2, 2, XX, 2, 2, 2, 3, 2, 2, 2, 2, XX, 3, XX, 4,
+	/*D*/ 3, 3, 3, XX, 3, 3, 3, 4, 3, 3, 3, 3, XX, 4, XX, 5,
+	/*E*/ 5, 5, 5, XX, 5, 5, 5, 6, 5, 5, 5, 5, 5, 6, XX, 7,
+	/*F*/ 4, 4, 4, XX, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, XX, 6 };
 #undef XX // /invalid opcode unknown cc
 
 const m6800_cpu_device::op_func m6800_cpu_device::m6800_insn[0x100] = {
@@ -434,7 +435,7 @@ const m6800_cpu_device::op_func m6800_cpu_device::m6800_insn[0x100] = {
 	&m6800_cpu_device::subb_ix, &m6800_cpu_device::cmpb_ix, &m6800_cpu_device::sbcb_ix, &m6800_cpu_device::illegl2, &m6800_cpu_device::andb_ix, &m6800_cpu_device::bitb_ix, &m6800_cpu_device::ldb_ix, &m6800_cpu_device::stb_ix,
 	&m6800_cpu_device::eorb_ix, &m6800_cpu_device::adcb_ix, &m6800_cpu_device::orb_ix, &m6800_cpu_device::addb_ix, &m6800_cpu_device::illegl2, &m6800_cpu_device::illegl2, &m6800_cpu_device::ldx_ix, &m6800_cpu_device::stx_ix,
 	&m6800_cpu_device::subb_ex, &m6800_cpu_device::cmpb_ex, &m6800_cpu_device::sbcb_ex, &m6800_cpu_device::illegl3, &m6800_cpu_device::andb_ex, &m6800_cpu_device::bitb_ex, &m6800_cpu_device::ldb_ex, &m6800_cpu_device::stb_ex,
-	&m6800_cpu_device::eorb_ex, &m6800_cpu_device::adcb_ex, &m6800_cpu_device::orb_ex, &m6800_cpu_device::addb_ex, &m6800_cpu_device::illegl3, &m6800_cpu_device::illegl3, &m6800_cpu_device::ldx_ex, &m6800_cpu_device::stx_ex};
+	&m6800_cpu_device::eorb_ex, &m6800_cpu_device::adcb_ex, &m6800_cpu_device::orb_ex, &m6800_cpu_device::addb_ex, &m6800_cpu_device::illegl3, &m6800_cpu_device::illegl3, &m6800_cpu_device::ldx_ex, &m6800_cpu_device::stx_ex };
 
 const m6800_cpu_device::op_func m6800_cpu_device::nsc8105_insn[0x100] = {
 	&m6800_cpu_device::illegl1, &m6800_cpu_device::illegl1, &m6800_cpu_device::nop, &m6800_cpu_device::illegl1, &m6800_cpu_device::illegl1, &m6800_cpu_device::tap, &m6800_cpu_device::illegl1, &m6800_cpu_device::tpa,
@@ -468,15 +469,17 @@ const m6800_cpu_device::op_func m6800_cpu_device::nsc8105_insn[0x100] = {
 	&m6800_cpu_device::subb_ix, &m6800_cpu_device::sbcb_ix, &m6800_cpu_device::cmpb_ix, &m6800_cpu_device::illegl1, &m6800_cpu_device::andb_ix, &m6800_cpu_device::ldb_ix, &m6800_cpu_device::bitb_ix, &m6800_cpu_device::stb_ix,
 	&m6800_cpu_device::eorb_ix, &m6800_cpu_device::orb_ix, &m6800_cpu_device::adcb_ix, &m6800_cpu_device::addb_ix, &m6800_cpu_device::adcx_im, &m6800_cpu_device::ldx_ix, &m6800_cpu_device::illegl1, &m6800_cpu_device::stx_ix,
 	&m6800_cpu_device::subb_ex, &m6800_cpu_device::sbcb_ex, &m6800_cpu_device::cmpb_ex, &m6800_cpu_device::illegl1, &m6800_cpu_device::andb_ex, &m6800_cpu_device::ldb_ex, &m6800_cpu_device::bitb_ex, &m6800_cpu_device::stb_ex,
-	&m6800_cpu_device::eorb_ex, &m6800_cpu_device::orb_ex, &m6800_cpu_device::adcb_ex, &m6800_cpu_device::addb_ex, &m6800_cpu_device::addx_ex, &m6800_cpu_device::ldx_ex, &m6800_cpu_device::illegl1, &m6800_cpu_device::stx_ex};
+	&m6800_cpu_device::eorb_ex, &m6800_cpu_device::orb_ex, &m6800_cpu_device::adcb_ex, &m6800_cpu_device::addb_ex, &m6800_cpu_device::addx_ex, &m6800_cpu_device::ldx_ex, &m6800_cpu_device::illegl1, &m6800_cpu_device::stx_ex };
 
 // DEFINE_DEVICE_TYPE(M6800, m6800_cpu_device, "m6800", "Motorola MC6800")
 // DEFINE_DEVICE_TYPE(M6802, m6802_cpu_device, "m6802", "Motorola MC6802")
 // DEFINE_DEVICE_TYPE(M6808, m6808_cpu_device, "m6808", "Motorola MC6808")
 // DEFINE_DEVICE_TYPE(NSC8105, nsc8105_cpu_device, "nsc8105", "NSC8105")
-m6800_cpu_device::m6800_cpu_device(::memory_map *memory_map)
+m6800_cpu_device::m6800_cpu_device(::memory_map* memory_map, std::vector<BreakPoint>* breakpoints)
 {
 	this->memory_map = memory_map;
+	this->breakpoints = breakpoints;
+	is_break = false;
 	verbose = false;
 	m_insn = m6800_insn;
 	m_cycles = cycles_6800;
@@ -549,14 +552,14 @@ uint32_t m6800_cpu_device::RM16(uint32_t Addr)
 	return result | RM((Addr + 1) & 0xffff);
 }
 
-void m6800_cpu_device::WM16(uint32_t Addr, PAIR *p)
+void m6800_cpu_device::WM16(uint32_t Addr, PAIR* p)
 {
 	WM(Addr, p->b.h);
 	WM((Addr + 1) & 0xffff, p->b.l);
 }
 
 /* IRQ enter */
-void m6800_cpu_device::enter_interrupt(const char *message, uint16_t irq_vector)
+void m6800_cpu_device::enter_interrupt(const char* message, uint16_t irq_vector)
 {
 	//LOG((message));
 	if (m_wai_state & (M6800_WAI | M6800_SLP))
@@ -739,10 +742,28 @@ void m6800_cpu_device::pre_execute_run()
 
 	// return 0;
 }
+
+bool m6800_cpu_device::has_breakpoint(offs_t address)
+{
+	bplocks.lock();
+	std::vector<BreakPoint>::const_iterator it = breakpoints->begin();
+	while (it != breakpoints->end())
+	{
+		if ((*it).address == address)
+		{
+			bplocks.unlock();
+			return true;
+		}
+		it++;
+	}
+	bplocks.unlock();
+	return false;
+}
+
 /****************************************************************************
  * Execute cycles CPU cycles. Return number of cycles really executed
  ****************************************************************************/
-void m6800_cpu_device::execute_run()
+void m6800_cpu_device::execute_run(bool resume)
 {
 	uint8_t ireg;
 
@@ -752,6 +773,12 @@ void m6800_cpu_device::execute_run()
 
 	do
 	{
+		if (!is_break && has_breakpoint(m_pc.d) && !resume)
+		{
+			is_break = true;
+			break;
+		}
+
 		if (m_wai_state & (M6800_WAI | M6800_SLP))
 		{
 			EAT_CYCLES();
@@ -765,6 +792,8 @@ void m6800_cpu_device::execute_run()
 			(this->*m_insn[ireg])();
 			increment_counter(m_cycles[ireg]);
 		}
+
+		resume = false;
 	} while (m_icount > 0);
 }
 
@@ -793,7 +822,7 @@ void m6800_cpu_device::execute_step()
 
 CpuStatus m6800_cpu_device::get_status()
 {
-	return CpuStatus{m_pc.d, m_s.d, m_x.d, m_d.b.h, m_d.b.l, m_cc};
+	return CpuStatus{ m_pc.d, m_s.d, m_x.d, m_d.b.h, m_d.b.l, m_cc };
 }
 
 // std::unique_ptr<util::disasm_interface> m6800_cpu_device::create_disassembler()

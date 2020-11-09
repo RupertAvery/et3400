@@ -1,6 +1,5 @@
 #include "disassembler.h"
 
-
 const char Disassembler::op_name_str_orig[128][8] =
     {
         "aba", "abx", "adca", "adcb", "adda", "addb", "addd", "aim",
@@ -327,190 +326,186 @@ int Disassembler::table[258][3] = {
     /* extra instruction $ec for NSC-8105 */
     {Disassembler::adcx, Disassembler::imb, 0}};
 
+int Disassembler::SIGNED(int b)
+{
+    return ((int)((b & 0x80) == 0x80 ? b | 0xffffff00 : b));
+}
 
+bool Disassembler::IsSubroutine(int opcode)
+{
+    return opcode == bsr || opcode == jsr;
+}
 
-    int Disassembler::SIGNED(int b)
+bool Disassembler::IsReturn(int opcode)
+{
+    return opcode == rti || opcode == rts;
+}
+
+DasmResult Disassembler::disassemble(uint8_t *memory, int address)
+{
+    static char *instruction = (char *)malloc(8);
+    static char *operand = (char *)malloc(8);
+
+    int flags = 0;
+    int invalid_mask;
+    int code = memory[0] & 0xff;
+    int opcode, args, invalid;
+
+    invalid_mask = 1;
+
+    opcode = table[code][0];
+    args = table[code][1];
+    invalid = table[code][2];
+
+    if (IsSubroutine(opcode))
+        flags = DASMFLAG_STEP_OVER;
+    else if (IsReturn(opcode))
+        flags = DASMFLAG_STEP_OUT;
+
+    bool is_illegal = false;
+    // char *operand = nullptr;
+    // char *instruction = nullptr;
+    int byteLength = 0;
+
+    if ((invalid & invalid_mask) == invalid_mask) /* invalid for this cpu type ? */
     {
-        return ((int)((b & 0x80) == 0x80 ? b | 0xffffff00 : b));
+        return DasmResult{true, nullptr, nullptr, flags | DASMFLAG_SUPPORTED, 1};
     }
 
-     bool Disassembler::IsSubroutine(int opcode)
+    sprintf(instruction, "%-4s", op_name_str[opcode]);
+
+    // int byteLength = 0;
+    sprintf(operand, "");
+
+    switch (args)
     {
-        return opcode == bsr || opcode == jsr;
+    case rel: /* relative */
+        sprintf(operand, "$%04X", address + SIGNED(memory[1]) + 2);
+        byteLength = 2;
+        break;
+    case imb: /* immediate (byte) */
+        sprintf(operand, "#$%02X", memory[1]);
+        byteLength = 2;
+        break;
+    case imw: /* immediate (word) */
+        sprintf(operand, "#$%04X", (memory[1] << 8) + memory[2]);
+        byteLength = 3;
+        break;
+    case idx: /* indexed + byte offset */
+        sprintf(operand, "$%02X,x", memory[1]);
+        byteLength = 2;
+        break;
+    case imx: /* immediate, indexed + byte offset */
+        sprintf(operand, "#$%02X,(x+$%02X)", memory[1], memory[2]);
+        byteLength = 3;
+        break;
+    case dir: /* direct address */
+        sprintf(operand, "$%02X", memory[1]);
+        byteLength = 2;
+        break;
+    case imd: /* immediate, direct address */
+        sprintf(operand, "#$%02X,$%02X", memory[1], memory[2]);
+        byteLength = 3;
+        break;
+    case ext: /* extended address */
+        sprintf(operand, "$%04X", (memory[1] << 8) + memory[2]);
+        byteLength = 3;
+        break;
+    case sx1: /* byte from address (s + 1) */
+        sprintf(operand, "(s+1)");
+        byteLength = 1;
+        break;
+    default:
+        byteLength = 1;
+        break;
     }
 
-     bool Disassembler::IsReturn(int opcode)
-    {
-        return opcode == rti || opcode == rts;
-    }
+    return DasmResult{
+        is_illegal,
+        operand,
+        instruction,
+        flags | DASMFLAG_SUPPORTED,
+        byteLength};
+    // return new DasmResult(){
+    //     Instruction = instruction,
+    //     Operand = operand,
+    //     ByteLength = byteLength,
+    //     Flags = flags | DASMFLAG_SUPPORTED};
+}
 
- DasmResult Disassembler::disassemble(uint8_t *memory, int address)
-    {
-        static char *instruction = (char *)malloc(8);
-        static char *operand = (char *)malloc(8);
+//     static int Disassemble(int[] memory, int pc, ref string buf)
+//     {
+//         int flags = 0;
+//         int invalid_mask;
+//         int code = memory[pc] & 0xff;
+//         int opcode, args, invalid;
 
-        int flags = 0;
-        int invalid_mask;
-        int code = memory[0] & 0xff;
-        int opcode, args, invalid;
+//         invalid_mask = 1;
 
-        invalid_mask = 1;
+//         opcode = table[code][0];
+//         args = table[code][1];
+//         invalid = table[code][2];
 
-        opcode = table[code][0];
-        args = table[code][1];
-        invalid = table[code][2];
+//         if (IsSubroutine(opcode))
+//             flags = DASMFLAG_STEP_OVER;
+//         else if (IsReturn(opcode))
+//             flags = DASMFLAG_STEP_OUT;
 
-        if (IsSubroutine(opcode))
-            flags = DASMFLAG_STEP_OVER;
-        else if (IsReturn(opcode))
-            flags = DASMFLAG_STEP_OUT;
+//         if ((invalid & invalid_mask) == invalid_mask) /* invalid for this cpu type ? */
+//         {
+//             buf += "illegal";
+//             return 1 | flags | DASMFLAG_SUPPORTED;
+//         }
 
-        bool is_illegal = false;
-        // char *operand = nullptr;
-        // char *instruction = nullptr;
-        int byteLength = 0;
+//         buf += string.Format("{0,-4} ", op_name_str[opcode]);
 
-        if ((invalid & invalid_mask) == invalid_mask) /* invalid for this cpu type ? */
-        {
-            return DasmResult{true, nullptr, nullptr, flags | DASMFLAG_SUPPORTED, 1};
-        }
+//         switch (args)
+//         {
+//         case rel: /* relative */
+//             buf += string.Format("${0:X4}", pc + SIGNED(memory[pc + 1]) + 2);
+//             return 2 | flags | DASMFLAG_SUPPORTED;
+//         case imb: /* immediate (byte) */
+//             buf += string.Format("#${0:X2}", memory[pc + 1]);
+//             return 2 | flags | DASMFLAG_SUPPORTED;
+//         case imw: /* immediate (word) */
+//             buf += string.Format("#${0:X4}", (memory[pc + 1] << 8) + memory[pc + 2]);
+//             return 3 | flags | DASMFLAG_SUPPORTED;
+//         case idx: /* indexed + byte offset */
+//             buf += string.Format("${0:X2},x", memory[pc + 1]);
+//             return 2 | flags | DASMFLAG_SUPPORTED;
+//         case imx: /* immediate, indexed + byte offset */
+//             buf += string.Format("#${0:X2},(x+${1:X2})", memory[pc + 1], memory[pc + 2]);
+//             return 3 | flags | DASMFLAG_SUPPORTED;
+//         case dir: /* direct address */
+//             buf += string.Format("${0:X2}", memory[pc + 1]);
+//             return 2 | flags | DASMFLAG_SUPPORTED;
+//         case imd: /* immediate, direct address */
+//             buf += string.Format("#${0:X2},${1:X2}", memory[pc + 1], memory[pc + 2]);
+//             return 3 | flags | DASMFLAG_SUPPORTED;
+//         case ext: /* extended address */
+//             buf += string.Format("${0:X4}", (memory[pc + 1] << 8) + memory[pc + 2]);
+//             return 3 | flags | DASMFLAG_SUPPORTED;
+//         case sx1: /* byte from address (s + 1) */
+//             buf += string.Format("(s+1)");
+//             return 1 | flags | DASMFLAG_SUPPORTED;
+//         default:
+//             return 1 | flags | DASMFLAG_SUPPORTED;
+//         }
+//     }
 
-        sprintf(instruction, "%-4s", op_name_str[opcode]);
-
-        // int byteLength = 0;
-
-        // string operand = "";
-
-        switch (args)
-        {
-        case rel: /* relative */
-            sprintf(operand, "$%04x", address + SIGNED(memory[1]) + 2);
-            byteLength = 2;
-            break;
-        case imb: /* immediate (byte) */
-            sprintf(operand, "#$%02x", memory[1]);
-            byteLength = 2;
-            break;
-        case imw: /* immediate (word) */
-            sprintf(operand, "#$%04x", (memory[1] << 8) + memory[2]);
-            byteLength = 3;
-            break;
-        case idx: /* indexed + byte offset */
-            sprintf(operand, "$%02x,x", memory[1]);
-            byteLength = 2;
-            break;
-        case imx: /* immediate, indexed + byte offset */
-            sprintf(operand, "#$%02x,(x+$%02x)", memory[1], memory[2]);
-            byteLength = 3;
-            break;
-        case dir: /* direct address */
-            sprintf(operand, "$%02x", memory[1]);
-            byteLength = 2;
-            break;
-        case imd: /* immediate, direct address */
-            sprintf(operand, "#$%02x,$%02x", memory[1], memory[2]);
-            byteLength = 3;
-            break;
-        case ext: /* extended address */
-            sprintf(operand, "$%04x", (memory[1] << 8) + memory[2]);
-            byteLength = 3;
-            break;
-        case sx1: /* byte from address (s + 1) */
-            sprintf(operand, "(s+1)");
-            byteLength = 1;
-            break;
-        default:
-            byteLength = 1;
-            break;
-        }
-
-        return DasmResult{
-            is_illegal,
-            operand,
-            instruction,
-            flags | DASMFLAG_SUPPORTED,
-            byteLength
-        };
-        // return new DasmResult(){
-        //     Instruction = instruction,
-        //     Operand = operand,
-        //     ByteLength = byteLength,
-        //     Flags = flags | DASMFLAG_SUPPORTED};
-    }
-
-    //     static int Disassemble(int[] memory, int pc, ref string buf)
-    //     {
-    //         int flags = 0;
-    //         int invalid_mask;
-    //         int code = memory[pc] & 0xff;
-    //         int opcode, args, invalid;
-
-    //         invalid_mask = 1;
-
-    //         opcode = table[code][0];
-    //         args = table[code][1];
-    //         invalid = table[code][2];
-
-    //         if (IsSubroutine(opcode))
-    //             flags = DASMFLAG_STEP_OVER;
-    //         else if (IsReturn(opcode))
-    //             flags = DASMFLAG_STEP_OUT;
-
-    //         if ((invalid & invalid_mask) == invalid_mask) /* invalid for this cpu type ? */
-    //         {
-    //             buf += "illegal";
-    //             return 1 | flags | DASMFLAG_SUPPORTED;
-    //         }
-
-    //         buf += string.Format("{0,-4} ", op_name_str[opcode]);
-
-    //         switch (args)
-    //         {
-    //         case rel: /* relative */
-    //             buf += string.Format("${0:X4}", pc + SIGNED(memory[pc + 1]) + 2);
-    //             return 2 | flags | DASMFLAG_SUPPORTED;
-    //         case imb: /* immediate (byte) */
-    //             buf += string.Format("#${0:X2}", memory[pc + 1]);
-    //             return 2 | flags | DASMFLAG_SUPPORTED;
-    //         case imw: /* immediate (word) */
-    //             buf += string.Format("#${0:X4}", (memory[pc + 1] << 8) + memory[pc + 2]);
-    //             return 3 | flags | DASMFLAG_SUPPORTED;
-    //         case idx: /* indexed + byte offset */
-    //             buf += string.Format("${0:X2},x", memory[pc + 1]);
-    //             return 2 | flags | DASMFLAG_SUPPORTED;
-    //         case imx: /* immediate, indexed + byte offset */
-    //             buf += string.Format("#${0:X2},(x+${1:X2})", memory[pc + 1], memory[pc + 2]);
-    //             return 3 | flags | DASMFLAG_SUPPORTED;
-    //         case dir: /* direct address */
-    //             buf += string.Format("${0:X2}", memory[pc + 1]);
-    //             return 2 | flags | DASMFLAG_SUPPORTED;
-    //         case imd: /* immediate, direct address */
-    //             buf += string.Format("#${0:X2},${1:X2}", memory[pc + 1], memory[pc + 2]);
-    //             return 3 | flags | DASMFLAG_SUPPORTED;
-    //         case ext: /* extended address */
-    //             buf += string.Format("${0:X4}", (memory[pc + 1] << 8) + memory[pc + 2]);
-    //             return 3 | flags | DASMFLAG_SUPPORTED;
-    //         case sx1: /* byte from address (s + 1) */
-    //             buf += string.Format("(s+1)");
-    //             return 1 | flags | DASMFLAG_SUPPORTED;
-    //         default:
-    //             return 1 | flags | DASMFLAG_SUPPORTED;
-    //         }
-    //     }
-
-    // public
-    //     static void SelfTest()
-    //     {
-    //         for (int i = 0; i < table.Length; i++)
-    //         {
-    //             var entry = table[i];
-    //             //if ((entry[2] & 1) == entry[2])
-    //             //{
-    //             if (!((IList)valid6800opcodes).Contains(i))
-    //             {
-    //                 // this is an invalid opcode
-    //                 Debug.WriteLine("{0:X2}: {1}", i, entry[2]);
-    //             }
-    //             //}
-    //         }
-    //     }
+// public
+//     static void SelfTest()
+//     {
+//         for (int i = 0; i < table.Length; i++)
+//         {
+//             var entry = table[i];
+//             //if ((entry[2] & 1) == entry[2])
+//             //{
+//             if (!((IList)valid6800opcodes).Contains(i))
+//             {
+//                 // this is an invalid opcode
+//                 Debug.WriteLine("{0:X2}: {1}", i, entry[2]);
+//             }
+//             //}
+//         }
+//     }

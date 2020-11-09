@@ -2,6 +2,8 @@
 #define DEFS_H
 #include <stdint.h>
 
+using offs_t = uint32_t;
+
 struct CpuStatus {
 	uint32_t pc;
 	uint32_t sp;
@@ -11,8 +13,14 @@ struct CpuStatus {
 	uint8_t cc;
 };
 
+struct BreakPoint
+{
+	offs_t address;
+	bool is_enabled;
+};
+
 #define logerror(x, y, z) printf(x, y, z);
-using offs_t = uint32_t;
+
 #define LSB_FIRST
 
 // I/O line states

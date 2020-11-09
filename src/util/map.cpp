@@ -29,7 +29,7 @@ bool MapReader::Read(QString path, std::vector<Map> *maps)
             uint32_t start = parts.at(0).toUInt(&bStatus, 16);
             uint32_t end = parts.at(1).toUInt(&bStatus, 16);
 
-            map_type type = parts.at(2) == "CODE" ? CODE : parts.at(2) == "DATA" ? DATA : COMMENT;
+            map_type type = parts.at(2) == "ASSEMBLY" ? ASSEMBLY : parts.at(2) == "DATA" ? DATA : COMMENT;
 
             QString comment;
             if (type == COMMENT)

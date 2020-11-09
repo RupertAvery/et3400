@@ -1,3 +1,4 @@
+#include "util/mutex.hpp"
 #include <QDebug>
 #include "windows/mainwindow.h"
 #include <QApplication>

@@ -35,10 +35,8 @@ public:
     DebuggerDialog(QWidget *parent);
     ~DebuggerDialog();
     void set_emulator(et3400emu *emu);
-    //signals:
+    void update_button_state();
 
-    // public slots:
-    //     void setClockRate(int value);
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
@@ -49,7 +47,7 @@ private:
     QGroupBox *memory_groupBox;
     QGroupBox *disassembly_groupBox;
     QGroupBox *status_groupBox;
-
+    QAction *breakpoint_handler_action;
     QScrollBar *memmory_scrollbar;
     QScrollBar *disassembly_scrollbar;
     QComboBox *memory_selector;
@@ -79,6 +77,7 @@ private:
     void update_memory_scrollbar(int value);
     void update_disassembly_scrollbar(int value);
     void update_memory_scrollbar_max(int value);
+    void update_disassembly_scrollbar_max(int value);
 
     void memory_slider_moved(int value);
     void disassembly_slider_moved(int value);
@@ -90,6 +89,14 @@ private:
     void toggle_memory_panel(bool checked);
     void toggle_disassembly_panel(bool checked);
     void toggle_status_panel(bool checked);
+
+    void pauseAndUpdateDisassembler();
+    void stepAndUpdateDisassembler();
+
+    void add_breakpoint(offs_t address);
+    void remove_breakpoint(offs_t address);
+
+    void breakpoint_handler(bool checked);
 };
 
 #endif // DEBUGGER_H

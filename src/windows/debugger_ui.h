@@ -6,9 +6,9 @@
 void DebuggerDialog::setupUI()
 {
     QToolBar *toolbar = new QToolBar(this);
-    QLabel *memory_label = new QLabel("&Memory");
+    QLabel *memory_label = new QLabel("Memory");
     memory_label->setStyleSheet("margin: 0px 5px 0px 5px;");
-    QLabel *disassembly_label = new QLabel("&Disassembly");
+    QLabel *disassembly_label = new QLabel("Disassembly");
     disassembly_label->setStyleSheet("margin: 0px 5px 0px 5px;");
 
     memory_selector = new QComboBox(toolbar);
@@ -131,9 +131,18 @@ void DebuggerDialog::setupUI()
 
     connect(memory_view, &MemoryView::on_scroll, this, &DebuggerDialog::update_memory_scrollbar);
     connect(disassembly_view, &DisassemblyView::on_scroll, this, &DebuggerDialog::update_disassembly_scrollbar);
+
     connect(memory_view, &MemoryView::on_size, this, &DebuggerDialog::update_memory_scrollbar_max);
+    connect(disassembly_view, &DisassemblyView::on_size, this, &DebuggerDialog::update_disassembly_scrollbar_max);
+
     connect(memory_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_memory_location);
     connect(disassembly_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_disassembly_location);
+
+    connect(disassembly_view, &DisassemblyView::add_breakpoint, this, &DebuggerDialog::add_breakpoint);
+    connect(disassembly_view, &DisassemblyView::remove_breakpoint, this, &DebuggerDialog::remove_breakpoint);
+
+    breakpoint_handler_action = new QAction;
+    connect(breakpoint_handler_action, &QAction::triggered, this, &DebuggerDialog::breakpoint_handler);
 
     setFixedSize(QSize(985, 721));
     setWindowTitle("Debugger");

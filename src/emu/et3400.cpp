@@ -1,11 +1,16 @@
 #include "et3400.h"
+//#include "../util/mutex.hpp"
 #include <iostream>
 
 et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
 {
     clock_rate = 100;
     memory_map = new ::memory_map;
-    device = new m6800_cpu_device(memory_map);
+    breakpoints = new std::vector<BreakPoint>;
+    device = new m6800_cpu_device(memory_map, breakpoints);
+    // device->has_breakpoint = [this](off_t address) { return has_breakpoint(address); };
+    // device->on_breakpoint = [this] { handle_breakpoint(); };
+    resumed = false;
     running = false;
     cycles = 0;
     total_cycles = 0;
@@ -74,27 +79,35 @@ void et3400emu::stop()
 
 void et3400emu::halt()
 {
-    if (running)
-    {
-        LOG("Stopping emulator thread");
-        running = false;
-        thread.join();
-    }
+    LOG("Stopping emulator thread");
+    running = false;
+    thread.join();
 }
 
 void et3400emu::step()
 {
-    if (running)
+    if (!running)
     {
-        device->execute_step();
+        if (device->reset_line == 0)
+        {
+            device->pre_execute_run();
+        }
+        else
+        {
+            device->execute_step();
+        }
     }
 }
 
 void et3400emu::resume()
 {
     LOG("Starting emulator thread");
-    running = true;
-    thread = std::thread(&et3400emu::worker, this);
+    if (!running)
+    {
+        running = true;
+        resumed = true;
+        thread = std::thread(&et3400emu::worker, this);
+    }
     //thread.detach();
 }
 
@@ -147,8 +160,6 @@ int et3400emu::get_clock_rate()
 
 void et3400emu::worker()
 {
-    device->device_start();
-    device->device_reset();
 
     const int sleep_ns = 13667;
     const int base_cycles = 16667;
@@ -160,14 +171,76 @@ void et3400emu::worker()
         int cycles_per_frame = (int)(base_cycles * (float)clock_rate / hundred_percent);
         device->m_icount = cycles_per_frame;
         device->pre_execute_run();
-        device->execute_run();
+        device->execute_run(resumed);
         sleep(sleep_ns);
         total_cycles += cycles_per_frame - device->m_icount;
         render_frame();
+        if (device->is_break) {
+            this->running = false;
+            device->is_break = false;
+            on_breakpoint();
+        }
+        resumed = false;
         //std::cout << std::hex << device->m_pc.d << std::endl;
     }
 
+
     LOG("emulator thread exited");
+}
+
+void et3400emu::add_breakpoint(offs_t address)
+{
+    bplocks.lock();
+    std::vector<BreakPoint>::iterator it = breakpoints->begin();
+    while (it != breakpoints->end())
+    {
+        if ((*it).address == address)
+        {
+            return;
+        }
+        it++;
+    }
+
+    breakpoints->push_back(BreakPoint{address, true});
+    bplocks.unlock();
+}
+
+void et3400emu::remove_breakpoint(offs_t address)
+{
+    bplocks.lock();
+    std::vector<BreakPoint>::iterator it = breakpoints->begin();
+    while (it != breakpoints->end())
+    {
+        if ((*it).address == address)
+        {
+            it = breakpoints->erase(it);
+        }
+        else
+        {
+            it++;
+        }
+    }
+    bplocks.unlock();
+}
+
+void et3400emu::handle_breakpoint()
+{
+    stop();
+    on_breakpoint();
+}
+
+bool et3400emu::has_breakpoint(offs_t address)
+{
+    std::vector<BreakPoint>::iterator it = breakpoints->begin();
+    while (it != breakpoints->end())
+    {
+        if ((*it).address == address)
+        {
+            return true;
+        }
+        it++;
+    }
+    return false;
 }
 
 void et3400emu::render_frame()
