@@ -1,9 +1,5 @@
 #include "mainwindow.h"
-#include <QFile>
-#include <QMenu>
-#include <QMenuBar>
-#include <QtWidgets>
-#include <iostream>
+
 
 using namespace std;
 
@@ -13,15 +9,25 @@ MainWindow::MainWindow(QWidget *parent)
   settings_dialog = new SettingsDialog(this);
   debugger_dialog = new DebuggerDialog;
 
+  // Menu
+
   QAction *settings_action = new QAction("&Settings", this);
   QAction *about_action = new QAction("&About", this);
   QAction *debugger_action = new QAction("&Debugger", this);
 
-  QAction *open_action = new QAction("&Load .S19", this);
-  QAction *quit_action = new QAction("&Quit", this);
+  QAction *openRam_action = new QAction("&Load RAM", this);
+  openRam_action->setShortcut(Qt::CTRL + Qt::Key_O);
+
+  QAction *saveRam_action = new QAction("&Save RAM", this);
+  saveRam_action->setShortcut(Qt::CTRL + Qt::Key_S);
+
+  QAction *quit_action = new QAction("E&xit", this);
+  quit_action->setShortcut(Qt::CTRL + Qt::Key_X);
+
   QMenu *file;
   file = menuBar()->addMenu("&File");
-  file->addAction(open_action);
+  file->addAction(openRam_action);
+  file->addAction(saveRam_action);
   file->addSeparator();
   file->addAction(quit_action);
 
@@ -38,12 +44,15 @@ MainWindow::MainWindow(QWidget *parent)
   display = new Display;
   keypad = new Keypad;
 
+  connect(openRam_action, &QAction::triggered, this, &MainWindow::load_ram);
+  connect(saveRam_action, &QAction::triggered, this, &MainWindow::save_ram);
   connect(quit_action, &QAction::triggered, qApp, QApplication::quit);
-  connect(open_action, &QAction::triggered, this, &MainWindow::load_ram);
+
   connect(debugger_action, &QAction::triggered, this, &MainWindow::show_debugger);
   connect(settings_action, &QAction::triggered, this, &MainWindow::show_settings);
   connect(about_action, &QAction::triggered, this, &MainWindow::show_about);
 
+  // Layout
   QGridLayout *mainLayout = new QGridLayout;
 
   mainLayout->setColumnStretch(0, 1);
@@ -59,11 +68,12 @@ MainWindow::MainWindow(QWidget *parent)
   setCentralWidget(central);
 
   setWindowTitle(tr("ET-3400 Emulator"));
-  last_cycles = 0;
 
-  this->setFixedSize(QSize(350, 500));
+  setFixedSize(QSize(350, 500));
 
   execute_emu();
+
+  last_cycles = 0;
 
   //setAttribute(Qt::WA_DeleteOnClose);
   //connect( widget, SIGNAL(destroyed(QObject*)), this, SLOT(widgetDestroyed(QObject*)) );
@@ -110,38 +120,31 @@ void MainWindow::show_settings()
 
 void MainWindow::load_ram()
 {
-  QString fileName = QFileDialog::getOpenFileName(this,
-                                                  tr("Open .S19 File"), "", tr("Assembly Files (*.obj *.s19)"));
-
-  std::vector<srec_block> *blocks = new std::vector<srec_block>;
-
-  // pause emulation to avoid overwriting memory while executing
-  emu->stop();
-
-  // load S19 blocks
-  if (SrecReader::Read(fileName, blocks))
-  {
-
-    // write blocks to memory
-    for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
-    {
-      emu->loadRAM(it->address, it->data, it->bytecount);
-    }
-  }
-
-  // clean up
-  for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
-  {
-    free(it->data);
-  }
-
-  delete blocks;
-
-  // reset and resume emulation
-  emu->reset();
-  emu->start();
+  File::load_ram(this, emu);
   debugger_dialog->update_button_state();
 }
+
+
+void MainWindow::save_ram()
+{
+}
+
+void MainWindow::load_brk()
+{
+}
+
+void MainWindow::save_brk()
+{
+}
+
+void MainWindow::load_map()
+{
+}
+
+void MainWindow::save_map()
+{
+}
+
 
 void MainWindow::updatecps()
 {

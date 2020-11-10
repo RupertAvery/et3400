@@ -475,10 +475,10 @@ const m6800_cpu_device::op_func m6800_cpu_device::nsc8105_insn[0x100] = {
 // DEFINE_DEVICE_TYPE(M6802, m6802_cpu_device, "m6802", "Motorola MC6802")
 // DEFINE_DEVICE_TYPE(M6808, m6808_cpu_device, "m6808", "Motorola MC6808")
 // DEFINE_DEVICE_TYPE(NSC8105, nsc8105_cpu_device, "nsc8105", "NSC8105")
-m6800_cpu_device::m6800_cpu_device(::memory_map* memory_map, std::vector<BreakPoint>* breakpoints)
+m6800_cpu_device::m6800_cpu_device(MemoryMapManager* memory_map, BreakpointManager *breakpoint_manager)
 {
 	this->memory_map = memory_map;
-	this->breakpoints = breakpoints;
+	this->breakpoint_manager = breakpoint_manager;
 	is_break = false;
 	verbose = false;
 	m_insn = m6800_insn;
@@ -743,22 +743,6 @@ void m6800_cpu_device::pre_execute_run()
 	// return 0;
 }
 
-bool m6800_cpu_device::has_breakpoint(offs_t address)
-{
-	bplocks.lock();
-	std::vector<BreakPoint>::const_iterator it = breakpoints->begin();
-	while (it != breakpoints->end())
-	{
-		if ((*it).address == address)
-		{
-			bplocks.unlock();
-			return true;
-		}
-		it++;
-	}
-	bplocks.unlock();
-	return false;
-}
 
 /****************************************************************************
  * Execute cycles CPU cycles. Return number of cycles really executed
@@ -773,7 +757,7 @@ void m6800_cpu_device::execute_run(bool resume)
 
 	do
 	{
-		if (!is_break && has_breakpoint(m_pc.d) && !resume)
+		if (!is_break && breakpoint_manager->hasBreakpoint(m_pc.d) && !resume)
 		{
 			is_break = true;
 			break;

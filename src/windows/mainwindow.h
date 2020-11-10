@@ -8,12 +8,18 @@
 #include "about.h"
 #include "debugger.h"
 #include "settings.h"
+#include "file.h"
 
 #include <fstream>
+#include <iostream>
+
 #include <QMainWindow>
 #include <QApplication>
 #include <QTimer>
 #include <QCloseEvent>
+#include <QFile>
+#include <QMenu>
+#include <QMenuBar>
 
 class MainWindow : public QMainWindow
 {
@@ -39,6 +45,11 @@ private:
   et3400emu *emu;
 
   void load_ram();
+  void save_ram();
+  void load_brk();
+  void save_brk();
+  void load_map();
+  void save_map();
   void show_about();
   void show_settings();
   void show_debugger();

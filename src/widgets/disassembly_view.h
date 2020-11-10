@@ -40,7 +40,7 @@ public:
     void set_current(offs_t address);
     void clear_current();
     void clear_selected();
-    void load_breakpoints(std::vector<BreakPoint> *breakpoints);
+    void load_breakpoints(std::vector<Breakpoint> *breakpoints);
 
 signals:
     void on_scroll(int steps);

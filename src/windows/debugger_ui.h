@@ -5,80 +5,71 @@
 
 void DebuggerDialog::setupUI()
 {
+
     QToolBar *toolbar = new QToolBar(this);
-    QLabel *memory_label = new QLabel("Memory");
-    memory_label->setStyleSheet("margin: 0px 5px 0px 5px;");
-    QLabel *disassembly_label = new QLabel("Disassembly");
-    disassembly_label->setStyleSheet("margin: 0px 5px 0px 5px;");
 
-    memory_selector = new QComboBox(toolbar);
-    memory_selector->addItem("RAM");
-    memory_selector->addItem("ROM");
+    // QLabel *memory_label = new QLabel("Memory");
+    // memory_label->setStyleSheet("margin: 0px 5px 0px 5px;");
 
-    disassembly_selector = new QComboBox(toolbar);
-    disassembly_selector->addItem("RAM");
-    disassembly_selector->addItem("ROM");
+    // QLabel *disassembly_label = new QLabel("Disassembly");
+    // disassembly_label->setStyleSheet("margin: 0px 5px 0px 5px;");
 
-    start_button = new QToolButton(toolbar);
-    start_button->setIcon(QIcon(":/buttons/Run_16x.png"));
-    start_button->setShortcut(QKeySequence(Qt::Key_F5));
-    connect(start_button, &QToolButton::clicked, this, &DebuggerDialog::start);
-
-    stop_button = new QToolButton(toolbar);
-    stop_button->setIcon(QIcon(":/buttons/Stop_16x.png"));
-    stop_button->setShortcut(QKeySequence(Qt::Key_F4));
-    connect(stop_button, &QToolButton::clicked, this, &DebuggerDialog::stop);
-
-    step_button = new QToolButton(toolbar);
-    step_button->setIcon(QIcon(":/buttons/StepIntoArrow_16x.png"));
-    step_button->setShortcut(QKeySequence(Qt::Key_F10));
-    connect(step_button, &QToolButton::clicked, this, &DebuggerDialog::step);
-
-    reset_button = new QToolButton(toolbar);
-    reset_button->setIcon(QIcon(":/buttons/Restart_16x.png"));
-    reset_button->setShortcut(QKeySequence(Qt::Key_Escape));
-    connect(reset_button, &QToolButton::clicked, this, &DebuggerDialog::reset);
+    MakeButton(start_button, ":/buttons/Run_16x.png", Qt::Key_F5, start);
+    MakeButton(stop_button, ":/buttons/Stop_16x.png", Qt::Key_F4, stop);
+    MakeButton(step_button, ":/buttons/StepIntoArrow_16x.png", Qt::Key_F10, step);
+    MakeButton(reset_button, ":/buttons/Restart_16x.png", Qt::Key_Escape, reset);
 
     panel_selector = new QToolButton(toolbar);
     panel_selector->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    panel_selector->setText("Panels");
+    panel_selector->setText("Panels   ");
     panel_selector->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
 
     QMenu *panel_selector_menu = new QMenu(panel_selector);
 
-    toggle_memory_action = new QAction("Memory", this);
-    toggle_memory_action->setCheckable(true);
-    toggle_memory_action->setChecked(true);
-    toggle_memory_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_1));
-    connect(toggle_memory_action, &QAction::toggled, this, &DebuggerDialog::toggle_memory_panel);
+    MakeAction(toggle_memory_action, "Memory", Qt::CTRL + Qt::Key_1, toggle_memory_panel)
+        MakeAction(toggle_disassembly_action, "Disassembly", Qt::CTRL + Qt::Key_2, toggle_disassembly_panel)
+            MakeAction(toggle_status_action, "Status", Qt::CTRL + Qt::Key_3, toggle_status_panel)
 
-    toggle_disassembly_action = new QAction("Disassembly", this);
-    toggle_disassembly_action->setCheckable(true);
-    toggle_disassembly_action->setChecked(true);
-    toggle_disassembly_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_2));
-    connect(toggle_disassembly_action, &QAction::toggled, this, &DebuggerDialog::toggle_disassembly_panel);
-
-    toggle_status_action = new QAction("Status", this);
-    toggle_status_action->setCheckable(true);
-    toggle_status_action->setChecked(true);
-    toggle_status_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_3));
-    connect(toggle_status_action, &QAction::toggled, this, &DebuggerDialog::toggle_status_panel);
-
-    panel_selector_menu->addAction(toggle_memory_action);
+                panel_selector_menu->addAction(toggle_memory_action);
     panel_selector_menu->addAction(toggle_disassembly_action);
     panel_selector_menu->addAction(toggle_status_action);
     panel_selector->setMenu(panel_selector_menu);
 
+    QAction *openRam_action = new QAction("&Load RAM", this);
+    openRam_action->setShortcut(Qt::CTRL + Qt::Key_O);
+
+    QAction *saveRam_action = new QAction("&Save RAM", this);
+    saveRam_action->setShortcut(Qt::CTRL + Qt::Key_S);
+
+    QAction *openBrk_action = new QAction("Load Breakpoints", this);
+    QAction *saveBrk_action = new QAction("Save Breakpoints", this);
+
+    QAction *openMap_action = new QAction("Load Map", this);
+    QAction *saveMap_action = new QAction("Save Map", this);
+
+    QToolButton *file_button = new QToolButton(toolbar);
+    file_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    file_button->setText("File   ");
+    file_button->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
+
+    QMenu *file_menu = new QMenu(file_button);
+    file_menu->addAction(openRam_action);
+    file_menu->addAction(saveRam_action);
+    file_menu->addSeparator();
+    file_menu->addAction(openBrk_action);
+    file_menu->addAction(saveBrk_action);
+    file_menu->addAction(openMap_action);
+    file_menu->addAction(saveMap_action);
+    file_button->setMenu(file_menu);
+
+    connect(openRam_action, &QAction::triggered, this, &DebuggerDialog::load_ram);
+
+    toolbar->addWidget(file_button);
+    toolbar->addSeparator();
     toolbar->addWidget(start_button);
     toolbar->addWidget(stop_button);
     toolbar->addWidget(step_button);
     toolbar->addWidget(reset_button);
-    toolbar->addSeparator();
-    toolbar->addWidget(memory_label);
-    toolbar->addWidget(memory_selector);
-    toolbar->addSeparator();
-    toolbar->addWidget(disassembly_label);
-    toolbar->addWidget(disassembly_selector);
     toolbar->addSeparator();
     toolbar->addWidget(panel_selector);
 
@@ -93,17 +84,39 @@ void DebuggerDialog::setupUI()
     disassembly_view = new DisassemblyView(this);
     status_view = new StatusView(this);
 
-    QHBoxLayout *memory_groupBox_layout = new QHBoxLayout(this);
+    memory_selector = new QComboBox(toolbar);
+    memory_selector->addItem("RAM");
+    memory_selector->addItem("Keypad");
+    memory_selector->addItem("Display");
+    memory_selector->addItem("ROM");
+
+    QWidget *inner_memory = new QWidget(memory_groupBox);
+    QHBoxLayout *memory_groupBox_layout = new QHBoxLayout(inner_memory);
     memory_groupBox_layout->addWidget(memory_view);
     memory_groupBox_layout->addWidget(memmory_scrollbar);
-    memory_groupBox_layout->setMargin(10);
-    memory_groupBox->setLayout(memory_groupBox_layout);
+    memory_groupBox_layout->setMargin(0);
+    inner_memory->setLayout(memory_groupBox_layout);
 
+    QVBoxLayout *memory_groupBox_layout_v = new QVBoxLayout(this);
+    memory_groupBox_layout_v->addWidget(memory_selector);
+    memory_groupBox_layout_v->addWidget(inner_memory);
+    memory_groupBox->setLayout(memory_groupBox_layout_v);
+
+    disassembly_selector = new QComboBox(toolbar);
+    disassembly_selector->addItem("RAM");
+    disassembly_selector->addItem("ROM");
+
+    QWidget *inner_disassembly = new QWidget(disassembly_groupBox);
     QHBoxLayout *disassembly_groupBox_layout = new QHBoxLayout(this);
     disassembly_groupBox_layout->addWidget(disassembly_view);
     disassembly_groupBox_layout->addWidget(disassembly_scrollbar);
-    disassembly_groupBox_layout->setMargin(10);
-    disassembly_groupBox->setLayout(disassembly_groupBox_layout);
+    disassembly_groupBox_layout->setMargin(0);
+    inner_disassembly->setLayout(disassembly_groupBox_layout);
+
+    QVBoxLayout *disassembly_groupBox_layout_v = new QVBoxLayout(this);
+    disassembly_groupBox_layout_v->addWidget(disassembly_selector);
+    disassembly_groupBox_layout_v->addWidget(inner_disassembly);
+    disassembly_groupBox->setLayout(disassembly_groupBox_layout_v);
 
     QHBoxLayout *status_groupBox_layout = new QHBoxLayout(this);
     status_groupBox_layout->addWidget(status_view);

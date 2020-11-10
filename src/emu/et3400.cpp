@@ -5,8 +5,8 @@
 et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
 {
     clock_rate = 100;
-    memory_map = new ::memory_map;
-    breakpoints = new std::vector<BreakPoint>;
+    memory_map = new MemoryMapManager;
+    breakpoints = new BreakpointManager;
     device = new m6800_cpu_device(memory_map, breakpoints);
     // device->has_breakpoint = [this](off_t address) { return has_breakpoint(address); };
     // device->on_breakpoint = [this] { handle_breakpoint(); };
@@ -34,6 +34,7 @@ et3400emu::~et3400emu()
     delete ram;
     delete rom;
     delete memory_map;
+    delete breakpoints;
     delete device;
 }
 
@@ -71,7 +72,6 @@ void et3400emu::stop()
 {
     if (running)
     {
-        LOG("Stopping emulator thread");
         running = false;
         thread.join();
     }
@@ -79,7 +79,6 @@ void et3400emu::stop()
 
 void et3400emu::halt()
 {
-    LOG("Stopping emulator thread");
     running = false;
     thread.join();
 }
@@ -101,27 +100,17 @@ void et3400emu::step()
 
 void et3400emu::resume()
 {
-    LOG("Starting emulator thread");
     if (!running)
     {
         running = true;
         resumed = true;
         thread = std::thread(&et3400emu::worker, this);
     }
-    //thread.detach();
 }
-
-// uint8_t *et3400emu::get_memory()
-// {
-//     return device->memory;
-// }
 
 void et3400emu::init()
 {
     total_cycles = 0;
-
-    // clear memory
-    //memset(device->memory, 0, 0xFC00);
 
     // pull keyboard lines high
     keypad->init();
@@ -132,10 +121,8 @@ void et3400emu::init()
 
 void et3400emu::start()
 {
-    LOG("Starting emulator thread");
     running = true;
     thread = std::thread(&et3400emu::worker, this);
-    //thread.detach();
 }
 
 void et3400emu::reset()
@@ -160,7 +147,6 @@ int et3400emu::get_clock_rate()
 
 void et3400emu::worker()
 {
-
     const int sleep_ns = 13667;
     const int base_cycles = 16667;
     const float hundred_percent = 100;
@@ -175,52 +161,14 @@ void et3400emu::worker()
         sleep(sleep_ns);
         total_cycles += cycles_per_frame - device->m_icount;
         render_frame();
-        if (device->is_break) {
+        if (device->is_break)
+        {
             this->running = false;
             device->is_break = false;
             on_breakpoint();
         }
         resumed = false;
-        //std::cout << std::hex << device->m_pc.d << std::endl;
     }
-
-
-    LOG("emulator thread exited");
-}
-
-void et3400emu::add_breakpoint(offs_t address)
-{
-    bplocks.lock();
-    std::vector<BreakPoint>::iterator it = breakpoints->begin();
-    while (it != breakpoints->end())
-    {
-        if ((*it).address == address)
-        {
-            return;
-        }
-        it++;
-    }
-
-    breakpoints->push_back(BreakPoint{address, true});
-    bplocks.unlock();
-}
-
-void et3400emu::remove_breakpoint(offs_t address)
-{
-    bplocks.lock();
-    std::vector<BreakPoint>::iterator it = breakpoints->begin();
-    while (it != breakpoints->end())
-    {
-        if ((*it).address == address)
-        {
-            it = breakpoints->erase(it);
-        }
-        else
-        {
-            it++;
-        }
-    }
-    bplocks.unlock();
 }
 
 void et3400emu::handle_breakpoint()
@@ -229,21 +177,22 @@ void et3400emu::handle_breakpoint()
     on_breakpoint();
 }
 
-bool et3400emu::has_breakpoint(offs_t address)
-{
-    std::vector<BreakPoint>::iterator it = breakpoints->begin();
-    while (it != breakpoints->end())
-    {
-        if ((*it).address == address)
-        {
-            return true;
-        }
-        it++;
-    }
-    return false;
-}
-
 void et3400emu::render_frame()
 {
     on_render_frame();
+}
+
+memory_mapped_device *et3400emu::get_block_device(offs_t address)
+{
+    return memory_map->get_block_device(address);
+}
+
+void et3400emu::add_breakpoint(offs_t address)
+{
+	breakpoints->addBreakpoint(address);
+}
+
+void et3400emu::remove_breakpoint(offs_t address)
+{
+	breakpoints->removeBreakpoint(address);
 }

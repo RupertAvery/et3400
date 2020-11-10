@@ -13,12 +13,6 @@ struct CpuStatus {
 	uint8_t cc;
 };
 
-struct BreakPoint
-{
-	offs_t address;
-	bool is_enabled;
-};
-
 #define logerror(x, y, z) printf(x, y, z);
 
 #define LSB_FIRST

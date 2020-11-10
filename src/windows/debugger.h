@@ -1,11 +1,27 @@
 #ifndef DEBUGGER_H
 #define DEBUGGER_H
 
+
+#define MakeButton(button,icon, seq, delegate) \
+    button = new QToolButton(toolbar); \
+    button->setIcon(QIcon(icon)); \
+    button->setShortcut(QKeySequence(seq)); \
+    connect(button, &QToolButton::clicked, this, &DebuggerDialog::delegate); 
+
+#define MakeAction(action, name, seq, delegate) \
+    action = new QAction(name, this); \
+    action->setCheckable(true); \
+    action->setChecked(true); \
+    action->setShortcut(QKeySequence(seq)); \
+    connect(action, &QAction::toggled, this, &DebuggerDialog::delegate); 
+
+
 //#include "memory_location.h"
 #include "../emu/et3400.h"
 #include "../widgets/memory_view.h"
 #include "../widgets/disassembly_view.h"
 #include "../widgets/status_view.h"
+#include "file.h"
 
 #include <QObject>
 #include <QVariant>
@@ -97,6 +113,8 @@ private:
     void remove_breakpoint(offs_t address);
 
     void breakpoint_handler(bool checked);
+
+    void load_ram();
 };
 
 #endif // DEBUGGER_H

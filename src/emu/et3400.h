@@ -48,6 +48,8 @@ public:
 	bool has_breakpoint(offs_t address);
 	void handle_breakpoint();
 
+	memory_mapped_device* get_block_device(offs_t address);
+
 	void set_clock_rate(int clock_rate);
 	int get_clock_rate();
 	unsigned long long total_cycles;
@@ -58,19 +60,21 @@ public:
 	memory_device *rom;
 	display_io *display;
 	keypad_io *keypad;
-	memory_map *memory_map;
 	std::vector<Map> *maps;
-	std::vector<BreakPoint> *breakpoints;
 
 private:
-	void render_frame();
+	MemoryMapManager *memory_map;
+	BreakpointManager *breakpoints;
+	m6800_cpu_device *device;
+	std::thread thread;
 	int cycles;
 	int clock_rate;
-	m6800_cpu_device *device;
-	void worker();
 	bool running;
 	bool resumed;
-	std::thread thread;
+
+
+	void worker();
+	void render_frame();
 };
 
 #endif // ET3400EMU_H

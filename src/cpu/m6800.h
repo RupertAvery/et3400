@@ -12,10 +12,8 @@
 #include "defs.h"
 #include "../dev/memory_map.h"
 #include <functional>
-#include <vector>
-#include <mutex>
+#include "breakpoint_manager.h"
 
-extern std::mutex bplocks;
 // class cpu_device
 // {
 // 	virtual void device_start();
@@ -37,7 +35,7 @@ public:
 
 	// construction/destruction
 	// m6800_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
-	m6800_cpu_device(memory_map *memory_map, std::vector<BreakPoint> *breakpoints);
+	m6800_cpu_device(MemoryMapManager *memory_map, BreakpointManager *breakpoint_manager);
 
 	enum
 	{
@@ -60,8 +58,6 @@ public:
 	void execute_step();
 	void execute_set_input(int inputnum, int state);
 	void pre_execute_run();
-	std::vector<BreakPoint> *breakpoints;
-	bool has_breakpoint(offs_t);
 
 	CpuStatus get_status();
 	// device_memory_interface overrides
@@ -92,7 +88,6 @@ public:
 	// memory_access<16, 0, 0, ENDIANNESS_BIG>::cache m_cprogram, m_copcodes;
 	// memory_access<16, 0, 0, ENDIANNESS_BIG>::specific m_program;
 
-	memory_map *memory_map;
 	uint8_t read_byte(offs_t address);
 	uint8_t *read_bytes(offs_t address, size_t size);
 	void write_byte(offs_t address, uint8_t data);
@@ -374,6 +369,10 @@ protected:
 	void trap();
 	void btst_ix();
 	void stx_nsc();
+
+private:
+	MemoryMapManager *memory_map;
+	BreakpointManager *breakpoint_manager;
 };
 
 #endif // MAME_CPU_M6800_M6800_H

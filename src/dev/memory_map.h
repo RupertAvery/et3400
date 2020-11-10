@@ -45,11 +45,11 @@ class io_device : public memory_mapped_device
 {
 };
 
-class memory_map
+class MemoryMapManager
 {
 public:
-    memory_map();
-    ~memory_map();
+    MemoryMapManager();
+    ~MemoryMapManager();
 
     void map(int block, memory_mapped_device *device);
     memory_mapped_device *get_block_device(off_t address);

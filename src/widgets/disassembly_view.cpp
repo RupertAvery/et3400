@@ -217,9 +217,9 @@ void DisassemblyView::resizeEvent(QResizeEvent *event)
     }
 }
 
-void DisassemblyView::load_breakpoints(std::vector<BreakPoint> *breakpoints)
+void DisassemblyView::load_breakpoints(std::vector<Breakpoint> *breakpoints)
 {
-    std::vector<BreakPoint>::iterator it = breakpoints->begin();
+    std::vector<Breakpoint>::iterator it = breakpoints->begin();
     while (it != breakpoints->end())
     {
         DisassemblyLine line = find_line((*it).address);
@@ -273,13 +273,16 @@ void DisassemblyView::keyPressEvent(QKeyEvent *event)
         selected++;
         break;
     case Qt::Key_PageUp:
+        selected -= visible_items;
         break;
     case Qt::Key_PageDown:
+        selected += visible_items;
         break;
     case Qt::Key_F9:
         toggle_breakpoint(selected);
         break;
     }
+
     if (selected < 0)
         selected = 0;
 
@@ -398,7 +401,7 @@ void DisassemblyView::set_range(offs_t start, offs_t end, uint8_t *memory)
 
     visible_items = height() / item_height;
 
-    lines = DisassemblyBuilder::build(start, end, emu_ptr->memory_map->get_block_device(start)->get_mapped_memory(), maps);
+    lines = DisassemblyBuilder::build(start, end, emu_ptr->get_block_device(start)->get_mapped_memory(), maps);
 
     int x = lines->size() - visible_items + 1;
     max_vscroll = x > 0 ? x : 0;

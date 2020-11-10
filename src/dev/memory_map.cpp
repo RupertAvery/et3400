@@ -1,6 +1,6 @@
 #include "memory_map.h"
 
-memory_map::memory_map()
+MemoryMapManager::MemoryMapManager()
 {
     for (int i = 0; i < 64; i++)
     {
@@ -8,11 +8,11 @@ memory_map::memory_map()
     }
 }
 
-memory_map::~memory_map()
+MemoryMapManager::~MemoryMapManager()
 {
 }
 
-void memory_map::map(int block, memory_mapped_device *device)
+void MemoryMapManager::map(int block, memory_mapped_device *device)
 {
     if (blocks[block].device == NULL)
     {
@@ -29,7 +29,7 @@ void memory_map::map(int block, memory_mapped_device *device)
     }
 }
 
-uint8_t memory_map::read(offs_t addr)
+uint8_t MemoryMapManager::read(offs_t addr)
 {
     memory_mapped_device *device = get_block_device(addr);
     if (device == NULL)
@@ -37,7 +37,7 @@ uint8_t memory_map::read(offs_t addr)
     return device->read(addr);
 };
 
-void memory_map::write(offs_t addr, uint8_t data)
+void MemoryMapManager::write(offs_t addr, uint8_t data)
 {
     memory_mapped_device *device = get_block_device(addr);
     if (device != NULL)
@@ -46,7 +46,7 @@ void memory_map::write(offs_t addr, uint8_t data)
     }
 };
 
-memory_mapped_device *memory_map::get_block_device(off_t address)
+memory_mapped_device *MemoryMapManager::get_block_device(off_t address)
 {
     int block = address / 1024;
     memory_mapped_device *device = blocks[block].device;

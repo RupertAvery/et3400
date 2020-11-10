@@ -1,3 +1,6 @@
+#ifndef SREC_H
+#define SREC_H
+
 #include <QString>
 #include <QFile>
 #include <QTextStream>
@@ -15,3 +18,5 @@ class SrecReader
 public:
     static bool Read(QString file, std::vector<srec_block> *blocks);
 };
+
+#endif // SREC_H
