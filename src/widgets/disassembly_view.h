@@ -18,10 +18,12 @@
 #include <QPixmap>
 #include <QGridLayout>
 #include <QScrollBar>
+#include <QMenu>
 #include <QAction>
 #include <QFont>
 #include <QWheelEvent>
 #include <QColor>
+
 
 class DisassemblyView : public QFrame
 {
@@ -61,26 +63,31 @@ protected:
 private:
     QScrollBar *scrollbar;
     QAction *action;
+    QPixmap *buffer;
+    QPixmap breakpoint_icon;
+    QTimer *m_paintTimer;
+
+    et3400emu *emu_ptr;
+    uint8_t *memory;
+
+    std::vector<Map> *maps;
+    std::vector<DisassemblyLine> *lines;
+
     bool running;
+    bool is_memory_set;
     offs_t start;
     offs_t end;
     int offset;
     int visible_items;
     int item_height = 20;
     int max_vscroll;
-    et3400emu *emu_ptr;
-    uint8_t *memory;
-    QPixmap *buffer;
-    QPixmap breakpoint_icon;
-    QTimer *m_paintTimer;
-    bool is_memory_set;
+    int selected;
+    int current;
+
     DisassemblyLine find_line(offs_t address);
     void toggle_breakpoint(int line_number);
     void bufferDraw();
-    std::vector<Map> *maps;
-    std::vector<DisassemblyLine> *lines;
-    int selected;
-    int current;
+    void showContextMenu(const QPoint &pos);
 };
 
 #endif // DISASSEMBLYVIEW_H

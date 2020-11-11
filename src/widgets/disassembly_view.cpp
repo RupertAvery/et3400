@@ -23,6 +23,10 @@ DisassemblyView::DisassemblyView(QWidget *parent)
     m_paintTimer->start(36); // 38ms, or every 1/30th of a second
     connect(this->m_paintTimer, &QTimer::timeout, this, &DisassemblyView::redraw);
 
+    setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(this, &QFrame::customContextMenuRequested, this, &DisassemblyView::showContextMenu);
+
     buffer = new QPixmap;
     // action = new QAction;
     // connect(action, &QAction::triggered, this, &Display::redraw);
@@ -242,7 +246,7 @@ DisassemblyLine DisassemblyView::find_line(offs_t address)
         }
         it++;
     }
-    return DisassemblyLine{0, DisassemblyType::Empty, NULL, NULL, NULL, false, false, false};
+    return DisassemblyLine{-1, 0, DisassemblyType::Empty, NULL, NULL, NULL, false, false, false, -1};
 }
 
 void DisassemblyView::toggle_breakpoint(int line_number)
@@ -250,14 +254,17 @@ void DisassemblyView::toggle_breakpoint(int line_number)
     if (line_number > -1)
     {
         DisassemblyLine *line = &lines->at(line_number);
-        line->has_breakpoint = !line->has_breakpoint;
-        if (line->has_breakpoint)
+        if (line->type == DisassemblyType::Assembly)
         {
-            emit add_breakpoint(line->address);
-        }
-        else
-        {
-            emit remove_breakpoint(line->address);
+            line->has_breakpoint = !line->has_breakpoint;
+            if (line->has_breakpoint)
+            {
+                emit add_breakpoint(line->address);
+            }
+            else
+            {
+                emit remove_breakpoint(line->address);
+            }
         }
     }
 }
@@ -325,6 +332,14 @@ void DisassemblyView::mousePressEvent(QMouseEvent *event)
 
 void DisassemblyView::redraw()
 {
+
+    //lines = DisassemblyBuilder::build(start, end, emu_ptr->get_block_device(start)->get_mapped_memory(), maps);
+
+    //int x = lines->size() - visible_items + 1;
+    //max_vscroll = x > 0 ? x : 0;
+    //emit on_size(max_vscroll);
+    //is_memory_set = true;
+ 
     this->update();
 }
 
@@ -412,4 +427,45 @@ void DisassemblyView::set_range(offs_t start, offs_t end, uint8_t *memory)
 void DisassemblyView::set_emulator(et3400emu *emu)
 {
     emu_ptr = emu;
+}
+
+void DisassemblyView::showContextMenu(const QPoint &pos)
+{
+    int line_number = offset + (pos.y() / item_height);
+
+    DisassemblyLine *line = &lines->at(line_number);
+
+    QMenu contextMenu(tr("Context menu"), this);
+    QAction addLabelAction("Add label", this);
+    QAction removeLabelAction("Remove label", this);
+
+    if (line->map == NULL)
+    {
+        //connect(&action1, &QAction::triggered(), this, SLOT(removeDataPoint()));
+        contextMenu.addAction(&addLabelAction);
+    }
+    else
+    {
+        contextMenu.addAction(&removeLabelAction);
+    }
+
+    ////connect(&action1, &QAction::triggered(), this, SLOT(removeDataPoint()));
+    //QAction action3("Remove Breakpoint", this);
+    //QAction action4("Add Breakpoint", this);
+
+    //if (line->type == DisassemblyType::Assembly)
+    //{
+    //	if (line->has_breakpoint)
+    //	{
+    //		//connect(&action1, &QAction::triggered(), this, SLOT(removeDataPoint()));
+    //		contextMenu.addAction(&action3);
+    //	}
+    //	else
+    //	{
+    //		//connect(&action1, &QAction::triggered(), this, SLOT(removeDataPoint()));
+    //		contextMenu.addAction(&action4);
+    //	}
+    //}
+
+    contextMenu.exec(mapToGlobal(pos));
 }

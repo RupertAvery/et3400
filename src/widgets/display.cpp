@@ -37,12 +37,13 @@ Display::~Display()
 void Display::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
-
+    QString letters[] = {"H", "I", "N", "Z", "V", "C"};
     // Clear display
     painter.setBrush(QBrush(Qt::black));
 
     painter.fillRect(this->rect(), painter.brush());
 
+    painter.setPen(Qt::white);
     // // Clear segment area only
     // painter.save();
     // for (int address = 0xC16F; address >= 0xC110; address--)
@@ -102,6 +103,11 @@ void Display::paintEvent(QPaintEvent * /* event */)
                 break;
             }
             painter.restore();
+
+            painter.save();
+            painter.translate(20 + position * 45, 10);
+            painter.drawText(15, 65, letters[position]);
+            painter.restore();
         }
     }
     painter.restore();
@@ -114,6 +120,7 @@ void Display::redraw()
     this->update();
 }
 
-void Display::update_display(){
+void Display::update_display()
+{
     action->trigger();
 }

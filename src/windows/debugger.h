@@ -41,6 +41,7 @@
 #include <QKeyEvent>
 #include <QMenu>
 #include <QToolButton>
+#include <QSizeGrip>
 
 class DebuggerDialog : public QDialog
 {

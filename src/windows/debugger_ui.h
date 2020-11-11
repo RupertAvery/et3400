@@ -126,8 +126,8 @@ void DebuggerDialog::setupUI()
 
     QWidget *panels = new QWidget(this);
     QHBoxLayout *panels_layout = new QHBoxLayout(this);
-    panels_layout->addWidget(memory_groupBox);
     panels_layout->addWidget(disassembly_groupBox);
+    panels_layout->addWidget(memory_groupBox);
     panels_layout->addWidget(status_groupBox);
     panels_layout->setMargin(10);
     panels->setLayout(panels_layout);
@@ -135,6 +135,9 @@ void DebuggerDialog::setupUI()
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(toolbar);
     mainLayout->addWidget(panels);
+    mainLayout->setMargin(0);
+    mainLayout->setSpacing(0);
+    mainLayout->addWidget(new QSizeGrip(this), 0, Qt::AlignBottom | Qt::AlignRight);
 
     setLayout(mainLayout);
 
@@ -157,7 +160,9 @@ void DebuggerDialog::setupUI()
     breakpoint_handler_action = new QAction;
     connect(breakpoint_handler_action, &QAction::triggered, this, &DebuggerDialog::breakpoint_handler);
 
-    setFixedSize(QSize(985, 721));
+    resize(QSize(985, 721));
+
+    //setFixedSize(QSize(985, 721));
     setWindowTitle("Debugger");
 }
 

@@ -14,6 +14,7 @@ StatusView::StatusView(QWidget *parent)
     connect(this->m_paintTimer, &QTimer::timeout, this, &StatusView::update);
 
     QString style = "border: 1px solid black; font-size: 12pt; font-family: Courier";
+    QString bits_style = "padding-right: 10px; font-size: 12pt; font-family: Courier";
 
     pc_label = new QLabel;
     sp_label = new QLabel;
@@ -21,12 +22,14 @@ StatusView::StatusView(QWidget *parent)
     acca_label = new QLabel;
     accb_label = new QLabel;
     cc_label = new QLabel;
+    QLabel *bits_label = new QLabel("--HINZVC");
     pc_label->setStyleSheet(style);
     sp_label->setStyleSheet(style);
     ix_label->setStyleSheet(style);
     acca_label->setStyleSheet(style);
     accb_label->setStyleSheet(style);
     cc_label->setStyleSheet(style);
+    bits_label->setStyleSheet(bits_style);
 
     QGridLayout *mainLayout = new QGridLayout;
     mainLayout->setColumnStretch(0, 1);
@@ -50,6 +53,7 @@ StatusView::StatusView(QWidget *parent)
     mainLayout->addWidget(ix_label, 2, 1, 1, 1);
     mainLayout->addWidget(acca_label, 3, 1, 1, 1);
     mainLayout->addWidget(accb_label, 4, 1, 1, 1);
+    mainLayout->addWidget(bits_label, 5, 1, 1, 1, Qt::AlignRight);
     mainLayout->addWidget(cc_label, 6, 1, 1, 1);
 
     // action = new QAction;

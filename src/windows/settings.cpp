@@ -6,12 +6,27 @@ SettingsDialog::SettingsDialog()
 
 SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
-    label = new QLabel("Clock Rate");
 
-    QWidget *mainwidget = new QWidget;
-    QVBoxLayout *layout = new QVBoxLayout(mainwidget);
+    setFixedSize(QSize(350, 250));
+    setWindowTitle("Settings");
 
-    slider = new QSlider(Qt::Horizontal);
+    QPushButton *reset_button = new QPushButton("Reset Clock", this);
+    reset_button->setGeometry(250, 15, 80, 30);
+
+    clock_rate_label = new QLabel("Clock Rate", this);
+    clock_rate_label->setStyleSheet("font-size:12px;");
+    clock_rate_label->setGeometry(10, 10, 150, 40);
+
+    warning_label = new QLabel("The ROM key press routine scans the keypad and waits to eliminate contact bouncing on a real ET-3400. Setting the clock rate below 200kHz will affect keypad response, requiring you to hold down (and release between key presses) the buttons for slightly longer.", this);
+    warning_label->setStyleSheet("font-size:12px;");
+    warning_label->hide();
+    warning_label->setWordWrap(true);
+    warning_label->setGeometry(10, 150, 320, 100);
+    // QWidget *mainwidget = new QWidget;
+    // QVBoxLayout *layout = new QVBoxLayout(mainwidget);
+
+    slider = new QSlider(Qt::Horizontal, this);
+    slider->setGeometry(10, 50, 320, 40);
     slider->setFocusPolicy(Qt::StrongFocus);
     slider->setTickPosition(QSlider::TicksBothSides);
     slider->setTickInterval(10);
@@ -20,29 +35,38 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent, Qt::WindowTitl
     slider->setMaximum(400);
 
     connect(slider, &QSlider::valueChanged, this, &SettingsDialog::setClockRate);
+    connect(reset_button, &QPushButton::clicked, this, [this] { slider->setValue(100); });
 
-    layout->addWidget(label);
-    layout->addWidget(slider);
-    mainwidget->setFixedHeight(150);
+    // addWidget(clock_rate_label);
+    // addWidget(warning_label);
+    // addWidget(slider);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addStretch(1);
-    mainLayout->addWidget(mainwidget);
-    mainLayout->addStretch(1);
-    mainLayout->setMargin(10);
+    // layout->addWidget(clock_rate_label, 1, Qt::AlignTop);
+    // layout->addWidget(slider, 1, Qt::AlignTop);
+    // layout->addWidget(warning_label, 1, Qt::AlignTop);
 
-    setLayout(mainLayout);
+    // mainwidget->setFixedHeight(150);
 
-    this->setStyleSheet("QLabel { font-size:12px; height: 20px }");
+    // QVBoxLayout *mainLayout = new QVBoxLayout;
+    // mainLayout->addWidget(mainwidget, 1, Qt::AlignTop);
+    // mainLayout->setMargin(10);
 
-    setFixedSize(QSize(350, 250));
-    setWindowTitle("Settings");
+    // setLayout(mainLayout);
 }
 
-void SettingsDialog::setClockRate(int value)
+void SettingsDialog::setClockRate(int clock_rate)
 {
-    label->setText(QString("Clock Rate (%1)").arg(format((float)1000000 * value / 100)));
-    emu_ptr->set_clock_rate(value);
+    clock_rate_label->setText(QString("Clock Rate (%1)").arg(format((float)1000000 * clock_rate / 100)));
+    if (clock_rate < 20)
+    {
+        warning_label->show();
+    }
+    else
+    {
+        warning_label->hide();
+    }
+
+    emu_ptr->set_clock_rate(clock_rate);
 }
 
 void SettingsDialog::set_emulator(et3400emu *emu)
@@ -50,5 +74,12 @@ void SettingsDialog::set_emulator(et3400emu *emu)
     emu_ptr = emu;
     int clock_rate = emu_ptr->get_clock_rate();
     slider->setValue(clock_rate);
-    label->setText(QString("Clock Rate (%1)").arg(format((float)1000000 * clock_rate / 100)));
+    if (clock_rate < 20)
+    {
+        warning_label->show();
+    }
+    else
+    {
+        warning_label->hide();
+    }
 }

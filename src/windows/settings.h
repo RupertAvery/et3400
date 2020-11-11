@@ -7,6 +7,7 @@
 #include <QGridLayout>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QPushButton>
 #include <QSlider>
 #include <QString>
 
@@ -40,7 +41,8 @@ public slots:
 
 private:
     QSlider *slider;
-    QLabel *label;
+    QLabel *clock_rate_label;
+    QLabel *warning_label;
     et3400emu *emu_ptr;
 };
 
