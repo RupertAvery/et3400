@@ -1,18 +1,17 @@
 #include "et3400.h"
-//#include "../util/mutex.hpp"
-#include <iostream>
 
 et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
 {
     clock_rate = 100;
     memory_map = new MemoryMapManager;
     breakpoints = new BreakpointManager;
-    device = new m6800_cpu_device(memory_map, breakpoints);
+    device = new m6800_cpu_device(memory_map);
+    device->check_breakpoint = [this](uint32_t address){ return check_breakpoint(address); };
     // device->has_breakpoint = [this](off_t address) { return has_breakpoint(address); };
     // device->on_breakpoint = [this] { handle_breakpoint(); };
-    resumed = false;
     running = false;
     cycles = 0;
+    last_pc = 0xFFFF;
     total_cycles = 0;
     ram = new memory_device(0x0000, 0x0400, false);
     rom = new memory_device(0xFC00, 0x0400, true);
@@ -103,7 +102,6 @@ void et3400emu::resume()
     if (!running)
     {
         running = true;
-        resumed = true;
         thread = std::thread(&et3400emu::worker, this);
     }
 }
@@ -157,18 +155,23 @@ void et3400emu::worker()
         int cycles_per_frame = (int)(base_cycles * (float)clock_rate / hundred_percent);
         device->m_icount = cycles_per_frame;
         device->pre_execute_run();
-        device->execute_run(resumed);
+        device->execute_run();
         sleep(sleep_ns);
         total_cycles += cycles_per_frame - device->m_icount;
         render_frame();
-        if (device->is_break)
-        {
-            this->running = false;
-            device->is_break = false;
-            on_breakpoint();
-        }
-        resumed = false;
     }
+}
+
+bool et3400emu::check_breakpoint(uint32_t address) {
+    if (breakpoints->hasBreakpoint(address) && last_pc != address)
+    {
+        this->running = false;
+        on_breakpoint();
+        last_pc = address;
+        return true;
+    }
+    last_pc = 0xFFFF;
+    return false;
 }
 
 void et3400emu::handle_breakpoint()
@@ -189,10 +192,20 @@ memory_mapped_device *et3400emu::get_block_device(offs_t address)
 
 void et3400emu::add_breakpoint(offs_t address)
 {
-	breakpoints->addBreakpoint(address);
+    breakpoints->addBreakpoint(address);
 }
 
 void et3400emu::remove_breakpoint(offs_t address)
 {
-	breakpoints->removeBreakpoint(address);
+    breakpoints->removeBreakpoint(address);
+}
+
+bool et3400emu::has_breakpoint(offs_t address)
+{
+    return breakpoints->hasBreakpoint(address);
+}
+
+void et3400emu::add_or_remove_breakpoint(offs_t address)
+{
+    breakpoints->addOrRemoveBreakpoint(address);
 }

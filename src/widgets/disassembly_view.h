@@ -6,6 +6,8 @@
 #include "../dev/memory_map.h"
 #include "../cpu/defs.h"
 #include "../dasm/disassembler.h"
+#include "../windows/add_label.h"
+#include "../windows/remove_label.h"
 //#include <thread>
 #include <vector>
 #include <QTimer>
@@ -33,22 +35,21 @@ public:
     DisassemblyView();
     DisassemblyView(QWidget *parent);
     ~DisassemblyView();
-    void update_display();
     void scroll(int steps);
     void scrollTo(int value);
     void set_emulator(et3400emu *emu);
     void set_range(offs_t start, offs_t end, uint8_t *memory);
-    void set_maps(std::vector<Map> *maps);
     void set_current(offs_t address);
     void clear_current();
     void clear_selected();
-    void load_breakpoints(std::vector<Breakpoint> *breakpoints);
+    void refresh();
 
 signals:
     void on_scroll(int steps);
     void on_size(int max);
     void add_breakpoint(offs_t address);
     void remove_breakpoint(offs_t address);
+    void add_or_remove_breakpoint_signal(offs_t address);
 
 public slots:
     void redraw();
@@ -70,7 +71,6 @@ private:
     et3400emu *emu_ptr;
     uint8_t *memory;
 
-    std::vector<Map> *maps;
     std::vector<DisassemblyLine> *lines;
 
     bool running;
@@ -85,7 +85,7 @@ private:
     int current;
 
     DisassemblyLine find_line(offs_t address);
-    void toggle_breakpoint(int line_number);
+    void add_or_remove_breakpoint(int line_number);
     void bufferDraw();
     void showContextMenu(const QPoint &pos);
 };

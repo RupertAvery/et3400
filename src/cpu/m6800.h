@@ -35,7 +35,7 @@ public:
 
 	// construction/destruction
 	// m6800_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
-	m6800_cpu_device(MemoryMapManager *memory_map, BreakpointManager *breakpoint_manager);
+	m6800_cpu_device(MemoryMapManager *memory_map);
 
 	enum
 	{
@@ -54,11 +54,11 @@ public:
 	uint32_t execute_max_cycles() const noexcept { return 12; }
 	uint32_t execute_input_lines() const noexcept { return 2; }
 	bool execute_input_edge_triggered(int inputnum) const noexcept { return inputnum == INPUT_LINE_NMI; }
-	void execute_run(bool resume = false);
+	void execute_run();
 	void execute_step();
 	void execute_set_input(int inputnum, int state);
 	void pre_execute_run();
-
+	std::function<bool (uint32_t)> check_breakpoint;
 	CpuStatus get_status();
 	// device_memory_interface overrides
 	//virtual space_config_vector memory_space_config() const override;
@@ -98,7 +98,6 @@ public:
 	int m_icount;
 	int reset_line;
 	bool verbose;
-	bool is_break;
 
 protected:
 	PAIR m_ea; /* effective address */

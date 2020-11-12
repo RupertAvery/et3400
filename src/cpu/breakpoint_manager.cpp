@@ -61,3 +61,25 @@ void BreakpointManager::removeBreakpoint(offs_t address)
     }
     lock.unlock();
 }
+
+void BreakpointManager::addOrRemoveBreakpoint(offs_t address)
+{
+    lock.lock();
+    std::vector<Breakpoint>::iterator it = breakpoints->begin();
+    while (it != breakpoints->end())
+    {
+        if ((*it).address == address)
+        {
+            it = breakpoints->erase(it);
+            lock.unlock();
+            return;
+        }
+        else
+        {
+            it++;
+        }
+    }
+
+    breakpoints->push_back(Breakpoint{ address, true });
+    lock.unlock();
+}

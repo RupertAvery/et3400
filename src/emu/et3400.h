@@ -45,6 +45,7 @@ public:
 	CpuStatus get_status();
 	void add_breakpoint(offs_t address);
 	void remove_breakpoint(offs_t address);
+	void add_or_remove_breakpoint(offs_t address);
 	bool has_breakpoint(offs_t address);
 	void handle_breakpoint();
 
@@ -70,11 +71,11 @@ private:
 	int cycles;
 	int clock_rate;
 	bool running;
-	bool resumed;
-
-
+	uint32_t last_pc;
 	void worker();
 	void render_frame();
+	bool check_breakpoint(uint32_t address);
+
 };
 
 #endif // ET3400EMU_H

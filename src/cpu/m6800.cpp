@@ -475,11 +475,9 @@ const m6800_cpu_device::op_func m6800_cpu_device::nsc8105_insn[0x100] = {
 // DEFINE_DEVICE_TYPE(M6802, m6802_cpu_device, "m6802", "Motorola MC6802")
 // DEFINE_DEVICE_TYPE(M6808, m6808_cpu_device, "m6808", "Motorola MC6808")
 // DEFINE_DEVICE_TYPE(NSC8105, nsc8105_cpu_device, "nsc8105", "NSC8105")
-m6800_cpu_device::m6800_cpu_device(MemoryMapManager* memory_map, BreakpointManager *breakpoint_manager)
+m6800_cpu_device::m6800_cpu_device(MemoryMapManager* memory_map)
 {
 	this->memory_map = memory_map;
-	this->breakpoint_manager = breakpoint_manager;
-	is_break = false;
 	verbose = false;
 	m_insn = m6800_insn;
 	m_cycles = cycles_6800;
@@ -747,22 +745,16 @@ void m6800_cpu_device::pre_execute_run()
 /****************************************************************************
  * Execute cycles CPU cycles. Return number of cycles really executed
  ****************************************************************************/
-void m6800_cpu_device::execute_run(bool resume)
+void m6800_cpu_device::execute_run()
 {
 	uint8_t ireg;
 
 	CHECK_IRQ_LINES(); /* HJB 990417 */
 
 	CLEANUP_COUNTERS();
-
+	
 	do
 	{
-		if (!is_break && breakpoint_manager->hasBreakpoint(m_pc.d) && !resume)
-		{
-			is_break = true;
-			break;
-		}
-
 		if (m_wai_state & (M6800_WAI | M6800_SLP))
 		{
 			EAT_CYCLES();
@@ -770,14 +762,15 @@ void m6800_cpu_device::execute_run(bool resume)
 		else
 		{
 			pPPC = pPC;
+			if (check_breakpoint(m_pc.d)) {
+				break;
+			}
 			//debugger_instruction_hook(PCD);
 			ireg = M_RDOP(PCD);
 			PC++;
 			(this->*m_insn[ireg])();
 			increment_counter(m_cycles[ireg]);
 		}
-
-		resume = false;
 	} while (m_icount > 0);
 }
 

@@ -18,6 +18,7 @@ DisassemblyView::DisassemblyView(QWidget *parent)
     selected = -1;
     current = -1;
     breakpoint_icon = QPixmap(":/buttons/BreakpointEnable_16x.png");
+    lines = new std::vector<DisassemblyLine>;
 
     m_paintTimer = new QTimer(this);
     m_paintTimer->start(36); // 38ms, or every 1/30th of a second
@@ -121,10 +122,11 @@ void DisassemblyView::bufferDraw()
         QColor insgtruction_color = darkblue;
         QColor operand_color = darkred;
 
-        bool has_breakpoint = line[ctr].has_breakpoint;
         bool is_comment = line[ctr].type == DisassemblyType::Comment;
+        bool is_data = line[ctr].type == DisassemblyType::Data;
         bool is_selected = ctr == selected;
-        bool is_current = ctr == current;
+        bool is_current = ctr == current && !is_comment;
+        bool has_breakpoint = emu_ptr->has_breakpoint(line[ctr].address) && !is_comment;
 
         painter.save();
 
@@ -190,7 +192,31 @@ void DisassemblyView::bufferDraw()
         else
         {
             painter.setPen(opcode_color);
-            painter.drawText(90, y, line[ctr].opcodes);
+
+            if (is_data)
+            {
+                // live view of data
+                int i = 0;
+                int ptr = line[ctr].address - start;
+                QString data = QString("%1 %2 %3 %4 %5 %6 %7 %8");
+                for (; i < line[ctr].bytes; i++)
+                {
+                    data = data.arg(memory[ptr + i], 2, 16, QChar('0')).toUpper();
+                }
+                for (; i < 8; i++)
+                {
+                    data = data.arg(" ");
+                }
+                painter.drawText(90, y, data);
+
+                // while (address < line[ctr].map->end)
+                // {
+                // }
+            }
+            else
+            {
+                painter.drawText(90, y, line[ctr].opcodes);
+            }
 
             if (line[ctr].type == DisassemblyType::Assembly)
             {
@@ -218,20 +244,8 @@ void DisassemblyView::resizeEvent(QResizeEvent *event)
         int x = lines->size() - visible_items + 1;
         max_vscroll = x > 0 ? x : 0;
         emit on_size(max_vscroll);
-    }
-}
 
-void DisassemblyView::load_breakpoints(std::vector<Breakpoint> *breakpoints)
-{
-    std::vector<Breakpoint>::iterator it = breakpoints->begin();
-    while (it != breakpoints->end())
-    {
-        DisassemblyLine line = find_line((*it).address);
-        if (line.type != DisassemblyType::Empty)
-        {
-            line.has_breakpoint = true;
-        }
-        it++;
+        redraw();
     }
 }
 
@@ -246,25 +260,17 @@ DisassemblyLine DisassemblyView::find_line(offs_t address)
         }
         it++;
     }
-    return DisassemblyLine{-1, 0, DisassemblyType::Empty, NULL, NULL, NULL, false, false, false, -1};
+    return DisassemblyLine{0, DisassemblyType::Empty, NULL, NULL, NULL};
 }
 
-void DisassemblyView::toggle_breakpoint(int line_number)
+void DisassemblyView::add_or_remove_breakpoint(int line_number)
 {
     if (line_number > -1)
     {
         DisassemblyLine *line = &lines->at(line_number);
         if (line->type == DisassemblyType::Assembly)
         {
-            line->has_breakpoint = !line->has_breakpoint;
-            if (line->has_breakpoint)
-            {
-                emit add_breakpoint(line->address);
-            }
-            else
-            {
-                emit remove_breakpoint(line->address);
-            }
+            emit add_or_remove_breakpoint_signal(line->address);
         }
     }
 }
@@ -286,7 +292,7 @@ void DisassemblyView::keyPressEvent(QKeyEvent *event)
         selected += visible_items;
         break;
     case Qt::Key_F9:
-        toggle_breakpoint(selected);
+        add_or_remove_breakpoint(selected);
         break;
     }
 
@@ -321,7 +327,7 @@ void DisassemblyView::mousePressEvent(QMouseEvent *event)
     int line = offset + (y / item_height);
     if (x < 20)
     {
-        toggle_breakpoint(line);
+        add_or_remove_breakpoint(line);
     }
     else
     {
@@ -332,14 +338,13 @@ void DisassemblyView::mousePressEvent(QMouseEvent *event)
 
 void DisassemblyView::redraw()
 {
+    //  DisassemblyBuilder::build(lines, start, end, memory, maps);
 
-    //lines = DisassemblyBuilder::build(start, end, emu_ptr->get_block_device(start)->get_mapped_memory(), maps);
+    // int x = lines->size() - visible_items + 1;
+    // max_vscroll = x > 0 ? x : 0;
+    // emit on_size(max_vscroll);
+    // is_memory_set = true;
 
-    //int x = lines->size() - visible_items + 1;
-    //max_vscroll = x > 0 ? x : 0;
-    //emit on_size(max_vscroll);
-    //is_memory_set = true;
- 
     this->update();
 }
 
@@ -388,25 +393,11 @@ void DisassemblyView::set_current(offs_t address)
     }
 }
 
-void DisassemblyView::update_display()
+void DisassemblyView::refresh()
 {
-    //action->trigger();
+    DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->maps);
+    redraw();
 }
-
-void DisassemblyView::set_maps(std::vector<Map> *maps)
-{
-    this->maps = maps;
-}
-
-// void DisassemblyView::set_breakpoints(std::vector<Map> *maps)
-// {
-//     this->maps = maps;
-// }
-
-// void DisassemblyView::set_range(offs_t start, offs_t end, uint8_t *memory)
-// {
-
-// }
 
 void DisassemblyView::set_range(offs_t start, offs_t end, uint8_t *memory)
 {
@@ -416,7 +407,7 @@ void DisassemblyView::set_range(offs_t start, offs_t end, uint8_t *memory)
 
     visible_items = height() / item_height;
 
-    lines = DisassemblyBuilder::build(start, end, emu_ptr->get_block_device(start)->get_mapped_memory(), maps);
+    DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->maps);
 
     int x = lines->size() - visible_items + 1;
     max_vscroll = x > 0 ? x : 0;
@@ -441,11 +432,70 @@ void DisassemblyView::showContextMenu(const QPoint &pos)
 
     if (line->map == NULL)
     {
-        //connect(&action1, &QAction::triggered(), this, SLOT(removeDataPoint()));
+        connect(&addLabelAction, &QAction::triggered, this, [this, line] {
+            AddLabelDialog add_label;
+            add_label.setLabel(Label{QString("New Label"), map_type::DATA, line->address, line->address});
+
+            QDialog::DialogCode result = (QDialog::DialogCode)add_label.exec();
+
+            if (result == QDialog::DialogCode::Accepted)
+            {
+                Label label = add_label.getLabel();
+
+                std::vector<Map>::iterator map = emu_ptr->maps->begin();
+
+                bool bInserted = false;
+                while (map != emu_ptr->maps->end())
+                {
+                    if (map->start > label.start)
+                    {
+                        emu_ptr->maps->insert(map, Map{label.start, label.end, label.type, label.text});
+                        bInserted = true;
+                        break;
+                    }
+                    map++;
+                }
+                if (!bInserted)
+                {
+
+                    emu_ptr->maps->push_back(Map{label.start, label.end, label.type, label.text});
+                }
+
+                DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->maps);
+
+                redraw();
+            }
+        });
+
         contextMenu.addAction(&addLabelAction);
     }
     else
     {
+         connect(&removeLabelAction, &QAction::triggered, this, [this, line] {
+            RemoveLabelDialog remove_label;
+            remove_label.setLabel(QString(line->map->comment));
+
+            QDialog::DialogCode result = (QDialog::DialogCode)remove_label.exec();
+
+            if (result == QDialog::DialogCode::Accepted)
+            {
+                std::vector<Map>::iterator map = emu_ptr->maps->begin();
+
+                while (map != emu_ptr->maps->end())
+                {
+                    if (&(*map) == line->map)
+                    {
+                        emu_ptr->maps->erase(map);
+                        break;
+                    }
+                    map++;
+                }
+
+                DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->maps);
+
+                redraw();
+            }
+        });
         contextMenu.addAction(&removeLabelAction);
     }
 

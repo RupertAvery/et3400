@@ -3,9 +3,9 @@
 
 #include "debugger.h"
 
+
 void DebuggerDialog::setupUI()
 {
-
     QToolBar *toolbar = new QToolBar(this);
 
     // QLabel *memory_label = new QLabel("Memory");
@@ -137,9 +137,10 @@ void DebuggerDialog::setupUI()
     mainLayout->addWidget(panels);
     mainLayout->setMargin(0);
     mainLayout->setSpacing(0);
-    mainLayout->addWidget(new QSizeGrip(this), 0, Qt::AlignBottom | Qt::AlignRight);
 
     setLayout(mainLayout);
+
+    setSizeGripEnabled(true);
 
     connect(memmory_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::memory_slider_moved);
     connect(disassembly_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::disassembly_slider_moved);
@@ -156,6 +157,7 @@ void DebuggerDialog::setupUI()
 
     connect(disassembly_view, &DisassemblyView::add_breakpoint, this, &DebuggerDialog::add_breakpoint);
     connect(disassembly_view, &DisassemblyView::remove_breakpoint, this, &DebuggerDialog::remove_breakpoint);
+    connect(disassembly_view, &DisassemblyView::add_or_remove_breakpoint_signal, this, &DebuggerDialog::add_or_remove_breakpoint);
 
     breakpoint_handler_action = new QAction;
     connect(breakpoint_handler_action, &QAction::triggered, this, &DebuggerDialog::breakpoint_handler);

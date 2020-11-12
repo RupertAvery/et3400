@@ -121,6 +121,7 @@ void MainWindow::show_settings()
 void MainWindow::load_ram()
 {
   File::load_ram(this, emu);
+  debugger_dialog->refresh();
   debugger_dialog->update_button_state();
 }
 

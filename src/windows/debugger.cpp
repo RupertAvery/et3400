@@ -38,6 +38,12 @@ void DebuggerDialog::step(bool checked)
 	}
 }
 
+void DebuggerDialog::refresh()
+{
+	disassembly_view->refresh();
+	memory_view->redraw();
+}
+
 void DebuggerDialog::reset(bool checked)
 {
 	emu_ptr->reset();
@@ -183,7 +189,6 @@ void DebuggerDialog::set_emulator(et3400emu *emu)
 		emu_set = true;
 		memory_view->set_emulator(emu);
 		disassembly_view->set_emulator(emu);
-		disassembly_view->set_maps(emu->maps);
 		status_view->set_emulator(emu);
 		memory_selector->setCurrentIndex(0);
 		disassembly_selector->setCurrentIndex(1);
@@ -305,8 +310,15 @@ void DebuggerDialog::remove_breakpoint(offs_t address)
 	emu_ptr->remove_breakpoint(address);
 }
 
+void DebuggerDialog::add_or_remove_breakpoint(offs_t address)
+{
+	emu_ptr->add_or_remove_breakpoint(address);
+}
+
+
 void DebuggerDialog::load_ram()
 {
 	File::load_ram(this, emu_ptr);
+	refresh();
 	update_button_state();
 }

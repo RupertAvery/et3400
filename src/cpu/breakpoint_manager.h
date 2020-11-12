@@ -19,6 +19,7 @@ public:
     ~BreakpointManager();
     void addBreakpoint(offs_t address);
     void removeBreakpoint(offs_t address);
+    void addOrRemoveBreakpoint(offs_t address);
     bool hasBreakpoint(offs_t address);
     std::vector<Breakpoint> getBreakpoints();
 

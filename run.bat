@@ -8,7 +8,7 @@ IF '%1'=='Release' goto run:
 goto err:
 
 :run
-build\%1\et3400.exe 
+%1\%1\et3400.exe 
 
 GOTO END:
 :err

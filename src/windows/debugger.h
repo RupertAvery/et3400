@@ -53,6 +53,7 @@ public:
     ~DebuggerDialog();
     void set_emulator(et3400emu *emu);
     void update_button_state();
+    void refresh();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -112,6 +113,7 @@ private:
 
     void add_breakpoint(offs_t address);
     void remove_breakpoint(offs_t address);
+    void add_or_remove_breakpoint(offs_t address);
 
     void breakpoint_handler(bool checked);
 
