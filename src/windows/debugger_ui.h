@@ -3,7 +3,6 @@
 
 #include "debugger.h"
 
-
 void DebuggerDialog::setupUI()
 {
     QToolBar *toolbar = new QToolBar(this);
@@ -14,10 +13,10 @@ void DebuggerDialog::setupUI()
     // QLabel *disassembly_label = new QLabel("Disassembly");
     // disassembly_label->setStyleSheet("margin: 0px 5px 0px 5px;");
 
-    MakeButton(start_button, ":/buttons/Run_16x.png", Qt::Key_F5, start);
-    MakeButton(stop_button, ":/buttons/Stop_16x.png", Qt::Key_F4, stop);
-    MakeButton(step_button, ":/buttons/StepIntoArrow_16x.png", Qt::Key_F10, step);
-    MakeButton(reset_button, ":/buttons/Restart_16x.png", Qt::Key_Escape, reset);
+    MakeButton(start_button, "Start (F5)", ":/buttons/Run_16x.png", Qt::Key_F5, start);
+    MakeButton(stop_button, "Stop (F4)", ":/buttons/Stop_16x.png", Qt::Key_F4, stop);
+    MakeButton(step_button, "Step in (F10)", ":/buttons/StepIntoArrow_16x.png", Qt::Key_F10, step);
+    MakeButton(reset_button, "Reset (ESC)", ":/buttons/Restart_16x.png", Qt::Key_Escape, reset);
 
     panel_selector = new QToolButton(toolbar);
     panel_selector->setToolButtonStyle(Qt::ToolButtonTextOnly);
@@ -26,13 +25,13 @@ void DebuggerDialog::setupUI()
 
     QMenu *panel_selector_menu = new QMenu(panel_selector);
 
-    MakeAction(toggle_memory_action, "Memory", Qt::CTRL + Qt::Key_1, toggle_memory_panel)
-        MakeAction(toggle_disassembly_action, "Disassembly", Qt::CTRL + Qt::Key_2, toggle_disassembly_panel)
-            MakeAction(toggle_status_action, "Status", Qt::CTRL + Qt::Key_3, toggle_status_panel)
+    // MakeAction(toggle_disassembly_action, "Disassembly", Qt::CTRL + Qt::Key_2, toggle_disassembly_panel);
+    MakeAction(toggle_memory_action, "Memory", Qt::CTRL + Qt::Key_M, toggle_memory_panel);
+    // MakeAction(toggle_status_action, "Status", Qt::CTRL + Qt::Key_3, toggle_status_panel);
 
-                panel_selector_menu->addAction(toggle_memory_action);
-    panel_selector_menu->addAction(toggle_disassembly_action);
-    panel_selector_menu->addAction(toggle_status_action);
+    panel_selector_menu->addAction(toggle_memory_action);
+    // panel_selector_menu->addAction(toggle_disassembly_action);
+    // panel_selector_menu->addAction(toggle_status_action);
     panel_selector->setMenu(panel_selector_menu);
 
     QAction *openRam_action = new QAction("&Load RAM", this);
@@ -74,10 +73,12 @@ void DebuggerDialog::setupUI()
     toolbar->addWidget(panel_selector);
 
     memory_groupBox = new QGroupBox("Memory", this);
+    memory_groupBox->setMaximumWidth(380);
+
     disassembly_groupBox = new QGroupBox("Disassembly", this);
     status_groupBox = new QGroupBox("Status", this);
 
-    memmory_scrollbar = new QScrollBar(Qt::Orientation::Vertical);
+    memory_scrollbar = new QScrollBar(Qt::Orientation::Vertical);
     disassembly_scrollbar = new QScrollBar(Qt::Orientation::Vertical);
 
     memory_view = new MemoryView(this);
@@ -93,7 +94,7 @@ void DebuggerDialog::setupUI()
     QWidget *inner_memory = new QWidget(memory_groupBox);
     QHBoxLayout *memory_groupBox_layout = new QHBoxLayout(inner_memory);
     memory_groupBox_layout->addWidget(memory_view);
-    memory_groupBox_layout->addWidget(memmory_scrollbar);
+    memory_groupBox_layout->addWidget(memory_scrollbar);
     memory_groupBox_layout->setMargin(0);
     inner_memory->setLayout(memory_groupBox_layout);
 
@@ -142,8 +143,10 @@ void DebuggerDialog::setupUI()
 
     setSizeGripEnabled(true);
 
-    connect(memmory_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::memory_slider_moved);
+    connect(memory_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::memory_slider_moved);
     connect(disassembly_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::disassembly_slider_moved);
+    connect(memory_scrollbar, &QScrollBar::valueChanged, this, &DebuggerDialog::memory_slider_moved);
+    connect(disassembly_scrollbar, &QScrollBar::valueChanged, this, &DebuggerDialog::disassembly_slider_moved);
     // this->setStyleSheet("QLabel { font-size:12px; height: 20px }");
 
     connect(memory_view, &MemoryView::on_scroll, this, &DebuggerDialog::update_memory_scrollbar);
@@ -151,6 +154,8 @@ void DebuggerDialog::setupUI()
 
     connect(memory_view, &MemoryView::on_size, this, &DebuggerDialog::update_memory_scrollbar_max);
     connect(disassembly_view, &DisassemblyView::on_size, this, &DebuggerDialog::update_disassembly_scrollbar_max);
+
+    connect(disassembly_view, &DisassemblyView::on_set_current, this, &DebuggerDialog::update_disassembly_scrollbar);
 
     connect(memory_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_memory_location);
     connect(disassembly_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_disassembly_location);

@@ -12,8 +12,10 @@ MemoryMapManager::~MemoryMapManager()
 {
 }
 
-void MemoryMapManager::map(int block, memory_mapped_device *device)
+void MemoryMapManager::map(memory_mapped_device *device)
 {
+    int block = device->get_start() / BLOCK_SIZE;
+
     if (blocks[block].device == NULL)
     {
         blocks[block].device = device;
@@ -48,12 +50,11 @@ void MemoryMapManager::write(offs_t addr, uint8_t data)
 
 memory_mapped_device *MemoryMapManager::get_block_device(off_t address)
 {
-    int block = address / 1024;
+    int block = address / BLOCK_SIZE;
     memory_mapped_device *device = blocks[block].device;
     while (device != NULL && !device->is_mapped(address))
     {
         device = device->next;
-    } 
+    }
     return device;
 }
-

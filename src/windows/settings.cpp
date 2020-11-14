@@ -83,3 +83,4 @@ void SettingsDialog::set_emulator(et3400emu *emu)
         warning_label->hide();
     }
 }
+

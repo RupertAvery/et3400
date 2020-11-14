@@ -56,3 +56,36 @@ bool SrecReader::Read(QString path, std::vector<srec_block> *blocks)
 
     return true;
 }
+
+bool SrecReader::Write(QString path, std::vector<srec_block> *blocks)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        //QMessageBox::information(0, "error", file.errorString());
+        return false;
+    }
+
+    QTextStream out(&file);
+
+    std::vector<srec_block>::iterator block = blocks->begin();
+
+    while (block != blocks->end())
+    {
+        uint8_t checksum = (*block).bytecount + (*block).address >> 8 & 0xFF + (*block).address & 0xFF;
+        out << "S1"
+            << QString("%1").arg((*block).bytecount, 2, 16, QChar('0'))
+            << QString("%1").arg((*block).address, 4, 16, QChar('0'));
+        for (int i = 0; i < (*block).bytecount; i++)
+        {
+            checksum += (*block).data[i];
+            out << QString("%1").arg((*block).data[i], 2, 16, QChar('0'));
+        }
+        checksum = ~(checksum & 0xFF);
+        out << QString("%1").arg(checksum, 2, 16, QChar('0'));
+        out << "\r\n";
+        block++;
+    }
+
+    return true;
+}

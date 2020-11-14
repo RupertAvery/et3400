@@ -6,24 +6,26 @@
 #include <QTextStream>
 #include <vector>
 
-enum map_type {
+enum LabelType
+{
     COMMENT,
     ASSEMBLY,
     DATA
 };
 
-struct Map
+struct Label
 {
     uint32_t start;
     uint32_t end;
-    map_type type;
+    LabelType type;
     QString comment;
 };
 
-class MapReader
+class LabelReader
 {
 public:
-    static bool Read(QString file, std::vector<Map> *maps);
+    static void Write(QString path, std::vector<Label> *labels, bool &success);
+    static std::vector<Label> *Read(QString file, bool &success);
 };
 
 #endif // MAP_H

@@ -1,17 +1,6 @@
-#ifndef DEFS_H
-#define DEFS_H
+#ifndef CPU_DEFS_H
+#define CPU_DEFS_H
 #include <stdint.h>
-
-using offs_t = uint32_t;
-
-struct CpuStatus {
-	uint32_t pc;
-	uint32_t sp;
-	uint32_t ix;
-	uint8_t acca;
-	uint8_t accb;
-	uint8_t cc;
-};
 
 #define logerror(x, y, z) printf(x, y, z);
 
@@ -115,4 +104,4 @@ enum
 	M6808_IRQ_LINE = M6800_IRQ_LINE
 };
 
-#endif
+#endif // CPU_DEFS_H

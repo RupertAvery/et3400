@@ -3,28 +3,29 @@
 et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
 {
     clock_rate = 100;
+
     memory_map = new MemoryMapManager;
     breakpoints = new BreakpointManager;
+    labels = new LabelManager;
+
     device = new m6800_cpu_device(memory_map);
-    device->check_breakpoint = [this](uint32_t address){ return check_breakpoint(address); };
-    // device->has_breakpoint = [this](off_t address) { return has_breakpoint(address); };
-    // device->on_breakpoint = [this] { handle_breakpoint(); };
+    device->check_breakpoint = [this](uint32_t address) { return check_breakpoint(address); };
+
     running = false;
     cycles = 0;
     last_pc = 0xFFFF;
     total_cycles = 0;
+
     ram = new memory_device(0x0000, 0x0400, false);
     rom = new memory_device(0xFC00, 0x0400, true);
 
     this->keypad = keypad_dev;
     this->display = display_dev;
 
-    memory_map->map(et3400emu::RAM, ram);
-    memory_map->map(et3400emu::MONITOR_ROM, rom);
-    memory_map->map(et3400emu::KEYPAD, keypad);
-    memory_map->map(et3400emu::DISPLAY, display);
-
-    maps = new std::vector<Map>;
+    memory_map->map(ram);
+    memory_map->map(rom);
+    memory_map->map(keypad);
+    memory_map->map(display);
 }
 
 et3400emu::~et3400emu()
@@ -49,12 +50,8 @@ void et3400emu::loadRAM(offs_t address, uint8_t *buffer, size_t size)
 
 void et3400emu::loadMap()
 {
-    maps->push_back(Map{0xFC06, 0xFC0B, DATA, QString("CPU UP")});
-    maps->push_back(Map{0xFF76, 0xFF95, DATA, QString("OP TABLE")});
-    maps->push_back(Map{0xFF96, 0xFFA5, DATA, QString("HEX DISPLAY CODE TABLE")});
-    maps->push_back(Map{0xFFA6, 0xFFB5, DATA, QString("KEY VALUE TABLE")});
-    maps->push_back(Map{0xFFB6, 0xFFF7, DATA, QString("COMMAND HANDLER ENTRY POINT TABLE")});
-    maps->push_back(Map{0xFFF8, 0xFFFF, DATA, QString("INTERRUPT VECTORS")});
+    bool success;
+    labels->loadLabels(":/rom/monitor.map", success);
 }
 
 bool et3400emu::get_running()
@@ -162,7 +159,8 @@ void et3400emu::worker()
     }
 }
 
-bool et3400emu::check_breakpoint(uint32_t address) {
+bool et3400emu::check_breakpoint(uint32_t address)
+{
     if (breakpoints->hasBreakpoint(address) && last_pc != address)
     {
         this->running = false;

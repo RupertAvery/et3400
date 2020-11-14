@@ -8,67 +8,15 @@
 			the 6809 Simulator V09)
 		6809 Microcomputer Programming & Interfacing with Experiments"
 			by Andrew C. Staugaard, Jr.; Howard W. Sams & Co., Inc.
+
 	System dependencies:    uint16_t must be 16 bit unsigned int
 							uint8_t must be 8 bit unsigned int
 							uint32_t must be more than 16 bits
 							arrays up to 65536 bytes must be supported
 							machine must be twos complement
-History
-991031  ZV
-	Added NSC-8105 support
-990319  HJB
-	Fixed wrong LSB/MSB order for push/pull word.
-	Subtract .extra_cycles at the beginning/end of the exectution loops.
-990316  HJB
-	Renamed to 6800, since that's the basic CPU.
-	Added different cycle count tables for M6800/2/8, M6801/3 and m68xx.
-990314  HJB
-	Also added the M6800 subtype.
-990311  HJB
-	Added _info functions. Now uses static m6808_Regs struct instead
-	of single statics. Changed the 16 bit registers to use the generic
-	PAIR union. Registers defined using macros. Split the core into
-	four execution loops for M6802, M6803, M6808 and HD63701.
-	TST, TSTA and TSTB opcodes reset carry flag.
-TODO:
-	Verify invalid opcodes for the different CPU types.
-	Add proper credits to _info functions.
-	Integrate m6808_Flags into the registers (multiple m6808 type CPUs?)
-990301  HJB
-	Modified the interrupt handling. No more pending interrupt checks.
-	WAI opcode saves state, when an interrupt is taken (IRQ or OCI),
-	the state is only saved if not already done by WAI.
-*****************************************************************************/
-
-/*
-	Chip                RAM     NVRAM   ROM     SCI     r15-f   ports
-	-----------------------------------------------------------------
-	MC6800              -       -       -       no      no      -
-	MC6802              128     32      -       no      no      -
-	MC6802NS            128     -       -       no      no      -
-	MC6808              -       -       -       no      no      -
-	MC6801              128     64      2K      yes     no      4
-	MC68701             128     64      2K      yes     no      4
-	MC6803              128     64      -       yes     no      4
-	MC6803NR            -       -       -       yes     no      4
-	MC6801U4            192     32      4K      yes     yes     4
-	MC6803U4            192     32      -       yes     yes     4
-	MC68120             128(DP) -       2K      yes     IPC     3
-	MC68121             128(DP) -       -       yes     IPC     3
-	HD6801              128     64      2K      yes     no      4
-	HD6301V             128     -       4K      yes     no      4
-	HD63701V            192     -       4K      yes     no      4
-	HD6303R             128     -       -       yes     no      4
-	HD6301X             192     -       4K      yes     yes     6
-	HD6301Y             256     -       16K     yes     yes     6
-	HD6303X             192     -       -       yes     yes     6
-	HD6303Y             256     -       -       yes     yes     6
-	NSC8105
-	MS2010-A
 */
 
 #include "m6800.h"
-//#include "../util/mutex.hpp"
 
 #define VERBOSE 0
 
@@ -471,10 +419,6 @@ const m6800_cpu_device::op_func m6800_cpu_device::nsc8105_insn[0x100] = {
 	&m6800_cpu_device::subb_ex, &m6800_cpu_device::sbcb_ex, &m6800_cpu_device::cmpb_ex, &m6800_cpu_device::illegl1, &m6800_cpu_device::andb_ex, &m6800_cpu_device::ldb_ex, &m6800_cpu_device::bitb_ex, &m6800_cpu_device::stb_ex,
 	&m6800_cpu_device::eorb_ex, &m6800_cpu_device::orb_ex, &m6800_cpu_device::adcb_ex, &m6800_cpu_device::addb_ex, &m6800_cpu_device::addx_ex, &m6800_cpu_device::ldx_ex, &m6800_cpu_device::illegl1, &m6800_cpu_device::stx_ex };
 
-// DEFINE_DEVICE_TYPE(M6800, m6800_cpu_device, "m6800", "Motorola MC6800")
-// DEFINE_DEVICE_TYPE(M6802, m6802_cpu_device, "m6802", "Motorola MC6802")
-// DEFINE_DEVICE_TYPE(M6808, m6808_cpu_device, "m6808", "Motorola MC6808")
-// DEFINE_DEVICE_TYPE(NSC8105, nsc8105_cpu_device, "nsc8105", "NSC8105")
 m6800_cpu_device::m6800_cpu_device(MemoryMapManager* memory_map)
 {
 	this->memory_map = memory_map;
@@ -482,67 +426,6 @@ m6800_cpu_device::m6800_cpu_device(MemoryMapManager* memory_map)
 	m_insn = m6800_insn;
 	m_cycles = cycles_6800;
 }
-
-//m6800_cpu_device::m6800_cpu_device(uint32_t clock)
-//	: m6800_cpu_device(clock, m6800_insn, cycles_6800/*, address_map_constructor()*/)
-//{
-//}
-
-//m6800_cpu_device::m6800_cpu_device(uint32_t clock, const op_func *insn, const uint8_t *cycles/*, address_map_constructor internal*/)
-//	//: cpu_device(mconfig, type, tag, owner, clock)
-//	//, m_program_config("program", ENDIANNESS_BIG, 8, 16, 0, internal)
-//	//, m_decrypted_opcodes_config("program", ENDIANNESS_BIG, 8, 16, 0)
-//	, m_insn(insn)
-//	, m_cycles(cycles)
-//{
-//}
-
-// m6802_cpu_device::m6802_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
-// 	: m6802_cpu_device(mconfig, M6802, tag, owner, clock, m6800_insn, cycles_6800)
-// {
-// }
-
-// m6802_cpu_device::m6802_cpu_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock, const op_func *insn, const uint8_t *cycles)
-// 	: m6800_cpu_device(mconfig, type, tag, owner, clock, insn, cycles, address_map_constructor(FUNC(m6802_cpu_device::ram_map), this))
-// 	, m_ram_enable(true)
-// {
-// }
-
-// void m6802_cpu_device::ram_map(address_map &map)
-// {
-// 	if (m_ram_enable)
-// 		map(0x0000, 0x007f).ram();
-// }
-
-// m6808_cpu_device::m6808_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
-// 	: m6802_cpu_device(mconfig, M6808, tag, owner, clock, m6800_insn, cycles_6800)
-// {
-// 	set_ram_enable(false);
-// }
-
-// void m6808_cpu_device::device_validity_check(validity_checker &valid) const
-// {
-// 	if (m_ram_enable)
-// 		osd_printf_error("MC6808 should not have internal RAM enabled\n");
-// }
-
-// nsc8105_cpu_device::nsc8105_cpu_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
-// 	: m6802_cpu_device(mconfig, NSC8105, tag, owner, clock, nsc8105_insn, cycles_nsc8105)
-// {
-// }
-
-// device_memory_interface::space_config_vector m6800_cpu_device::memory_space_config() const
-// {
-// 	if(has_configured_map(AS_OPCODES))
-// 		return space_config_vector {
-// 			std::make_pair(AS_PROGRAM, &m_program_config),
-// 			std::make_pair(AS_OPCODES, &m_decrypted_opcodes_config)
-// 		};
-// 	else
-// 		return space_config_vector {
-// 			std::make_pair(AS_PROGRAM, &m_program_config)
-// 		};
-// }
 
 uint32_t m6800_cpu_device::RM16(uint32_t Addr)
 {
@@ -622,10 +505,6 @@ void m6800_cpu_device::EAT_CYCLES()
 
 void m6800_cpu_device::device_start()
 {
-	// space(AS_PROGRAM).cache(m_cprogram);
-	// space(has_space(AS_OPCODES) ? AS_OPCODES : AS_PROGRAM).cache(m_copcodes);
-	// space(AS_PROGRAM).specific(m_program);
-
 	m_pc.d = 0;
 	m_s.d = 0;
 	m_x.d = 0;
@@ -633,29 +512,6 @@ void m6800_cpu_device::device_start()
 	m_cc = 0;
 	m_wai_state = 0;
 	m_irq_state[0] = m_irq_state[1] = m_irq_state[2] = 0;
-
-	// save_item(NAME(m_ppc.w.l));
-	// save_item(NAME(m_pc.w.l));
-	// save_item(NAME(m_s.w.l));
-	// save_item(NAME(m_x.w.l));
-	// save_item(NAME(m_d.w.l));
-	// save_item(NAME(m_cc));
-	// save_item(NAME(m_wai_state));
-	// save_item(NAME(m_nmi_state));
-	// save_item(NAME(m_nmi_pending));
-	// save_item(NAME(m_irq_state));
-
-	// state_add( M6800_A,         "A", m_d.b.h).formatstr("%02X");
-	// state_add( M6800_B,         "B", m_d.b.l).formatstr("%02X");
-	// state_add( M6800_PC,        "PC", m_pc.w.l).formatstr("%04X");
-	// state_add( M6800_S,         "S", m_s.w.l).formatstr("%04X");
-	// state_add( M6800_X,         "X", m_x.w.l).formatstr("%04X");
-	// state_add( M6800_CC,        "CC", m_cc).formatstr("%02X");
-	// state_add( M6800_WAI_STATE, "WAI", m_wai_state).formatstr("%01X");
-
-	// state_add( STATE_GENPC, "GENPC", m_pc.w.l).noshow();
-	// state_add( STATE_GENPCBASE, "CURPC", m_pc.w.l).noshow();
-	// state_add( STATE_GENFLAGS, "GENFLAGS", m_cc).formatstr("%8s").noshow();
 
 	// TODO:
 	//set_icountptr(m_icount);
@@ -801,23 +657,3 @@ CpuStatus m6800_cpu_device::get_status()
 {
 	return CpuStatus{ m_pc.d, m_s.d, m_x.d, m_d.b.h, m_d.b.l, m_cc };
 }
-
-// std::unique_ptr<util::disasm_interface> m6800_cpu_device::create_disassembler()
-// {
-// 	return std::make_unique<m680x_disassembler>(6800);
-// }
-
-// std::unique_ptr<util::disasm_interface> m6802_cpu_device::create_disassembler()
-// {
-// 	return std::make_unique<m680x_disassembler>(6802);
-// }
-
-// std::unique_ptr<util::disasm_interface> m6808_cpu_device::create_disassembler()
-// {
-// 	return std::make_unique<m680x_disassembler>(6808);
-// }
-
-// std::unique_ptr<util::disasm_interface> nsc8105_cpu_device::create_disassembler()
-// {
-// 	return std::make_unique<m680x_disassembler>(8105);
-// }

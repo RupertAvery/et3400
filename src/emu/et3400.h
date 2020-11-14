@@ -1,29 +1,20 @@
 #ifndef ET3400EMU_H
 #define ET3400EMU_H
 
-#include "../util/common.h"
+#include "../util/sleep.h"
 #include "../util/disassembly_builder.h"
+#include "../util/label_manager.h"
+#include "../util/breakpoint_manager.h"
 #include "../cpu/m6800.h"
-#include "../dev/memory_map.h"
-#include "../dev/memory_dev.h"
-#include "../dev/display_dev.h"
-#include "../dev/keypad_dev.h"
-#include "../util/map.h"
+#include "../dev/devices.h"
 
 #include <functional>
 #include <mutex>
-
-extern std::mutex bplocks;
 
 class et3400emu
 {
 
 public:
-	static const off_t RAM = 0;
-	static const off_t MONITOR_ROM = 63;
-	static const off_t DISPLAY = 48;
-	static const off_t KEYPAD = 48;
-
 	et3400emu(keypad_io *keypad, display_io *display);
 	~et3400emu();
 
@@ -61,11 +52,13 @@ public:
 	memory_device *rom;
 	display_io *display;
 	keypad_io *keypad;
-	std::vector<Map> *maps;
 
-private:
+
 	MemoryMapManager *memory_map;
 	BreakpointManager *breakpoints;
+	LabelManager *labels;
+
+private:
 	m6800_cpu_device *device;
 	std::thread thread;
 	int cycles;

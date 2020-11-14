@@ -2,18 +2,19 @@
 #define DEBUGGER_H
 
 
-#define MakeButton(button,icon, seq, delegate) \
+#define MakeButton(button, toolTip, icon, seq, delegate) \
     button = new QToolButton(toolbar); \
+    button->setToolTip(toolTip); \
     button->setIcon(QIcon(icon)); \
     button->setShortcut(QKeySequence(seq)); \
-    connect(button, &QToolButton::clicked, this, &DebuggerDialog::delegate); 
+    connect(button, &QToolButton::clicked, this, &DebuggerDialog::delegate)
 
 #define MakeAction(action, name, seq, delegate) \
     action = new QAction(name, this); \
     action->setCheckable(true); \
     action->setChecked(true); \
     action->setShortcut(QKeySequence(seq)); \
-    connect(action, &QAction::toggled, this, &DebuggerDialog::delegate); 
+    connect(action, &QAction::toggled, this, &DebuggerDialog::delegate)
 
 
 //#include "memory_location.h"
@@ -54,6 +55,7 @@ public:
     void set_emulator(et3400emu *emu);
     void update_button_state();
     void refresh();
+    void after_load_ram();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -66,7 +68,7 @@ private:
     QGroupBox *disassembly_groupBox;
     QGroupBox *status_groupBox;
     QAction *breakpoint_handler_action;
-    QScrollBar *memmory_scrollbar;
+    QScrollBar *memory_scrollbar;
     QScrollBar *disassembly_scrollbar;
     QComboBox *memory_selector;
     QComboBox *disassembly_selector;
@@ -118,6 +120,11 @@ private:
     void breakpoint_handler(bool checked);
 
     void load_ram();
+    void save_ram();
+    void load_breakpoints();
+    void save_breakpoints();
+    void load_labels();
+    void save_labels();
 };
 
 #endif // DEBUGGER_H

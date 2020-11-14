@@ -8,9 +8,11 @@
 #include <QFileDialog>
 #include <vector>
 
-class File {
-    public:
+class File
+{
+public:
     static void load_ram(QWidget *parent, et3400emu *emu_ptr);
+    static void save_ram(QWidget *parent, et3400emu *emu_ptr);
 };
 
 #endif // FILE_H

@@ -9,10 +9,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include "defs.h"
-#include "../dev/memory_map.h"
 #include <functional>
-#include "breakpoint_manager.h"
+
+#include "cpu_defs.h"
+#include "../util/breakpoint_manager.h"
+#include "../dev/memory_map.h"
 
 // class cpu_device
 // {

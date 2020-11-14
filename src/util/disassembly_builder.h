@@ -2,8 +2,8 @@
 #define DISASSEMBLY_BUILDER_H
 
 #include <vector>
-#include "map.h"
-#include "../cpu/defs.h"
+#include "label.h"
+#include "../common/common_defs.h"
 #include "../dasm/disassembler.h"
 #include <QString>
 
@@ -21,16 +21,16 @@ struct DisassemblyLine
     QString opcodes;
     QString instruction;
     QString operand;
-    Map* map;
+    Label* label;
     int bytes;
 };
 
 class DisassemblyBuilder
 {
 public:
-    static void build(std::vector<DisassemblyLine>* lines, offs_t start, offs_t end, uint8_t *memory, std::vector<Map> *maps);
+    static void build(std::vector<DisassemblyLine>* lines, offs_t start, offs_t end, uint8_t *memory, std::vector<Label> *labels);
 private:
-    static void disassemble(std::vector<DisassemblyLine>* lines, uint8_t* memory, int& ptr, offs_t &address, int& id, int parentId, Map* map);
+    static void disassemble(std::vector<DisassemblyLine>* lines, uint8_t* memory, int& ptr, offs_t &address, Label* label);
 };
 
 #endif // DISASSEMBLY_BUILDER_H

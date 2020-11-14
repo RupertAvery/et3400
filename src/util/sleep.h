@@ -1,16 +1,5 @@
-#ifndef COMMON_H
-#define COMMON_H
-
-#include <iostream>
-#include <thread>
-
-// struct Delegate {
-//     std::vector<std::function<void()>> funcs;
-//     template<class T> Delegate& operator+=(T mFunc) { funcs.push_back(mFunc); }
-//     void operator()() { for(auto& f : funcs) f(); }
-// };
-
-#define LOG(x) std::cout << x << std::endl;
+#ifndef SLEEP_H
+#define SLEEP_H
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -20,7 +9,7 @@
 static void
 sleep(long long useconds) //const struct timespec *requested_delay)
 {
-	time_t seconds = useconds / 1000000;                // second part
+	time_t seconds = useconds / 1000000;				// second part
 	long int nanoSeconds = (useconds % 1000000) * 1000; // nano seconds part
 	if (seconds > 0)
 		Sleep(seconds * 1000 + nanoSeconds / 1000000); //If more than one second
@@ -57,12 +46,11 @@ sleep(long long useconds) //const struct timespec *requested_delay)
 #else
 static void sleep(long long useconds)
 {
-	struct timespec req = { 0 };
+	struct timespec req = {0};
 	req.tv_sec = useconds / 1000000;
 	req.tv_nsec = useconds * 1000;
 	nanosleep(&req, &req);
 }
 #endif // _WINDOWS_
 
-
-#endif // COMMON_H
+#endif // SLEEP_H

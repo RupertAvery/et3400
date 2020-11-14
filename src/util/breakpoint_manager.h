@@ -1,7 +1,7 @@
 #ifndef BREAKPOINT_MANAGER_H
 #define BREAKPOINT_MANAGER_H
 
-#include "defs.h"
+#include "../common/common_defs.h"
 #include <thread>
 #include <mutex>
 #include <vector>

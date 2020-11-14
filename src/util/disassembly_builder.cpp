@@ -1,7 +1,7 @@
 #include "disassembly_builder.h"
 
 
-void DisassemblyBuilder::disassemble(std::vector<DisassemblyLine>* lines, uint8_t* memory, int& ptr, offs_t &address, int& id, int parentId, Map* map)
+void DisassemblyBuilder::disassemble(std::vector<DisassemblyLine>* lines, uint8_t* memory, int& ptr, offs_t &address, Label* label)
 {
 	DasmResult result = Disassembler::disassemble(&memory[ptr], address);
 	QString opcodes = QString("%1 %2 %3");
@@ -14,49 +14,46 @@ void DisassemblyBuilder::disassemble(std::vector<DisassemblyLine>* lines, uint8_
 	{
 		opcodes = opcodes.arg("  ");
 	}
-	lines->push_back(DisassemblyLine{ address, DisassemblyType::Assembly, opcodes, QString(result.instruction), result.operand, map });
+	lines->push_back(DisassemblyLine{ address, DisassemblyType::Assembly, opcodes, QString(result.instruction), result.operand, label });
 	ptr += result.byteLength;
 	address += result.byteLength;
 }
 
-void DisassemblyBuilder::build(std::vector<DisassemblyLine> *lines, offs_t start, offs_t end, uint8_t* memory, std::vector<Map>* maps)
+void DisassemblyBuilder::build(std::vector<DisassemblyLine> *lines, offs_t start, offs_t end, uint8_t* memory, std::vector<Label>* labels)
 {
 	lines->clear();
 	offs_t address = start;
-	std::vector<Map>::iterator map = maps->begin();
-	bool hasMaps = maps->size() > 0;
+	std::vector<Label>::iterator label = labels->begin();
+	bool hasLabels = labels->size() > 0;
 	//QChar filler = QLatin1Char('0');
 	int ptr = 0;
-	int id = 0;
-	int parentId = -1;
 	int i = 0;
 	int line_count = 0;
 
 	while (address <= end)
 	{
-		if (hasMaps && address > map->start)
+		if (hasLabels && address > label->start)
 		{
-			while (address > map->start)
+			while (address > label->start)
 			{
-				map++;
+				label++;
 			}
 		}
 
-		if (hasMaps && address == map->start)
+		if (hasLabels && address == label->start)
 		{
-			switch (map->type)
+			switch (label->type)
 			{
-			case map_type::DATA:
-				parentId = id;
+			case LabelType::DATA:
 				i = 0;
 				line_count = 0;
-				lines->push_back(DisassemblyLine{ address, DisassemblyType::Comment, QString("; %1").arg(map->comment), NULL, NULL,  &(*map) });
-				while (address <= map->end)
+				lines->push_back(DisassemblyLine{ address, DisassemblyType::Comment, QString("; %1").arg(label->comment), NULL, NULL,  &(*label) });
+				while (address <= label->end)
 				{
 					offs_t save_address = address;
 					// QString data = QString("%1 %2 %3 %4 %5 %6 %7 %8");
 					i = 0;
-					for (; address <= end && address <= map->end && i < 8; i++)
+					for (; address <= end && address <= label->end && i < 8; i++)
 					{
 						// data = data.arg(memory[ptr], 2, 16, QChar('0')).toUpper();
 						address++;
@@ -66,40 +63,38 @@ void DisassemblyBuilder::build(std::vector<DisassemblyLine> *lines, offs_t start
 					// {
 					// 	data = data.arg(" ");
 					// }
-					lines->push_back(DisassemblyLine{ save_address, DisassemblyType::Data, NULL, NULL, NULL, &(*map), i });
+					lines->push_back(DisassemblyLine{ save_address, DisassemblyType::Data, NULL, NULL, NULL, &(*label), i });
 					line_count++;
 				}
 
 				// if (line_count > 1)
 				// {
-				//     lines->push_back(DisassemblyLine{address - 1, DisassemblyType::Comment, QString("; END // %1").arg(map->comment), NULL, NULL});
+				//     lines->push_back(DisassemblyLine{address - 1, DisassemblyType::Comment, QString("; END // %1").arg(label->comment), NULL, NULL});
 				// }
 
 				break;
-			case map_type::ASSEMBLY:
-				parentId = id;
-				i = 0;
+			case LabelType::ASSEMBLY:
 				line_count = 0;
-				lines->push_back(DisassemblyLine{ address, DisassemblyType::Assembly, QString("; %1").arg(map->comment), NULL, NULL, &(*map) });
-				while (address < map->end) {
-					disassemble(lines, memory, ptr, address, id, parentId, &(*map));
+				lines->push_back(DisassemblyLine{ address, DisassemblyType::Assembly, QString("; %1").arg(label->comment), NULL, NULL, &(*label) });
+				while (address < label->end) {
+					disassemble(lines, memory, ptr, address, &(*label));
 				}
 				break;
-			case map_type::COMMENT:
-				lines->push_back(DisassemblyLine{ address, DisassemblyType::Comment, QString("; %1").arg(map->comment), NULL, NULL, &(*map) });
-				disassemble(lines, memory, ptr, address, id, parentId, &(*map));
+			case LabelType::COMMENT:
+				lines->push_back(DisassemblyLine{ address, DisassemblyType::Comment, QString("; %1").arg(label->comment), NULL, NULL, &(*label) });
+				disassemble(lines, memory, ptr, address, &(*label));
 				break;
 			}
 
-			map++;
-			if (map == maps->end())
+			label++;
+			if (label == labels->end())
 			{
-				hasMaps = false;
+				hasLabels = false;
 			}
 		}
 		else
 		{
-			disassemble(lines, memory, ptr, address, id, -1, NULL);
+			disassemble(lines, memory, ptr, address, NULL);
 		}
 	}
 }

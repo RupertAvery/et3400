@@ -5,9 +5,11 @@
 #include "../widgets/display.h"
 #include "../widgets/keypad.h"
 #include "../util/srec.h"
+#include "../util/settings.h"
 #include "about.h"
 #include "debugger.h"
 #include "settings.h"
+#include "tips.h"
 #include "file.h"
 
 #include <fstream>
@@ -37,7 +39,7 @@ public:
 
 private:
   long long last_cycles;
-
+  Settings settings;
   Display *display;
   Keypad *keypad;
   SettingsDialog *settings_dialog;
@@ -46,13 +48,10 @@ private:
 
   void load_ram();
   void save_ram();
-  void load_brk();
-  void save_brk();
-  void load_map();
-  void save_map();
   void show_about();
   void show_settings();
   void show_debugger();
+  void show_tips();
   void updatecps();
   void fps();
 };

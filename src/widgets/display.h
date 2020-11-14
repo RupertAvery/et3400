@@ -1,15 +1,13 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#include "../util/common.h"
-#include "../dev/display_dev.h"
-//#include <thread>
 #include <QBrush>
 #include <QPen>
 #include <QPixmap>
 #include <QWidget>
 // #include <QTimer>
 #include <QAction>
+#include "../dev/display_dev.h"
 
 class Display : public QWidget
 {

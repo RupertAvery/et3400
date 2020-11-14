@@ -1,7 +1,9 @@
 #ifndef MEMORY_MAP_H
 #define MEMORY_MAP_H
-#include "../cpu/defs.h"
+
 #include <map>
+
+#include "../common/common_defs.h"
 
 /*
     Memory mapped devices
@@ -17,8 +19,6 @@
     Everytime a read or write occurs, a call to the top-level device's is_mapped(address) is made, and if it returns false, it gets passed to the next 
     device in the chain.
 */
-
-
 
 /*
   The base class for a memory-mapped device
@@ -51,13 +51,14 @@ public:
     MemoryMapManager();
     ~MemoryMapManager();
 
-    void map(int block, memory_mapped_device *device);
+    void map(memory_mapped_device *device);
     memory_mapped_device *get_block_device(off_t address);
 
     uint8_t read(offs_t addr);
     void write(offs_t addr, uint8_t data);
 
 private:
+    const int BLOCK_SIZE = 1024;
     mapped_memory_block blocks[64];
 };
 

@@ -27,6 +27,7 @@ void DebuggerDialog::stop(bool checked)
 	{
 		pauseAndUpdateDisassembler();
 		update_button_state();
+		disassembly_scrollbar->setValue(disassembly_view->offset);
 	}
 }
 
@@ -35,6 +36,7 @@ void DebuggerDialog::step(bool checked)
 	if (!emu_ptr->get_running())
 	{
 		stepAndUpdateDisassembler();
+		disassembly_scrollbar->setValue(disassembly_view->offset);
 	}
 }
 
@@ -51,46 +53,47 @@ void DebuggerDialog::reset(bool checked)
 
 int DebuggerDialog::count_open_panels()
 {
-	return (toggle_memory_action->isChecked() ? 1 : 0) +
-		   (toggle_disassembly_action->isChecked() ? 1 : 0) +
-		   (toggle_status_action->isChecked() ? 1 : 0);
+	return 1;
+	// return (toggle_memory_action->isChecked() ? 1 : 0) +
+	// 	   (toggle_disassembly_action->isChecked() ? 1 : 0) +
+	// 	   (toggle_status_action->isChecked() ? 1 : 0);
 }
 
 void DebuggerDialog::toggle_memory_panel(bool checked)
 {
-	if (count_open_panels() == 0)
-	{
-		toggle_memory_action->setChecked(true);
-		return;
-	}
+	// if (count_open_panels() == 0)
+	// {
+	// 	toggle_memory_action->setChecked(true);
+	// 	return;
+	// }
 	memory_groupBox->setVisible(checked);
 }
 
 void DebuggerDialog::toggle_disassembly_panel(bool checked)
 {
-	if (count_open_panels() == 0)
-	{
-		toggle_disassembly_action->setChecked(true);
-		return;
-	}
-	disassembly_groupBox->setVisible(checked);
+	// if (count_open_panels() == 0)
+	// {
+	// 	toggle_disassembly_action->setChecked(true);
+	// 	return;
+	// }
+	// disassembly_groupBox->setVisible(checked);
 }
 
 void DebuggerDialog::toggle_status_panel(bool checked)
 {
-	if (count_open_panels() == 0)
-	{
-		toggle_status_action->setChecked(true);
-		return;
-	}
-	status_groupBox->setVisible(checked);
+	// if (count_open_panels() == 0)
+	// {
+	// 	toggle_status_action->setChecked(true);
+	// 	return;
+	// }
+	// status_groupBox->setVisible(checked);
 }
 
 DebuggerDialog::~DebuggerDialog()
 {
 	qDebug() << "Destroying debugger";
 	delete memory_view;
-	delete memmory_scrollbar;
+	delete memory_scrollbar;
 	delete memory_selector;
 	delete disassembly_view;
 	delete disassembly_scrollbar;
@@ -128,14 +131,13 @@ void DebuggerDialog::select_memory_location(int index)
 	uint8_t *memory = device->get_mapped_memory();
 
 	memory_view->set_range(start, end, memory);
+	memory_scrollbar->setValue(0);
 }
 
 void DebuggerDialog::select_disassembly_location(int index)
 {
 	QVariant v = disassembly_selector->itemText(index);
 	QString s = v.value<QString>();
-
-	qDebug() << v;
 
 	int sstart = 0;
 	if (s == "RAM")
@@ -153,17 +155,18 @@ void DebuggerDialog::select_disassembly_location(int index)
 	uint8_t *memory = device->get_mapped_memory();
 
 	disassembly_view->set_range(start, end, memory);
+	disassembly_scrollbar->setValue(0);
 }
 
 void DebuggerDialog::update_memory_scrollbar(int value)
 {
-	memmory_scrollbar->setValue(memmory_scrollbar->value() - value);
+	memory_scrollbar->setValue(memory_scrollbar->value() - value);
 }
 
 void DebuggerDialog::update_memory_scrollbar_max(int value)
 {
-	memmory_scrollbar->setMinimum(0);
-	memmory_scrollbar->setMaximum(value);
+	memory_scrollbar->setMinimum(0);
+	memory_scrollbar->setMaximum(value);
 }
 
 void DebuggerDialog::update_disassembly_scrollbar(int value)
@@ -174,7 +177,7 @@ void DebuggerDialog::update_disassembly_scrollbar(int value)
 void DebuggerDialog::update_disassembly_scrollbar_max(int value)
 {
 	disassembly_scrollbar->setMinimum(0);
-	disassembly_scrollbar->setMaximum(value);
+	disassembly_scrollbar->setMaximum(value - 1);
 }
 
 void DebuggerDialog::set_emulator(et3400emu *emu)
@@ -193,7 +196,6 @@ void DebuggerDialog::set_emulator(et3400emu *emu)
 		memory_selector->setCurrentIndex(0);
 		disassembly_selector->setCurrentIndex(1);
 		select_memory_location(0);
-		select_disassembly_location(1);
 	}
 	update_button_state();
 }
@@ -202,6 +204,7 @@ void DebuggerDialog::breakpoint_handler(bool checked)
 {
 	pauseAndUpdateDisassembler();
 	update_button_state();
+	disassembly_scrollbar->setValue(disassembly_view->offset);
 }
 
 void DebuggerDialog::update_button_state()
@@ -225,34 +228,35 @@ void DebuggerDialog::disassembly_slider_moved(int value)
 
 void DebuggerDialog::keyPressEvent(QKeyEvent *event)
 {
-
-	switch (event->key())
-	{
-	case Qt::Key_F4:
-		if (emu_ptr->get_running())
-		{
-			pauseAndUpdateDisassembler();
-			update_button_state();
-		}
-		break;
-	case Qt::Key_F5:
-		if (!emu_ptr->get_running())
-		{
-			emu_ptr->resume();
-			disassembly_view->clear_current();
-			update_button_state();
-		}
-		break;
-	case Qt::Key_F10:
-		if (!emu_ptr->get_running())
-		{
-			stepAndUpdateDisassembler();
-		}
-		break;
-	case Qt::Key_Escape:
-		emu_ptr->reset();
-		break;
-	}
+	// These are now handled by the toolbar actions
+	//switch (event->key())
+	//{
+	//case Qt::Key_F4:
+	//	if (emu_ptr->get_running())
+	//	{
+	//		pauseAndUpdateDisassembler();
+	//		update_button_state();
+	//	}
+	//	break;
+	//case Qt::Key_F5:
+	//	if (!emu_ptr->get_running())
+	//	{
+	//		emu_ptr->resume();
+	//		disassembly_view->clear_current();
+	//		update_button_state();
+	//	}
+	//	break;
+	//case Qt::Key_F10:
+	//	if (!emu_ptr->get_running())
+	//	{
+	//		stepAndUpdateDisassembler();
+	//	}
+	//	break;
+	//case Qt::Key_Escape:
+	//	emu_ptr->reset();
+	//	break;
+	//}
+	event->ignore();
 };
 
 void DebuggerDialog::pauseAndUpdateDisassembler()
@@ -315,10 +319,51 @@ void DebuggerDialog::add_or_remove_breakpoint(offs_t address)
 	emu_ptr->add_or_remove_breakpoint(address);
 }
 
-
 void DebuggerDialog::load_ram()
 {
 	File::load_ram(this, emu_ptr);
+	after_load_ram();
+}
+
+void DebuggerDialog::save_ram()
+{
+}
+
+void DebuggerDialog::load_breakpoints()
+{
+}
+
+void DebuggerDialog::save_breakpoints()
+{
+}
+
+void DebuggerDialog::load_labels()
+{
+	bool success;
+	QString fileName = QFileDialog::getOpenFileName(this,
+		"Load Labels", "", "Label Files (*.map, *.lbl)");
+	emu_ptr->labels->loadLabels(fileName, success);
+}
+
+void DebuggerDialog::save_labels()
+{
+	bool success;
+	QString fileName = QFileDialog::getSaveFileName(this,
+		"Save Labels", "", "Label Files (*.lbl)");
+	emu_ptr->labels->saveLabels(fileName, 0x0000, 0x03FF, success);
+}
+
+void DebuggerDialog::after_load_ram()
+{
 	refresh();
 	update_button_state();
+	memory_scrollbar->setValue(0);
+
+	QVariant v = disassembly_selector->itemText(disassembly_selector->currentIndex());
+	QString s = v.value<QString>();
+
+	if (s == "RAM")
+	{
+		disassembly_scrollbar->setValue(0);
+	}
 }

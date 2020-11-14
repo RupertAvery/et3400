@@ -1,9 +1,7 @@
 #ifndef STATUS_VIEW_H
 #define STATUS_VIEW_H
 
-#include "../util/common.h"
-#include "../emu/et3400.h"
-#include "../cpu/defs.h"
+#include "../common/common_defs.h"
 //#include <thread>
 #include <QTimer>
 #include <QWidget>

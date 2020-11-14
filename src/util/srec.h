@@ -17,6 +17,7 @@ class SrecReader
 {
 public:
     static bool Read(QString file, std::vector<srec_block> *blocks);
+    static bool Write(QString file, std::vector<srec_block> *blocks);
 };
 
 #endif // SREC_H

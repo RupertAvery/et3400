@@ -1,15 +1,14 @@
 #ifndef KEYPAD_H
 #define KEYPAD_H
 
-#include "../emu/et3400.h"
-#include "../util/common.h"
-#include "../dev/keypad_dev.h"
 #include <thread>
 #include <QPushButton>
 #include <QSize>
 #include <QGridLayout>
 #include <QWidget>
 #include <QIcon>
+#include "../dev/keypad_dev.h"
+
 
 class Keypad : public QWidget
 {

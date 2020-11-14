@@ -146,19 +146,19 @@ void AddLabelDialog::retranslateUi(QDialog *Dialog)
 
 } // retranslateUi
 
-void AddLabelDialog::setLabel(Label label)
+void AddLabelDialog::setLabel(LabelInfo label)
 {
     text_edit->setText(label.text);
     start_edit->setText(QString("$%1").arg(label.start, 4, 16, QChar('0')).toUpper());
     end_edit->setText(QString("$%1").arg(label.end, 4, 16, QChar('0')).toUpper());
 }
 
-Label AddLabelDialog::getLabel()
+LabelInfo AddLabelDialog::getLabel()
 {
     bool ok;
-    return Label{
+    return LabelInfo{
         text_edit->text(),
-        data_radio->isChecked() ? map_type::DATA : map_type::COMMENT,
+        data_radio->isChecked() ? LabelType::DATA : LabelType::COMMENT,
         (offs_t)start_edit->text().replace("$", "0x").toInt(&ok, 0),
         (offs_t)end_edit->text().replace("$", "0x").toInt(&ok, 0),
     };

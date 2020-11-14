@@ -1,5 +1,6 @@
 #include <QDebug>
 #include "status_view.h"
+#include "../emu/et3400.h"
 
 StatusView::StatusView(QWidget *parent)
     : QFrame(parent)
@@ -76,11 +77,11 @@ void StatusView::update()
     {
         QChar filler = QLatin1Char('0');
         CpuStatus status = emu_ptr->get_status();
-        pc_label->setText(QString("%1").arg(status.pc, 4, 16, filler));
-        sp_label->setText(QString("%1").arg(status.sp, 4, 16, filler));
-        ix_label->setText(QString("%1").arg(status.ix, 4, 16, filler));
-        acca_label->setText(QString("%1").arg(status.acca, 2, 16, filler));
-        accb_label->setText(QString("%1").arg(status.accb, 2, 16, filler));
+        pc_label->setText(QString("%1").arg(status.pc, 4, 16, filler).toUpper());
+        sp_label->setText(QString("%1").arg(status.sp, 4, 16, filler).toUpper());
+        ix_label->setText(QString("%1").arg(status.ix, 4, 16, filler).toUpper());
+        acca_label->setText(QString("%1").arg(status.acca, 2, 16, filler).toUpper());
+        accb_label->setText(QString("%1").arg(status.accb, 2, 16, filler).toUpper());
         cc_label->setText(QString("11%1%2%3%4%5%6")
                               .arg(status.cc >> 5 & 1)
                               .arg(status.cc >> 4 & 1)

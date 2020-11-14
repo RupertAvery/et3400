@@ -1,19 +1,21 @@
 #include "mainwindow.h"
 
-
 using namespace std;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+  settings = load_settings();
+
   settings_dialog = new SettingsDialog(this);
   debugger_dialog = new DebuggerDialog;
 
   // Menu
 
+  QAction *debugger_action = new QAction("&Debugger", this);
   QAction *settings_action = new QAction("&Settings", this);
   QAction *about_action = new QAction("&About", this);
-  QAction *debugger_action = new QAction("&Debugger", this);
+  QAction *tips_action = new QAction("Show &Tips", this);
 
   QAction *openRam_action = new QAction("&Load RAM", this);
   openRam_action->setShortcut(Qt::CTRL + Qt::Key_O);
@@ -40,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
   QMenu *help_menu;
   help_menu = menuBar()->addMenu("&Help");
   help_menu->addAction(about_action);
+  help_menu->addAction(tips_action);
 
   display = new Display;
   keypad = new Keypad;
@@ -51,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(debugger_action, &QAction::triggered, this, &MainWindow::show_debugger);
   connect(settings_action, &QAction::triggered, this, &MainWindow::show_settings);
   connect(about_action, &QAction::triggered, this, &MainWindow::show_about);
+  connect(tips_action, &QAction::triggered, this, &MainWindow::show_tips);
 
   // Layout
   QGridLayout *mainLayout = new QGridLayout;
@@ -77,10 +81,21 @@ MainWindow::MainWindow(QWidget *parent)
 
   //setAttribute(Qt::WA_DeleteOnClose);
   //connect( widget, SIGNAL(destroyed(QObject*)), this, SLOT(widgetDestroyed(QObject*)) );
+  if (settings.showTips)
+  {
+    show_tips();
+  }
 
   QTimer *timer = new QTimer(this);
   connect(timer, &QTimer::timeout, this, QOverload<>::of(&MainWindow::fps));
   timer->start(1000);
+}
+
+void MainWindow::show_tips()
+{
+  Tips *tips = new Tips(this);
+  tips->set_settings(&settings);
+  tips->show();
 }
 
 void MainWindow::fps()
@@ -121,31 +136,13 @@ void MainWindow::show_settings()
 void MainWindow::load_ram()
 {
   File::load_ram(this, emu);
-  debugger_dialog->refresh();
-  debugger_dialog->update_button_state();
+  debugger_dialog->after_load_ram();
 }
-
 
 void MainWindow::save_ram()
 {
+  File::save_ram(this, emu);
 }
-
-void MainWindow::load_brk()
-{
-}
-
-void MainWindow::save_brk()
-{
-}
-
-void MainWindow::load_map()
-{
-}
-
-void MainWindow::save_map()
-{
-}
-
 
 void MainWindow::updatecps()
 {

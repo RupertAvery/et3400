@@ -1,7 +1,8 @@
 #ifndef ADD_LABEL_H
 #define ADD_LABEL_H
-#include "../cpu/defs.h"
-#include "../util/map.h"
+
+#include "../common/common_defs.h"
+#include "../util/label.h"
 
 #include <QVariant>
 #include <QApplication>
@@ -16,10 +17,10 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-struct Label
+struct LabelInfo
 {
     QString text;
-    map_type type;
+    LabelType type;
     offs_t start;
     offs_t end;
 };
@@ -47,8 +48,8 @@ public:
     QLabel *description_label;
     QDialogButtonBox *buttonBox;
 
-    void setLabel(Label label);
-    Label getLabel();
+    void setLabel(LabelInfo label);
+    LabelInfo getLabel();
 
 private:
     void setupUi(QDialog *Dialog);

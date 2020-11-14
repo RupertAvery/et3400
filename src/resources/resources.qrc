@@ -36,5 +36,6 @@
         <file>buttons/StepIntoArrow_16x.png</file>
         <file>buttons/Stop_16x.png</file>
         <file>rom/monitor.bin</file>
+        <file>rom/monitor.map</file>
     </qresource>
 </RCC>
