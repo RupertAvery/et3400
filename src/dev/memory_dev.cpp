@@ -1,4 +1,5 @@
 #include "memory_dev.h"
+#include "string.h"
 
 memory_device::memory_device(offs_t start, size_t size, bool readonly)
 {

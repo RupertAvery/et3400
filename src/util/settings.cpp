@@ -28,6 +28,13 @@ QString getSettingsPath(bool &success)
     return spath;
 }
 
+#else
+
+QString getSettingsPath(bool &success)
+{
+    return QString("~/.config/et3400/settings.ini");
+}
+
 #endif
 
 Settings load_settings()
