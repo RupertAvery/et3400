@@ -1,8 +1,8 @@
 # ET-3400 Emulator
 
-This is an ET-3400 Trainer Emulator built in C++.
+This is an [ET-3400 Trainer](http://www.oldcomputermuseum.com/heathkit_et3400.html) Emulator built in C++.
 
-This is a port of the emulator build in C# (https://github.com/RupertAvery/et3400-emu) with the goal of better performance and speed accuracy, as well as portability, with Windows and Linux targets.
+This is a port of the emulator built in C# (https://github.com/RupertAvery/et3400-emu) with the goal of better performance and speed accuracy, as well as portability, with Windows and Linux targets.
 
 It emulates the Motorola 6800 CPU, the 6 7-segment LED displays and the hex keypad. The ROM contains the Monitor program for the Heathkit ET-3400 Trainer, which interacts with the keypad and display to run programs and view CPU registers.
 
@@ -12,6 +12,7 @@ The emulator also features a debugger which allows you to stop emulation and ste
 
 ![debugger](https://user-images.githubusercontent.com/1910659/99161744-44bbbd80-2730-11eb-8ce4-54aec7b27489.png)
 
+The manual for this trainer is available here: https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer
 
 ## Windows
 
