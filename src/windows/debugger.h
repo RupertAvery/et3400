@@ -22,6 +22,7 @@
 #include "../widgets/memory_view.h"
 #include "../widgets/disassembly_view.h"
 #include "../widgets/status_view.h"
+#include "../util/settings.h"
 #include "file.h"
 
 #include <QObject>
@@ -46,85 +47,88 @@
 
 class DebuggerDialog : public QDialog
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    DebuggerDialog();
-    DebuggerDialog(QWidget *parent);
-    ~DebuggerDialog();
-    void set_emulator(et3400emu *emu);
-    void update_button_state();
-    void refresh();
-    void after_load_ram();
+	DebuggerDialog();
+	DebuggerDialog(QWidget* parent);
+	~DebuggerDialog();
+	void set_emulator(et3400emu* emu);
+	void set_settings(Settings* settings);
+	void update_button_state();
+	void refresh();
+	void after_load_ram();
 
 protected:
-    void keyPressEvent(QKeyEvent *event) override;
-    void keyReleaseEvent(QKeyEvent *event) override;
+	void keyPressEvent(QKeyEvent* event) override;
+	void keyReleaseEvent(QKeyEvent* event) override;
 
 private:
-    QSlider *slider;
-    QLabel *label;
-    QGroupBox *memory_groupBox;
-    QGroupBox *disassembly_groupBox;
-    QGroupBox *status_groupBox;
-    QAction *breakpoint_handler_action;
-    QScrollBar *memory_scrollbar;
-    QScrollBar *disassembly_scrollbar;
-    QComboBox *memory_selector;
-    QComboBox *disassembly_selector;
-    QToolButton *panel_selector;
-    QToolButton *start_button;
-    QToolButton *stop_button;
-    QToolButton *step_button;
-    QToolButton *reset_button;
-    QAction *toggle_memory_action;
-    QAction *toggle_disassembly_action;
-    QAction *toggle_status_action;
+	QSlider* slider;
+	QLabel* label;
+	QGroupBox* memory_groupBox;
+	QGroupBox* disassembly_groupBox;
+	QGroupBox* status_groupBox;
+	QAction* breakpoint_handler_action;
+	QScrollBar* memory_scrollbar;
+	QScrollBar* disassembly_scrollbar;
+	QComboBox* memory_selector;
+	QComboBox* disassembly_selector;
+	QToolButton* panel_selector;
+	QToolButton* start_button;
+	QToolButton* stop_button;
+	QToolButton* step_button;
+	QToolButton* reset_button;
+	QAction* toggle_memory_action;
+	QAction* toggle_disassembly_action;
+	QAction* toggle_status_action;
 
-    MemoryView *memory_view;
-    DisassemblyView *disassembly_view;
-    StatusView *status_view;
+	MemoryView* memory_view;
+	DisassemblyView* disassembly_view;
+	StatusView* status_view;
 
-    et3400emu *emu_ptr;
-    bool emu_set;
+	et3400emu* emu_ptr;
+	Settings* settings;
 
-    void start(bool checked);
-    void stop(bool checked);
-    void step(bool checked);
-    void reset(bool checked);
+	bool emu_set;
 
-    void setupUI();
-    void update_memory_scrollbar(int value);
-    void update_disassembly_scrollbar(int value);
-    void update_memory_scrollbar_max(int value);
-    void update_disassembly_scrollbar_max(int value);
+	void start(bool checked);
+	void stop(bool checked);
+	void step(bool checked);
+	void reset(bool checked);
 
-    void memory_slider_moved(int value);
-    void disassembly_slider_moved(int value);
+	void setupUI();
+	void update_memory_scrollbar(int value);
+	void update_disassembly_scrollbar(int value);
+	void update_memory_scrollbar_max(int value);
+	void update_disassembly_scrollbar_max(int value);
 
-    void select_memory_location(int index);
-    void select_disassembly_location(int index);
+	void memory_slider_moved(int value);
+	void disassembly_slider_moved(int value);
 
-    int count_open_panels();
-    void toggle_memory_panel(bool checked);
-    void toggle_disassembly_panel(bool checked);
-    void toggle_status_panel(bool checked);
+	void select_memory_location(int index);
+	void select_disassembly_location(int index);
 
-    void pauseAndUpdateDisassembler();
-    void stepAndUpdateDisassembler();
+	int count_open_panels();
+	void toggle_memory_panel(bool checked);
+	void toggle_disassembly_panel(bool checked);
+	void toggle_status_panel(bool checked);
 
-    void add_breakpoint(offs_t address);
-    void remove_breakpoint(offs_t address);
-    void add_or_remove_breakpoint(offs_t address);
+	void pauseAndUpdateDisassembler();
+	void stepAndUpdateDisassembler();
 
-    void breakpoint_handler(bool checked);
+	void add_breakpoint(offs_t address);
+	void remove_breakpoint(offs_t address);
+	void add_or_remove_breakpoint(offs_t address);
 
-    void load_ram();
-    void save_ram();
-    void load_breakpoints();
-    void save_breakpoints();
-    void load_labels();
-    void save_labels();
+	void breakpoint_handler(bool checked);
+
+	void load_ram();
+	void save_ram();
+	void load_breakpoints();
+	void save_breakpoints();
+	void load_labels();
+	void save_labels();
 };
 
 #endif // DEBUGGER_H

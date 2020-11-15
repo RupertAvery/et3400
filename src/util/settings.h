@@ -4,6 +4,7 @@
 struct Settings
 {
     bool showTips;
+    bool showMemoryView;
 };
 
 Settings load_settings();

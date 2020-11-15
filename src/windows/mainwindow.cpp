@@ -309,6 +309,8 @@ void MainWindow::execute_emu()
   emu->loadMap();
 
   debugger_dialog->set_emulator(emu);
+  debugger_dialog->set_settings(&settings);
+
   keypad->device->on_reset_press = [this] { emu->reset(); };
   emu->on_render_frame = [this] { display->update_display(); };
 

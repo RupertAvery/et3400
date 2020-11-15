@@ -33,7 +33,7 @@ QString getSettingsPath(bool &success)
 Settings load_settings()
 {
 
-    bool showTips = false;
+    Settings settings{ false, false };
 
     bool success;
     QString settingsFile = getSettingsPath(success);
@@ -60,7 +60,11 @@ Settings load_settings()
                 QStringList list1 = line.split(QLatin1Char('='));
                 if (list1.at(0) == "ShowTips" && list1.at(1) == "true")
                 {
-                    showTips = true;
+                    settings.showTips = true;
+                }
+                else if (list1.at(0) == "ShowMemoryView" && list1.at(1) == "true")
+                {
+                    settings.showMemoryView = true;
                 }
                 qDebug() << list1;
             }
@@ -69,7 +73,7 @@ Settings load_settings()
         file.close();
     }
 
-    return Settings{showTips};
+    return settings;
 };
 
 void save_settings(Settings *settings)
@@ -102,6 +106,8 @@ void save_settings(Settings *settings)
         QTextStream out(&file);
 
         out << "ShowTips=" << (settings->showTips ? "true" : "false");
+        out << "\r\n";
+        out << "ShowMemoryView=" << (settings->showMemoryView ? "true" : "false");
 
         out.flush();
 

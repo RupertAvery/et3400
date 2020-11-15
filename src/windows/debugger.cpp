@@ -67,6 +67,8 @@ void DebuggerDialog::toggle_memory_panel(bool checked)
 	// 	return;
 	// }
 	memory_groupBox->setVisible(checked);
+	settings->showMemoryView = checked;
+	save_settings(settings);
 }
 
 void DebuggerDialog::toggle_disassembly_panel(bool checked)
@@ -200,6 +202,13 @@ void DebuggerDialog::set_emulator(et3400emu *emu)
 	update_button_state();
 }
 
+void DebuggerDialog::set_settings(Settings *settings)
+{
+	this->settings = settings;
+	memory_groupBox->setVisible(settings->showMemoryView);
+	toggle_memory_action->setChecked(settings->showMemoryView);
+}
+
 void DebuggerDialog::breakpoint_handler(bool checked)
 {
 	pauseAndUpdateDisassembler();
@@ -327,29 +336,60 @@ void DebuggerDialog::load_ram()
 
 void DebuggerDialog::save_ram()
 {
+	File::save_ram(this, emu_ptr);
 }
 
 void DebuggerDialog::load_breakpoints()
 {
+	bool success;
+	QString fileName = QFileDialog::getOpenFileName(this,
+													"Load Breakpoints", "", "Breakpoint Files (*.brk)");
+
+	if (fileName == nullptr)
+		return;
+
+	emu_ptr->stop();
+	emu_ptr->breakpoints->loadBreakpoints(fileName, success);
+	disassembly_view->refresh();
+	emu_ptr->start();
 }
 
 void DebuggerDialog::save_breakpoints()
 {
+	bool success;
+	QString fileName = QFileDialog::getSaveFileName(this,
+													"Save Breakpoints", "", "Breakpoint Files (*.brk)");
+
+	if (fileName == nullptr)
+		return;
+
+	emu_ptr->breakpoints->saveBreakpoints(fileName, success);
 }
 
 void DebuggerDialog::load_labels()
 {
 	bool success;
 	QString fileName = QFileDialog::getOpenFileName(this,
-		"Load Labels", "", "Label Files (*.map, *.lbl)");
+													"Load Labels", "", "Label Files (*.map, *.lbl)");
+
+	if (fileName == nullptr)
+		return;
+
+	emu_ptr->stop();
 	emu_ptr->labels->loadLabels(fileName, success);
+	disassembly_view->refresh();
+	emu_ptr->start();
 }
 
 void DebuggerDialog::save_labels()
 {
 	bool success;
 	QString fileName = QFileDialog::getSaveFileName(this,
-		"Save Labels", "", "Label Files (*.lbl)");
+													"Save Labels", "", "Label Files (*.lbl)");
+
+	if (fileName == nullptr)
+		return;
+
 	emu_ptr->labels->saveLabels(fileName, 0x0000, 0x03FF, success);
 }
 

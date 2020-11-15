@@ -33,7 +33,13 @@ void LabelManager::addLabel(Label label)
 	bool bInserted = false;
 	while (current != labels->end())
 	{
-		if (current->start > label.start)
+		if (current->start == label.start)
+		{
+			current = labels->erase(current);
+			labels->insert(current, label);
+			break;
+		}
+		else if (current->start > label.start)
 		{
 			labels->insert(current, label);
 			bInserted = true;
@@ -44,6 +50,20 @@ void LabelManager::addLabel(Label label)
 	if (!bInserted)
 	{
 		labels->push_back(label);
+	}
+}
+
+void LabelManager::clearRamLabels()
+{
+	std::vector<Label>::iterator current = labels->begin();
+
+	while (current != labels->end())
+	{
+		if (current->start < 0x0400)
+		{
+			current = labels->erase(current);
+		}
+		current++;
 	}
 }
 
@@ -76,9 +96,18 @@ void LabelManager::loadLabels(QString path, bool& success)
 void LabelManager::saveLabels(QString path, uint32_t start, uint32_t end, bool& success)
 {
 	std::vector<Label> filteredLabels;
-	std::copy_if(labels->begin(), labels->end(), std::back_inserter(filteredLabels), [](Label label, uint32_t start, uint32_t end) {
-		return label.start >= start && label.end <= end;
-		});
+	std::vector<Label>::iterator current = labels->begin();
+
+	while (current != labels->end())
+	{
+		if ((*current).start >= start && (*current).end <= end)
+		{
+			filteredLabels.push_back((*current));
+			break;
+		}
+		current++;
+	}
+
 	LabelReader::Write(path, &filteredLabels, success);
 }
 

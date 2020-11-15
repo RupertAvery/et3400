@@ -74,15 +74,15 @@ bool SrecReader::Write(QString path, std::vector<srec_block> *blocks)
     {
         uint8_t checksum = (*block).bytecount + (*block).address >> 8 & 0xFF + (*block).address & 0xFF;
         out << "S1"
-            << QString("%1").arg((*block).bytecount, 2, 16, QChar('0'))
-            << QString("%1").arg((*block).address, 4, 16, QChar('0'));
+            << QString("%1").arg((*block).bytecount + 3, 2, 16, QChar('0')).toUpper()
+            << QString("%1").arg((*block).address, 4, 16, QChar('0')).toUpper();
         for (int i = 0; i < (*block).bytecount; i++)
         {
             checksum += (*block).data[i];
-            out << QString("%1").arg((*block).data[i], 2, 16, QChar('0'));
+            out << QString("%1").arg((*block).data[i], 2, 16, QChar('0')).toUpper();
         }
         checksum = ~(checksum & 0xFF);
-        out << QString("%1").arg(checksum, 2, 16, QChar('0'));
+        out << QString("%1").arg(checksum, 2, 16, QChar('0')).toUpper();
         out << "\r\n";
         block++;
     }

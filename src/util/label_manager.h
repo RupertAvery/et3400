@@ -15,6 +15,7 @@ public:
     void removeLabel(Label *label);
     void loadLabels(QString path, bool &success);
     void saveLabels(QString path, uint32_t start, uint32_t end, bool &success);
+    void clearRamLabels();
 
 private:
     std::vector<Label> *labels;

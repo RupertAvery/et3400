@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0.0)
 set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
 project(et3400 VERSION 0.1.0)
 
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
@@ -41,8 +42,10 @@ set(EMUSRC
     )
 
 set(TOOLSRC 
+    src/util/csv.cpp 
     src/util/srec.cpp 
     src/util/label.cpp 
+    src/util/breakpoint.cpp 
     src/util/label_manager.cpp  
     src/util/disassembly_builder.cpp 
     src/util/breakpoint_manager.cpp 
@@ -64,6 +67,11 @@ add_executable(et3400
     ${SOURCES} 
     ${PROJECT_RESOURCES}
     )
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+  set_property(TARGET et3400 PROPERTY WIN32_EXECUTABLE true)
+endif()
+
 
 target_link_libraries(et3400 
     PRIVATE 

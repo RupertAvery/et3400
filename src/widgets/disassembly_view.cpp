@@ -114,6 +114,8 @@ void DisassemblyView::bufferDraw()
 
 	QColor white = QColor("#FFFFFF");
 
+	//emu_ptr->breakpoints->lock();
+
 	while (ctr < offset + visible_items && ctr - visible_items + 1 < max_vscroll)
 	{
 		// Default colors
@@ -181,16 +183,22 @@ void DisassemblyView::bufferDraw()
 			operand_color = white;
 		}
 
-		painter.setPen(address_color);
-		painter.drawText(20, y, QString("$%1:").arg(line[ctr].address, 4, 16, QChar('0')).toUpper());
-
 		if (is_comment)
 		{
+			//painter.setPen(address_color);
+			//painter.drawText(20, y, QString("$%1:").arg(line[ctr].address, 4, 16, QChar('0')).toUpper());
+
+			//painter.setPen(opcode_color);
+			//painter.drawText(90, y, line[ctr].opcodes);
+
 			painter.setPen(opcode_color);
-			painter.drawText(90, y, line[ctr].opcodes);
+			painter.drawText(20, y, line[ctr].opcodes);
 		}
 		else
 		{
+			painter.setPen(address_color);
+			painter.drawText(20, y, QString("$%1:").arg(line[ctr].address, 4, 16, QChar('0')).toUpper());
+
 			painter.setPen(opcode_color);
 
 			if (is_data)
@@ -230,6 +238,9 @@ void DisassemblyView::bufferDraw()
 		ctr++;
 		y += item_height;
 	}
+
+	//emu_ptr->breakpoints->unlock();
+
 	painter.restore();
 }
 
@@ -462,11 +473,12 @@ void DisassemblyView::add_label(DisassemblyLine* line)
 		LabelInfo label = add_label.getLabel();
 
 		emu_ptr->labels->addLabel(Label{ label.start, label.end, label.type, label.text });
+
 		DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
 
-		// DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
+		clear_selected();
 
-		redraw();
+		resizeEvent(new QResizeEvent(size(), size()));
 	}
 }
 
@@ -480,8 +492,12 @@ void DisassemblyView::remove_label(DisassemblyLine* line)
 	if (result == QDialog::DialogCode::Accepted)
 	{
 		emu_ptr->labels->removeLabel(line->label);
+
 		DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
-		redraw();
+
+		clear_selected();
+
+		resizeEvent(new QResizeEvent(size(), size()));
 	}
 }
 

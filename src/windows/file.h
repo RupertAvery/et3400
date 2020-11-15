@@ -1,7 +1,6 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include "../util/srec.h"
 #include "../emu/et3400.h"
 #include <QObject>
 #include <QString>

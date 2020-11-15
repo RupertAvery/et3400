@@ -43,8 +43,8 @@ void DebuggerDialog::setupUI()
     QAction *openBrk_action = new QAction("Load Breakpoints", this);
     QAction *saveBrk_action = new QAction("Save Breakpoints", this);
 
-    QAction *openMap_action = new QAction("Load Map", this);
-    QAction *saveMap_action = new QAction("Save Map", this);
+    QAction *openMap_action = new QAction("Load Labels (RAM)", this);
+    QAction *saveMap_action = new QAction("Save Labels (RAM)", this);
 
     QToolButton *file_button = new QToolButton(toolbar);
     file_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
@@ -62,6 +62,11 @@ void DebuggerDialog::setupUI()
     file_button->setMenu(file_menu);
 
     connect(openRam_action, &QAction::triggered, this, &DebuggerDialog::load_ram);
+    connect(saveRam_action, &QAction::triggered, this, &DebuggerDialog::save_ram);
+    connect(openBrk_action, &QAction::triggered, this, &DebuggerDialog::load_breakpoints);
+    connect(saveBrk_action, &QAction::triggered, this, &DebuggerDialog::save_breakpoints);
+    connect(openMap_action, &QAction::triggered, this, &DebuggerDialog::load_labels);
+    connect(saveMap_action, &QAction::triggered, this, &DebuggerDialog::save_labels);
 
     toolbar->addWidget(file_button);
     toolbar->addSeparator();

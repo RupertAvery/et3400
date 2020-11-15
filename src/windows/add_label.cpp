@@ -6,7 +6,7 @@ AddLabelDialog::AddLabelDialog() : QDialog(0, Qt::WindowTitleHint | Qt::WindowSy
 
     this->setStyleSheet("QLabel { font-size:12px; height: 20px }");
 
-    setFixedSize(QSize(350, 150));
+    setFixedSize(QSize(350, 250));
     setWindowTitle("Add Label");
 }
 
