@@ -5,7 +5,7 @@
 #include "../emu/et3400.h"
 #include "../dev/memory_map.h"
 #include "../dasm/disassembler.h"
-#include "../windows/add_label.h"
+#include "../windows/label.h"
 #include "../windows/remove_label.h"
 //#include <thread>
 #include <vector>
@@ -38,20 +38,24 @@ public:
 	~DisassemblyView();
 	void scroll(int steps);
 	void scrollTo(int value);
-	void set_emulator(et3400emu* emu);
-	void set_range(offs_t start, offs_t end, uint8_t* memory);
-	void set_current(offs_t address);
-	void clear_current();
-	void clear_selected();
+	void setEmulator(et3400emu* emu);
+	void setRange(offs_t start, offs_t end, uint8_t* memory);
+	void setCurrent(offs_t address);
+	void setSelected(offs_t address);
+	void clearCurrent();
+	void clearSelected();
+
 	void refresh();
+	void addLabel();
+	void ensureVisible(offs_t address);
 
 signals:
-	void on_scroll(int steps);
-	void on_set_current(int offset);
-	void on_size(int max);
-	void add_breakpoint(offs_t address);
-	void remove_breakpoint(offs_t address);
-	void add_or_remove_breakpoint_signal(offs_t address);
+	void onScroll(int steps);
+	void onOffsetUpdated(int offset);
+	void onSize(int max);
+	void onAddBreakpoint(offs_t address);
+	void onRemoveBreakpoint(offs_t address);
+	void onAddorRemoveBreakpoint(offs_t address);
 
 public slots:
 	void redraw();
@@ -85,13 +89,15 @@ private:
 	int selected;
 	int current;
 
-	DisassemblyLine find_line(offs_t address);
-	void add_or_remove_breakpoint(int line_number);
+	DisassemblyLine findLine(offs_t address);
+	void addOrRemoveBreakpoint(int line_number);
 	void bufferDraw();
 	void showContextMenu(const QPoint& pos);
-	void adjust_selected();
-	void add_label(DisassemblyLine* line);
-	void remove_label(DisassemblyLine* line);
+	void adjustSelected(int direction);
+
+	void addLabel(DisassemblyLine* line);
+	void editLabel(DisassemblyLine* line);
+	void removeLabel(DisassemblyLine* line);
 };
 
 #endif // DISASSEMBLYVIEW_H

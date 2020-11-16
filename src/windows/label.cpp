@@ -1,6 +1,6 @@
-#include "add_label.h"
+#include "label.h"
 
-AddLabelDialog::AddLabelDialog() : QDialog(0, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
+LabelDialog::LabelDialog() : QDialog(0, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
     setupUi(this);
 
@@ -10,7 +10,7 @@ AddLabelDialog::AddLabelDialog() : QDialog(0, Qt::WindowTitleHint | Qt::WindowSy
     setWindowTitle("Add Label");
 }
 
-void AddLabelDialog::setupUi(QDialog *Dialog)
+void LabelDialog::setupUi(QDialog *Dialog)
 {
     mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(10);
@@ -76,7 +76,6 @@ void AddLabelDialog::setupUi(QDialog *Dialog)
     end_edit = new QLineEdit(this);
     gridLayout->addWidget(end_edit, 2, 2, 1, 1);
 
-
     description_label = new QLabel(this);
     description_label->setWordWrap(true);
 
@@ -103,8 +102,8 @@ void AddLabelDialog::setupUi(QDialog *Dialog)
 
     setLayout(mainLayout);
 
-    QObject::connect(comment_radio, &QRadioButton::clicked, this, &AddLabelDialog::set_comment);
-    QObject::connect(data_radio, &QRadioButton::clicked, this, &AddLabelDialog::set_data);
+    QObject::connect(comment_radio, &QRadioButton::clicked, this, &LabelDialog::set_comment);
+    QObject::connect(data_radio, &QRadioButton::clicked, this, &LabelDialog::set_data);
 
     retranslateUi(Dialog);
     QObject::connect(buttonBox, SIGNAL(accepted()), Dialog, SLOT(accept()));
@@ -113,10 +112,10 @@ void AddLabelDialog::setupUi(QDialog *Dialog)
     QMetaObject::connectSlotsByName(Dialog);
 
     comment_radio->setChecked(true);
-    set_comment();
+
 } // setupUi
 
-void AddLabelDialog::set_comment(bool checked)
+void LabelDialog::set_comment(bool checked)
 {
     start_label->setText(QApplication::translate("Dialog", "Address", nullptr));
     end_label->setText(QApplication::translate("Dialog", "End", nullptr));
@@ -125,7 +124,7 @@ void AddLabelDialog::set_comment(bool checked)
     description_label->setText("Add a comment at the specified address. This does not affect disassembly.");
 }
 
-void AddLabelDialog::set_data(bool checked)
+void LabelDialog::set_data(bool checked)
 {
     start_label->setText(QApplication::translate("Dialog", "Start", nullptr));
     end_label->setVisible(true);
@@ -133,7 +132,7 @@ void AddLabelDialog::set_data(bool checked)
     description_label->setText("Mark the range as data, preventing the disassembler from processing it as code");
 }
 
-void AddLabelDialog::retranslateUi(QDialog *Dialog)
+void LabelDialog::retranslateUi(QDialog *Dialog)
 {
     Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", nullptr));
 
@@ -146,14 +145,31 @@ void AddLabelDialog::retranslateUi(QDialog *Dialog)
 
 } // retranslateUi
 
-void AddLabelDialog::setLabel(LabelInfo label)
+void LabelDialog::setLabel(LabelInfo label, LabelDialogMode mode)
 {
+    if (mode == LabelDialogMode::Edit)
+    {
+        setWindowTitle("Edit Label");
+        if (label.type == LabelType::DATA) {
+            set_data();
+        }
+        else {
+            set_comment();
+        }
+    }
+    else {
+        label.type = LabelType::COMMENT;
+        set_comment();
+    }
     text_edit->setText(label.text);
+
+    data_radio->setChecked(label.type == LabelType::DATA);
+    comment_radio->setChecked(label.type == LabelType::COMMENT);
     start_edit->setText(QString("$%1").arg(label.start, 4, 16, QChar('0')).toUpper());
     end_edit->setText(QString("$%1").arg(label.end, 4, 16, QChar('0')).toUpper());
 }
 
-LabelInfo AddLabelDialog::getLabel()
+LabelInfo LabelDialog::getLabel()
 {
     bool ok;
     return LabelInfo{

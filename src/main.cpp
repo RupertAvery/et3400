@@ -6,8 +6,6 @@ int main(int argc, char* argv[])
 {
 	QApplication app(argc, argv);
 
- 	//qRegisterMetaType<MemoryLocation>();
-
 	MainWindow window;
 
 	window.setWindowTitle("ET-3400 Emulator");

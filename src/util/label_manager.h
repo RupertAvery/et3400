@@ -16,9 +16,11 @@ public:
     void loadLabels(QString path, bool &success);
     void saveLabels(QString path, uint32_t start, uint32_t end, bool &success);
     void clearRamLabels();
+    bool getIsDirty();
 
 private:
-    std::vector<Label> *labels;
+    std::vector<Label> *_labels;
+    bool _isDirty;
 };
 
 #endif // LABEL_MANAGER_H

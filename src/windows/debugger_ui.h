@@ -2,6 +2,7 @@
 #define DEBUGGER_UI_H
 
 #include "debugger.h"
+#include "label.h"
 
 void DebuggerDialog::setupUI()
 {
@@ -12,6 +13,21 @@ void DebuggerDialog::setupUI()
 
     // QLabel *disassembly_label = new QLabel("Disassembly");
     // disassembly_label->setStyleSheet("margin: 0px 5px 0px 5px;");
+
+    labels_selector = new QToolButton(toolbar);
+    labels_selector->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    labels_selector->setText("Labels   ");
+    labels_selector->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
+
+    add_label_action = new QAction("Add Label", this); 
+    connect(add_label_action, &QAction::triggered, this, &DebuggerDialog::add_label);
+
+    MakeTriggeredAction(goto_label_action, "Goto Label", Qt::CTRL + Qt::Key_G, goto_label);
+
+    QMenu *labels_selector_menu = new QMenu(labels_selector);
+    labels_selector_menu->addAction(add_label_action);
+    labels_selector_menu->addAction(goto_label_action);
+    labels_selector->setMenu(labels_selector_menu);
 
     MakeButton(start_button, "Start (F5)", ":/buttons/Run_16x.png", Qt::Key_F5, start);
     MakeButton(stop_button, "Stop (F4)", ":/buttons/Stop_16x.png", Qt::Key_F4, stop);
@@ -26,7 +42,7 @@ void DebuggerDialog::setupUI()
     QMenu *panel_selector_menu = new QMenu(panel_selector);
 
     // MakeAction(toggle_disassembly_action, "Disassembly", Qt::CTRL + Qt::Key_2, toggle_disassembly_panel);
-    MakeAction(toggle_memory_action, "Memory", Qt::CTRL + Qt::Key_M, toggle_memory_panel);
+    MakeToggledAction(toggle_memory_action, "Memory", Qt::CTRL + Qt::Key_M, toggle_memory_panel);
     // MakeAction(toggle_status_action, "Status", Qt::CTRL + Qt::Key_3, toggle_status_panel);
 
     panel_selector_menu->addAction(toggle_memory_action);
@@ -76,6 +92,7 @@ void DebuggerDialog::setupUI()
     toolbar->addWidget(reset_button);
     toolbar->addSeparator();
     toolbar->addWidget(panel_selector);
+    toolbar->addWidget(labels_selector);
 
     memory_groupBox = new QGroupBox("Memory", this);
     memory_groupBox->setMaximumWidth(380);
@@ -155,19 +172,19 @@ void DebuggerDialog::setupUI()
     // this->setStyleSheet("QLabel { font-size:12px; height: 20px }");
 
     connect(memory_view, &MemoryView::on_scroll, this, &DebuggerDialog::update_memory_scrollbar);
-    connect(disassembly_view, &DisassemblyView::on_scroll, this, &DebuggerDialog::update_disassembly_scrollbar);
+    connect(disassembly_view, &DisassemblyView::onScroll, this, &DebuggerDialog::adjustDisassemblyScrollbar);
 
     connect(memory_view, &MemoryView::on_size, this, &DebuggerDialog::update_memory_scrollbar_max);
-    connect(disassembly_view, &DisassemblyView::on_size, this, &DebuggerDialog::update_disassembly_scrollbar_max);
+    connect(disassembly_view, &DisassemblyView::onSize, this, &DebuggerDialog::update_disassembly_scrollbar_max);
 
-    connect(disassembly_view, &DisassemblyView::on_set_current, this, &DebuggerDialog::update_disassembly_scrollbar);
+    connect(disassembly_view, &DisassemblyView::onOffsetUpdated, this, &DebuggerDialog::setDisassemblyScrollbar);
 
     connect(memory_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_memory_location);
     connect(disassembly_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_disassembly_location);
 
-    connect(disassembly_view, &DisassemblyView::add_breakpoint, this, &DebuggerDialog::add_breakpoint);
-    connect(disassembly_view, &DisassemblyView::remove_breakpoint, this, &DebuggerDialog::remove_breakpoint);
-    connect(disassembly_view, &DisassemblyView::add_or_remove_breakpoint_signal, this, &DebuggerDialog::add_or_remove_breakpoint);
+    connect(disassembly_view, &DisassemblyView::onAddBreakpoint, this, &DebuggerDialog::add_breakpoint);
+    connect(disassembly_view, &DisassemblyView::onRemoveBreakpoint, this, &DebuggerDialog::remove_breakpoint);
+    connect(disassembly_view, &DisassemblyView::onAddorRemoveBreakpoint, this, &DebuggerDialog::add_or_remove_breakpoint);
 
     breakpoint_handler_action = new QAction;
     connect(breakpoint_handler_action, &QAction::triggered, this, &DebuggerDialog::breakpoint_handler);

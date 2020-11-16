@@ -1,5 +1,6 @@
 #include "debugger.h"
 #include "debugger_ui.h"
+#include "goto.h"
 
 DebuggerDialog::DebuggerDialog() : DebuggerDialog(nullptr)
 {
@@ -16,7 +17,7 @@ void DebuggerDialog::start(bool checked)
 	if (!emu_ptr->get_running())
 	{
 		emu_ptr->resume();
-		disassembly_view->clear_current();
+		disassembly_view->clearCurrent();
 		update_button_state();
 	}
 }
@@ -156,7 +157,7 @@ void DebuggerDialog::select_disassembly_location(int index)
 	int end = device->get_end();
 	uint8_t *memory = device->get_mapped_memory();
 
-	disassembly_view->set_range(start, end, memory);
+	disassembly_view->setRange(start, end, memory);
 	disassembly_scrollbar->setValue(0);
 }
 
@@ -171,10 +172,16 @@ void DebuggerDialog::update_memory_scrollbar_max(int value)
 	memory_scrollbar->setMaximum(value);
 }
 
-void DebuggerDialog::update_disassembly_scrollbar(int value)
+void DebuggerDialog::adjustDisassemblyScrollbar(int value)
 {
 	disassembly_scrollbar->setValue(disassembly_scrollbar->value() - value);
 }
+
+void DebuggerDialog::setDisassemblyScrollbar(int value)
+{
+	disassembly_scrollbar->setValue(value);
+}
+
 
 void DebuggerDialog::update_disassembly_scrollbar_max(int value)
 {
@@ -193,7 +200,7 @@ void DebuggerDialog::set_emulator(et3400emu *emu)
 		};
 		emu_set = true;
 		memory_view->set_emulator(emu);
-		disassembly_view->set_emulator(emu);
+		disassembly_view->setEmulator(emu);
 		status_view->set_emulator(emu);
 		memory_selector->setCurrentIndex(0);
 		disassembly_selector->setCurrentIndex(1);
@@ -285,7 +292,7 @@ void DebuggerDialog::pauseAndUpdateDisassembler()
 		disassembly_selector->setCurrentIndex(1);
 	}
 
-	disassembly_view->set_current(address);
+	disassembly_view->setCurrent(address);
 }
 
 void DebuggerDialog::stepAndUpdateDisassembler()
@@ -305,8 +312,8 @@ void DebuggerDialog::stepAndUpdateDisassembler()
 		disassembly_selector->setCurrentIndex(1);
 	}
 
-	disassembly_view->set_current(address);
-	disassembly_view->clear_selected();
+	disassembly_view->setCurrent(address);
+	disassembly_view->clearSelected();
 }
 
 void DebuggerDialog::keyReleaseEvent(QKeyEvent *event){
@@ -405,5 +412,37 @@ void DebuggerDialog::after_load_ram()
 	if (s == "RAM")
 	{
 		disassembly_scrollbar->setValue(0);
+	}
+}
+
+void DebuggerDialog::add_label()
+{
+	disassembly_view->addLabel();
+}
+
+void DebuggerDialog::goto_label()
+{
+	GotoDialog gotoDialog;
+	gotoDialog.setLabels(emu_ptr->labels->getLabels());
+
+	QDialog::DialogCode result = (QDialog::DialogCode)gotoDialog.exec();
+
+	if (result == QDialog::DialogCode::Accepted)
+	{
+		offs_t address = gotoDialog.getSelectedAddress();
+		memory_mapped_device* device = emu_ptr->get_block_device(address);
+		int start = device->get_start();
+
+		if (start == 0x0000)
+		{
+			disassembly_selector->setCurrentIndex(0);
+		}
+		else if (start == 0xFC00)
+		{
+			disassembly_selector->setCurrentIndex(1);
+		}
+
+		disassembly_view->setSelected(address);
+		disassembly_scrollbar->setValue(disassembly_view->offset);
 	}
 }

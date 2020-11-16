@@ -1,5 +1,5 @@
-#ifndef ADD_LABEL_H
-#define ADD_LABEL_H
+#ifndef LABEL_H
+#define LABEL_H
 
 #include "../common/common_defs.h"
 #include "../util/label.h"
@@ -17,6 +17,12 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+enum LabelDialogMode
+{
+    Add,
+    Edit
+};
+
 struct LabelInfo
 {
     QString text;
@@ -25,13 +31,17 @@ struct LabelInfo
     offs_t end;
 };
 
-class AddLabelDialog : public QDialog
+class LabelDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    AddLabelDialog();
+    LabelDialog();
 
+    void setLabel(LabelInfo label, LabelDialogMode mode);
+    LabelInfo getLabel();
+
+private:
     QVBoxLayout *mainLayout;
     QHBoxLayout *horizontalLayout;
     QRadioButton *comment_radio;
@@ -48,14 +58,10 @@ public:
     QLabel *description_label;
     QDialogButtonBox *buttonBox;
 
-    void setLabel(LabelInfo label);
-    LabelInfo getLabel();
-
-private:
     void setupUi(QDialog *Dialog);
     void set_comment(bool checked = false);
     void set_data(bool checked = false);
     void retranslateUi(QDialog *Dialog);
 };
 
-#endif // ADD_LABEL_H
+#endif // LABEL_H

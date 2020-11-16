@@ -9,7 +9,13 @@
     button->setShortcut(QKeySequence(seq)); \
     connect(button, &QToolButton::clicked, this, &DebuggerDialog::delegate)
 
-#define MakeAction(action, name, seq, delegate) \
+#define MakeTriggeredAction(action, name, seq, delegate) \
+    action = new QAction(name, this); \
+    action->setShortcut(QKeySequence(seq)); \
+    connect(action, &QAction::triggered, this, &DebuggerDialog::delegate)
+
+
+#define MakeToggledAction(action, name, seq, delegate) \
     action = new QAction(name, this); \
     action->setCheckable(true); \
     action->setChecked(true); \
@@ -64,24 +70,33 @@ protected:
 	void keyReleaseEvent(QKeyEvent* event) override;
 
 private:
-	QSlider* slider;
-	QLabel* label;
-	QGroupBox* memory_groupBox;
-	QGroupBox* disassembly_groupBox;
-	QGroupBox* status_groupBox;
-	QAction* breakpoint_handler_action;
-	QScrollBar* memory_scrollbar;
-	QScrollBar* disassembly_scrollbar;
-	QComboBox* memory_selector;
-	QComboBox* disassembly_selector;
-	QToolButton* panel_selector;
 	QToolButton* start_button;
 	QToolButton* stop_button;
 	QToolButton* step_button;
 	QToolButton* reset_button;
+
+	// QSlider* slider;
+	QLabel* label;
+
+	QComboBox* memory_selector;
+	QComboBox* disassembly_selector;
+
+	QToolButton* panel_selector;
 	QAction* toggle_memory_action;
 	QAction* toggle_disassembly_action;
 	QAction* toggle_status_action;
+
+	QToolButton* labels_selector; 
+	QAction* add_label_action;
+	QAction* goto_label_action;
+
+	QScrollBar* memory_scrollbar;
+	QGroupBox* memory_groupBox;
+	QGroupBox* disassembly_groupBox;
+	QScrollBar* disassembly_scrollbar;
+	QGroupBox* status_groupBox;
+
+	QAction* breakpoint_handler_action;
 
 	MemoryView* memory_view;
 	DisassemblyView* disassembly_view;
@@ -99,7 +114,8 @@ private:
 
 	void setupUI();
 	void update_memory_scrollbar(int value);
-	void update_disassembly_scrollbar(int value);
+	void setDisassemblyScrollbar(int value);
+	void adjustDisassemblyScrollbar(int value);
 	void update_memory_scrollbar_max(int value);
 	void update_disassembly_scrollbar_max(int value);
 
@@ -122,6 +138,9 @@ private:
 	void add_or_remove_breakpoint(offs_t address);
 
 	void breakpoint_handler(bool checked);
+
+	void add_label();
+	void goto_label();
 
 	void load_ram();
 	void save_ram();

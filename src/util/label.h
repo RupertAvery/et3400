@@ -1,5 +1,5 @@
-#ifndef MAP_H
-#define MAP_H
+#ifndef LABEL_READER_H
+#define LABEL_READER_H
 
 #include <QString>
 #include <QFile>
@@ -28,4 +28,6 @@ public:
     static std::vector<Label> *Read(QString file, bool &success);
 };
 
-#endif // MAP_H
+
+
+#endif // LABEL_H
