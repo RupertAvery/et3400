@@ -1,7 +1,8 @@
 #ifndef MEMORY_DEV_H
 #define MEMORY_DEV_H
 
-#include "memory_map.h"
+#include "memory_mapped_device.h"
+
 
 class memory_device : public memory_mapped_device
 {

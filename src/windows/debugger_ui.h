@@ -108,10 +108,12 @@ void DebuggerDialog::setupUI()
     status_view = new StatusView(this);
 
     memory_selector = new QComboBox(toolbar);
-    memory_selector->addItem("RAM");
-    memory_selector->addItem("Keypad");
-    memory_selector->addItem("Display");
-    memory_selector->addItem("ROM");
+    memory_selector->addItem("RAM", 0x0000);
+    memory_selector->addItem("Keypad", 0xC003);
+    memory_selector->addItem("Display", 0xC110);
+    memory_selector->addItem("Fantom II ROM", 0x1400);
+    memory_selector->addItem("TinyBasic ROM", 0x1C00);
+    memory_selector->addItem("Monitor ROM", 0xFC00);
 
     QWidget *inner_memory = new QWidget(memory_groupBox);
     QHBoxLayout *memory_groupBox_layout = new QHBoxLayout(inner_memory);
@@ -126,8 +128,10 @@ void DebuggerDialog::setupUI()
     memory_groupBox->setLayout(memory_groupBox_layout_v);
 
     disassembly_selector = new QComboBox(toolbar);
-    disassembly_selector->addItem("RAM");
-    disassembly_selector->addItem("ROM");
+    disassembly_selector->addItem("RAM", 0x0000);
+    disassembly_selector->addItem("Fantom II ROM", 0x1400);
+    disassembly_selector->addItem("TinyBasic ROM", 0x1C00);
+    disassembly_selector->addItem("Monitor ROM", 0xFC00);
 
     QWidget *inner_disassembly = new QWidget(disassembly_groupBox);
     QHBoxLayout *disassembly_groupBox_layout = new QHBoxLayout(this);

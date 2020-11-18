@@ -1,3 +1,4 @@
+#include "stdlib.h"
 #include "memory_dev.h"
 #include "string.h"
 
@@ -15,8 +16,6 @@ memory_device::~memory_device()
 {
     free(memory);
 }
-
-
 uint8_t memory_device::read(offs_t addr)
 {
     return memory[addr - start];

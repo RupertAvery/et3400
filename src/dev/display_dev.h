@@ -1,7 +1,7 @@
 #ifndef DISPLAY_DEV_H
 #define DISPLAY_DEV_H
 
-#include "memory_map.h"
+#include "memory_mapped_device.h"
 
 class display_io : public memory_mapped_device
 {

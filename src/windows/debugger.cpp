@@ -106,27 +106,8 @@ DebuggerDialog::~DebuggerDialog()
 
 void DebuggerDialog::select_memory_location(int index)
 {
-	QVariant v = memory_selector->itemText(index);
-	QString s = v.value<QString>();
-
-	int address = 0;
-
-	if (s == "RAM")
-	{
-		address = 0x0000;
-	}
-	else if (s == "ROM")
-	{
-		address = 0xFC00;
-	}
-	else if (s == "Keypad")
-	{
-		address = 0xC003;
-	}
-	else if (s == "Display")
-	{
-		address = 0xC110;
-	}
+	QVariant v = memory_selector->itemData(index);
+	offs_t address = (offs_t)v.toInt();
 
 	memory_mapped_device *device = emu_ptr->get_block_device(address);
 	int start = device->get_start();
@@ -139,20 +120,10 @@ void DebuggerDialog::select_memory_location(int index)
 
 void DebuggerDialog::select_disassembly_location(int index)
 {
-	QVariant v = disassembly_selector->itemText(index);
-	QString s = v.value<QString>();
+	QVariant v = disassembly_selector->itemData(index);
+	offs_t address = (offs_t)v.toInt();
 
-	int sstart = 0;
-	if (s == "RAM")
-	{
-		sstart = 0x0000;
-	}
-	else if (s == "ROM")
-	{
-		sstart = 0xFC00;
-	}
-
-	memory_mapped_device *device = emu_ptr->get_block_device(sstart);
+	memory_mapped_device *device = emu_ptr->get_block_device(address);
 	int start = device->get_start();
 	int end = device->get_end();
 	uint8_t *memory = device->get_mapped_memory();
@@ -203,7 +174,7 @@ void DebuggerDialog::set_emulator(et3400emu *emu)
 		disassembly_view->setEmulator(emu);
 		status_view->set_emulator(emu);
 		memory_selector->setCurrentIndex(0);
-		disassembly_selector->setCurrentIndex(1);
+		disassembly_selector->setCurrentIndex(3);
 		select_memory_location(0);
 	}
 	update_button_state();
@@ -281,15 +252,31 @@ void DebuggerDialog::pauseAndUpdateDisassembler()
 	offs_t address = emu_ptr->get_status().pc;
 
 	memory_mapped_device *device = emu_ptr->get_block_device(address);
-	int start = device->get_start();
+	int start = 0xFC00;
+
+	if (device == nullptr) {
+		address = start;
+	}
+	else {
+		start = device->get_start();
+	}
+
 
 	if (start == 0x0000)
 	{
 		disassembly_selector->setCurrentIndex(0);
 	}
-	else if (start == 0xFC00)
+	else if (start == 0x1400)
 	{
 		disassembly_selector->setCurrentIndex(1);
+	}
+	else if (start == 0x1C00)
+	{
+		disassembly_selector->setCurrentIndex(2);
+	}
+	else if (start == 0xFC00)
+	{
+		disassembly_selector->setCurrentIndex(3);
 	}
 
 	disassembly_view->setCurrent(address);
@@ -301,15 +288,30 @@ void DebuggerDialog::stepAndUpdateDisassembler()
 	offs_t address = emu_ptr->get_status().pc;
 
 	memory_mapped_device *device = emu_ptr->get_block_device(address);
-	int start = device->get_start();
+	int start = 0xFC00;
+
+	if (device == nullptr) {
+		address = start;
+	}
+	else {
+		start = device->get_start();
+	}
 
 	if (start == 0x0000)
 	{
 		disassembly_selector->setCurrentIndex(0);
 	}
-	else if (start == 0xFC00)
+	else if (start == 0x1400)
 	{
 		disassembly_selector->setCurrentIndex(1);
+	}
+	else if (start == 0x1C00)
+	{
+		disassembly_selector->setCurrentIndex(2);
+	}
+	else if (start == 0xFC00)
+	{
+		disassembly_selector->setCurrentIndex(3);
 	}
 
 	disassembly_view->setCurrent(address);
@@ -439,7 +441,7 @@ void DebuggerDialog::goto_label()
 		}
 		else if (start == 0xFC00)
 		{
-			disassembly_selector->setCurrentIndex(1);
+			disassembly_selector->setCurrentIndex(3);
 		}
 
 		disassembly_view->setSelected(address);

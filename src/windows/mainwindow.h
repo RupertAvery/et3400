@@ -25,8 +25,13 @@
 
 class MainWindow : public QMainWindow
 {
-  uint16_t ROM_SIZE = 0x400;
-  const uint16_t ROM_ADDR = 0xFC00;
+  uint16_t MONITOR_SIZE = 0x400;
+  uint16_t FANTOMII_SIZE = 0x800;
+  uint16_t TINYBASIC_SIZE = 0x800;
+
+  const uint16_t MONITOR_ADDR = 0xFC00;
+  const uint16_t FANTOMII_ADDR = 0x1400;
+  const uint16_t TINYBASIC_ADDR = 0x1C00;
 
 public:
   MainWindow(QWidget *parent = 0);
@@ -45,7 +50,7 @@ private:
   SettingsDialog *settings_dialog;
   DebuggerDialog *debugger_dialog;
   et3400emu *emu;
-
+  
   void load_ram();
   void save_ram();
   void show_about();

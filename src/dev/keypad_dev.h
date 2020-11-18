@@ -1,7 +1,7 @@
 #ifndef KEYPAD_DEV_H
 #define KEYPAD_DEV_H
 
-#include "memory_map.h"
+#include "memory_mapped_device.h"
 #include <functional>
 
 class keypad_io : public memory_mapped_device

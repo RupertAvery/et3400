@@ -283,30 +283,17 @@ void MainWindow::keyReleaseEvent(QKeyEvent *ev)
     break;
   }
 }
-
 void MainWindow::execute_emu()
 {
-  QFile file(":/rom/monitor.bin");
-
-  char *buffer;
-
-  if (!file.open(QIODevice::ReadOnly))
-  {
-    throw -10010;
-  }
-  else
-  {
-    buffer = (char *)malloc(ROM_SIZE);
-
-    file.read(buffer, ROM_SIZE);
-  }
-
-  file.close();
 
   emu = new et3400emu(keypad->device, display->device);
+  emu->loadROM(":/rom/monitor.bin", MONITOR_ADDR, MONITOR_SIZE);
+  emu->loadMap(":/rom/monitor.map");
 
-  emu->loadROM(ROM_ADDR, (uint8_t *)buffer, ROM_SIZE);
-  emu->loadMap();
+  emu->loadROM(":/rom/fantomii.bin", FANTOMII_ADDR, FANTOMII_SIZE);
+  emu->loadMap(":/rom/fantomii.map");
+
+  emu->loadROM(":/rom/tinybasic.bin", TINYBASIC_ADDR, TINYBASIC_SIZE);
 
   debugger_dialog->set_emulator(emu);
   debugger_dialog->set_settings(&settings);

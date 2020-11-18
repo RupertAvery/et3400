@@ -37,5 +37,8 @@
         <file>buttons/Stop_16x.png</file>
         <file>rom/monitor.bin</file>
         <file>rom/monitor.map</file>
+        <file>rom/fantomii.bin</file>
+        <file>rom/fantomii.map</file>
+        <file>rom/tinybasic.bin</file>
     </qresource>
 </RCC>

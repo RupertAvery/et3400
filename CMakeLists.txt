@@ -24,9 +24,10 @@ set(WINDOWS_SRC
     src/windows/settings.cpp  
     src/windows/debugger.cpp 
     src/windows/file.cpp 
-    src/windows/add_label.cpp 
+    src/windows/label.cpp 
     src/windows/remove_label.cpp 
     src/windows/tips.cpp 
+    src/windows/goto.cpp 
     )
 
 set(DEVSRC 
@@ -34,6 +35,8 @@ set(DEVSRC
     src/dev/memory_dev.cpp 
     src/dev/keypad_dev.cpp 
     src/dev/display_dev.cpp
+    src/dev/mc6820.cpp
+    src/dev/rs232.cpp
     )
 
 set(EMUSRC 

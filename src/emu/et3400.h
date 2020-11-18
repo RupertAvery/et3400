@@ -10,6 +10,8 @@
 
 #include <functional>
 #include <mutex>
+#include <QFile>
+#include <QString>
 
 class et3400emu
 {
@@ -27,9 +29,10 @@ public:
 	void step();
 	void resume();
 
-	void loadROM(offs_t address, uint8_t *buffer, size_t size);
+	void loadROM(QString romPath, offs_t address, size_t size);
+	//void loadROM(offs_t address, uint8_t *buffer, size_t size);
 	void loadRAM(offs_t address, uint8_t *buffer, size_t size);
-	void loadMap();
+	void loadMap(QString mapPath);
 	// uint8_t *get_memory();
 	bool get_running();
 	int get_cycles();
@@ -40,7 +43,7 @@ public:
 	bool has_breakpoint(offs_t address);
 	void handle_breakpoint();
 
-	memory_mapped_device* get_block_device(offs_t address);
+	memory_mapped_device *get_block_device(offs_t address);
 
 	void set_clock_rate(int clock_rate);
 	int get_clock_rate();
@@ -49,16 +52,15 @@ public:
 	std::function<void()> on_breakpoint;
 
 	memory_device *ram;
-	memory_device *rom;
 	display_io *display;
 	keypad_io *keypad;
-
 
 	MemoryMapManager *memory_map;
 	BreakpointManager *breakpoints;
 	LabelManager *labels;
 
 private:
+	MC6820 *mc6820;
 	m6800_cpu_device *device;
 	std::thread thread;
 	int cycles;
@@ -68,7 +70,6 @@ private:
 	void worker();
 	void render_frame();
 	bool check_breakpoint(uint32_t address);
-
 };
 
 #endif // ET3400EMU_H
