@@ -58,6 +58,7 @@ set(TOOLSRC
 
 set(SOURCES 
     src/main.cpp 
+    src/common/util.cpp
     ${TOOLSRC} 
     ${DEVSRC} 
     ${EMUSRC} 

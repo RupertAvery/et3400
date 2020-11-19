@@ -153,7 +153,6 @@ void DebuggerDialog::setDisassemblyScrollbar(int value)
 	disassembly_scrollbar->setValue(value);
 }
 
-
 void DebuggerDialog::update_disassembly_scrollbar_max(int value)
 {
 	disassembly_scrollbar->setMinimum(0);
@@ -254,30 +253,16 @@ void DebuggerDialog::pauseAndUpdateDisassembler()
 	memory_mapped_device *device = emu_ptr->get_block_device(address);
 	int start = 0xFC00;
 
-	if (device == nullptr) {
+	if (device == nullptr)
+	{
 		address = start;
 	}
-	else {
+	else
+	{
 		start = device->get_start();
 	}
 
-
-	if (start == 0x0000)
-	{
-		disassembly_selector->setCurrentIndex(0);
-	}
-	else if (start == 0x1400)
-	{
-		disassembly_selector->setCurrentIndex(1);
-	}
-	else if (start == 0x1C00)
-	{
-		disassembly_selector->setCurrentIndex(2);
-	}
-	else if (start == 0xFC00)
-	{
-		disassembly_selector->setCurrentIndex(3);
-	}
+	selectByAddress(start);
 
 	disassembly_view->setCurrent(address);
 }
@@ -290,32 +275,39 @@ void DebuggerDialog::stepAndUpdateDisassembler()
 	memory_mapped_device *device = emu_ptr->get_block_device(address);
 	int start = 0xFC00;
 
-	if (device == nullptr) {
+	if (device == nullptr)
+	{
 		address = start;
 	}
-	else {
+	else
+	{
 		start = device->get_start();
 	}
 
-	if (start == 0x0000)
-	{
-		disassembly_selector->setCurrentIndex(0);
-	}
-	else if (start == 0x1400)
-	{
-		disassembly_selector->setCurrentIndex(1);
-	}
-	else if (start == 0x1C00)
-	{
-		disassembly_selector->setCurrentIndex(2);
-	}
-	else if (start == 0xFC00)
-	{
-		disassembly_selector->setCurrentIndex(3);
-	}
+	selectByAddress(start);
 
 	disassembly_view->setCurrent(address);
 	disassembly_view->clearSelected();
+}
+
+void DebuggerDialog::selectByAddress(offs_t address)
+{
+	if (address == 0x0000)
+	{
+		disassembly_selector->setCurrentIndex(0);
+	}
+	else if (address == 0x1400)
+	{
+		disassembly_selector->setCurrentIndex(1);
+	}
+	else if (address == 0x1C00)
+	{
+		disassembly_selector->setCurrentIndex(2);
+	}
+	else if (address == 0xFC00)
+	{
+		disassembly_selector->setCurrentIndex(3);
+	}
 }
 
 void DebuggerDialog::keyReleaseEvent(QKeyEvent *event){
@@ -399,7 +391,7 @@ void DebuggerDialog::save_labels()
 	if (fileName == nullptr)
 		return;
 
-	emu_ptr->labels->saveLabels(fileName, 0x0000, 0x03FF, success);
+	emu_ptr->labels->saveLabels(fileName, 0x1400, 0x1BFF, success);
 }
 
 void DebuggerDialog::after_load_ram()
@@ -432,17 +424,10 @@ void DebuggerDialog::goto_label()
 	if (result == QDialog::DialogCode::Accepted)
 	{
 		offs_t address = gotoDialog.getSelectedAddress();
-		memory_mapped_device* device = emu_ptr->get_block_device(address);
+		memory_mapped_device *device = emu_ptr->get_block_device(address);
 		int start = device->get_start();
 
-		if (start == 0x0000)
-		{
-			disassembly_selector->setCurrentIndex(0);
-		}
-		else if (start == 0xFC00)
-		{
-			disassembly_selector->setCurrentIndex(3);
-		}
+		selectByAddress(start);
 
 		disassembly_view->setSelected(address);
 		disassembly_scrollbar->setValue(disassembly_view->offset);

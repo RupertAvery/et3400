@@ -10,6 +10,8 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QDialogButtonBox>
+#include <QLineEdit>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QListView>
 #include <QStandardItemModel>
@@ -22,19 +24,21 @@ class GotoDialog : public QDialog
 
 public:
 	GotoDialog();
-	void setLabels(std::vector<Label>* labels);
+	void setLabels(std::vector<Label> *labels);
 	offs_t getSelectedAddress();
 
 private:
 	offs_t _selectedAddress;
-	QVBoxLayout* mainLayout;
-	QListView* listView;
-	QDialogButtonBox* buttonBox;
+	QVBoxLayout *mainLayout;
+	QLineEdit *address;
+	QListView *listView;
+	QDialogButtonBox *buttonBox;
 
-	void setupUi(QDialog* Dialog);
-	void doubleClicked(QModelIndex index);
-
+	void setupUi(QDialog *Dialog);
+	void addressEntered();
+	void labelDoubleClicked(const QModelIndex &index);
+	void labelSelected(const QModelIndex &index);
+	void validate();
 };
-
 
 #endif // GOTO_H

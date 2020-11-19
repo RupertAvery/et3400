@@ -1,4 +1,6 @@
 #include "label.h"
+#include "../common/util.h"
+
 
 LabelDialog::LabelDialog() : QDialog(0, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
@@ -102,12 +104,12 @@ void LabelDialog::setupUi(QDialog *Dialog)
 
     setLayout(mainLayout);
 
-    QObject::connect(comment_radio, &QRadioButton::clicked, this, &LabelDialog::set_comment);
-    QObject::connect(data_radio, &QRadioButton::clicked, this, &LabelDialog::set_data);
+    connect(comment_radio, &QRadioButton::clicked, this, &LabelDialog::set_comment);
+    connect(data_radio, &QRadioButton::clicked, this, &LabelDialog::set_data);
 
     retranslateUi(Dialog);
-    QObject::connect(buttonBox, SIGNAL(accepted()), Dialog, SLOT(accept()));
-    QObject::connect(buttonBox, SIGNAL(rejected()), Dialog, SLOT(reject()));
+    connect(buttonBox, &QDialogButtonBox::accepted, this, &LabelDialog::validate);
+    connect(buttonBox, &QDialogButtonBox::rejected, this, &LabelDialog::reject);
 
     QMetaObject::connectSlotsByName(Dialog);
 
@@ -150,14 +152,17 @@ void LabelDialog::setLabel(LabelInfo label, LabelDialogMode mode)
     if (mode == LabelDialogMode::Edit)
     {
         setWindowTitle("Edit Label");
-        if (label.type == LabelType::DATA) {
+        if (label.type == LabelType::DATA)
+        {
             set_data();
         }
-        else {
+        else
+        {
             set_comment();
         }
     }
-    else {
+    else
+    {
         label.type = LabelType::COMMENT;
         set_comment();
     }
@@ -169,13 +174,27 @@ void LabelDialog::setLabel(LabelInfo label, LabelDialogMode mode)
     end_edit->setText(QString("$%1").arg(label.end, 4, 16, QChar('0')).toUpper());
 }
 
+void LabelDialog::validate()
+{
+    bool ok1;
+    bool ok2;
+
+    toInt(start_edit, ok1);
+    toInt(end_edit, ok2);
+
+    if (ok1 && (!data_radio->isChecked() || (data_radio->isChecked() && ok2)))
+    {
+        accept();
+    }
+}
+
 LabelInfo LabelDialog::getLabel()
 {
     bool ok;
     return LabelInfo{
         text_edit->text(),
         data_radio->isChecked() ? LabelType::DATA : LabelType::COMMENT,
-        (offs_t)start_edit->text().replace("$", "0x").toInt(&ok, 0),
-        (offs_t)end_edit->text().replace("$", "0x").toInt(&ok, 0),
+        (offs_t)toInt(start_edit, ok),
+        (offs_t)toInt(end_edit, ok),
     };
 }

@@ -23,31 +23,46 @@ void RS232Adapter::receiveString(char *value){
 
 uint8_t RS232Adapter::receive()
 {
-    uint8_t value = 0x7F;
+    // The PIA is wired like so for Peripheral A
+    // PA0 - Output bit (pulled high)
+    // PA1 - pulled high w/ jumper to ground
+    // PA2 - pulled high w/ jumper to ground
+    // PA3 - pulled high w/ jumper to ground
+    // PA4 - pulled low
+    // PA5 - NC
+    // PA6 - NC
+    // PA7 - Input bit
+
+    // Y--0111X
+    // Y is the input. 
+    // Mask: 10000000 = 0x80
+    // Mask: 00001110 = 0x0E
+    // Mask: 11101111 = 0xEF
+
+
+
+    uint8_t value = 0x7E;
 
     if (rcvState == 0)
     {
-        // if (inputBuffer.Count > 0)
-        // {
-        //     tempBuffer = inputBuffer.Dequeue();
-        //     rcvState++;
-        //     value = 0xFF;
-        // }
+         if (!inputBuffer->empty() > 0)
+         {
+             tempBuffer = inputBuffer->front();
+             inputBuffer->pop();
+             rcvState++;
+             value = 0xFF;
+         }
     }
     else if (rcvState == 1)
     {
-        value = 0xDD;
-        value = 0B00000111;
-        value = value << 1;
-        value = ~value;
-        value = value & 0xFF;
+        value = 0B00001110;
         rcvState++;
     }
-    else if (rcvState == 2)
-    {
-        value = 0x7F;
-        rcvState++;
-    }
+    //else if (rcvState == 2)
+    //{
+    //    value = 0x7F;
+    //    rcvState++;
+    //}
     else if (rcvState == 10)
     {
         value = 0x7F;
@@ -62,12 +77,10 @@ uint8_t RS232Adapter::receive()
     {
         //value = 0x7E | (tempBuffer >> rcvState - 1);
         value = tempBuffer;
-        value = ~value;
         value = value << (7 - rcvState + 2);
-        value = value | 0x7F;
-        value = value & 0xFF;
-        //value = value & 0x80;
-        //value = value | 0b1110;
+        value = value & 0x80; // mask all bits but the 8th
+        value = value | 0x0E; // set bits 1-3
+        value = value & 0xEF; // clear bit 4
         rcvState++;
     }
 

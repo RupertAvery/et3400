@@ -20,18 +20,18 @@ et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
     total_cycles = 0;
 
     //ram = new memory_device(0x0000, 0x0400, false);
-    ram = new memory_device(0x0000, 0x0400, false);
-    memory_device* bank2 = new memory_device(0x0400, 0x0400, false);
-    memory_device* bank3 = new memory_device(0x0800, 0x0400, false);
-    memory_device* bank4 = new memory_device(0x0C00, 0x0400, false);
+    ram = new memory_device(0x0000, 0x0800, false);
+    //memory_device* bank2 = new memory_device(0x0400, 0x0400, false);
+    //memory_device* bank3 = new memory_device(0x0800, 0x0400, false);
+    //memory_device* bank4 = new memory_device(0x0C00, 0x0400, false);
 
     this->keypad = keypad_dev;
     this->display = display_dev;
 
     memory_map->map(ram);
-    memory_map->map(bank2);
-    memory_map->map(bank3);
-    memory_map->map(bank4);
+    //memory_map->map(bank2);
+    //memory_map->map(bank3);
+    //memory_map->map(bank4);
     memory_map->map(keypad);
     memory_map->map(display);
     memory_map->map(mc6820);

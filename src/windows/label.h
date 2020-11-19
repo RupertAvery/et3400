@@ -62,6 +62,7 @@ private:
     void set_comment(bool checked = false);
     void set_data(bool checked = false);
     void retranslateUi(QDialog *Dialog);
+    void validate();
 };
 
 #endif // LABEL_H

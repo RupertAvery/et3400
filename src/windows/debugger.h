@@ -107,6 +107,8 @@ private:
 
 	bool emu_set;
 
+	void selectByAddress(offs_t address);
+
 	void start(bool checked);
 	void stop(bool checked);
 	void step(bool checked);
