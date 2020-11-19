@@ -38,7 +38,7 @@ private:
     int DDRB = 0;
     int PRA = 0;
     int PRB = 0;
-    Register Register = Register::DDRA;
+    //Register register = Register::DDRA;
 
 public:
     MC6820(RS232Adapter *rs232adapter);
