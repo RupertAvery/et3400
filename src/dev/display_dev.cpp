@@ -7,17 +7,21 @@ display_io::display_io()
 
 uint8_t display_io::read(offs_t addr)
 {
-	return displaymem[addr - 0xC110];
+	addr = addr - 0xC100;
+	addr = addr & 0b01110111;
+	return displaymem[addr];
 };
 
 void display_io::write(offs_t addr, uint8_t data)
 {
-	displaymem[addr - 0xC110] = data;
+	addr = addr - 0xC100;
+	addr = addr & 0b01110111;
+	displaymem[addr] = data;
 };
 
 bool display_io::is_mapped(offs_t addr)
 {
-	return addr >= 0xC110 && addr <= 0xC16F;
+	return addr >= 0xC100 && addr <= 0xC1FF;
 }
 
 uint8_t *display_io::get_mapped_memory()
@@ -32,5 +36,5 @@ offs_t display_io::get_start()
 
 offs_t display_io::get_end()
 {
-	return 0xC16F;
+	return 0xC1FF;
 }
