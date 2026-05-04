@@ -1,6 +1,7 @@
 #ifndef MEMORY_MAP_H
 #define MEMORY_MAP_H
 
+#include <sys/types.h>
 #include <map>
 #include "memory_mapped_device.h"
 
