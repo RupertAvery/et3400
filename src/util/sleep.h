@@ -50,7 +50,7 @@ static void sleep(long long useconds)
 {
 	struct timespec req = {0};
 	req.tv_sec = useconds / 1000000;
-	req.tv_nsec = useconds * 1000;
+	req.tv_nsec = (useconds % 1000000) * 1000;
 	nanosleep(&req, &req);
 }
 #endif // _WINDOWS_

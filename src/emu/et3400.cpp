@@ -1,4 +1,6 @@
 #include "et3400.h"
+#include <chrono>
+#include <thread>
 
 et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
 {
@@ -167,20 +169,28 @@ int et3400emu::get_clock_rate()
 
 void et3400emu::worker()
 {
-    const int sleep_ns = 13667;
-    const int base_cycles = 16667;
-    const float hundred_percent = 100;
-    int ctr = 60;
+    using clk = std::chrono::steady_clock;
+    using us  = std::chrono::microseconds;
+
+    const int frame_us    = 16667;
+    const int base_cycles = 1667;
+    const float pct       = 100.f;
+
+    auto deadline = clk::now();
+    int excess = 0;
 
     while (this->running)
     {
-        int cycles_per_frame = (int)(base_cycles * (float)clock_rate / hundred_percent);
-        device->m_icount = cycles_per_frame;
+        int cycles_per_frame = (int)(base_cycles * (float)clock_rate / pct);
+        device->m_icount = cycles_per_frame + excess;
         device->pre_execute_run();
         device->execute_run();
-        sleep(sleep_ns);
+        excess = device->m_icount;
         total_cycles += cycles_per_frame - device->m_icount;
         render_frame();
+
+        deadline += us(frame_us);
+        std::this_thread::sleep_until(deadline);
     }
 }
 
