@@ -116,7 +116,9 @@ void DisassemblyView::bufferDraw()
 
 	//emu_ptr->breakpoints->lock();
 
-	while (ctr < offset + visible_items && ctr - visible_items + 1 < max_vscroll)
+	int linesSize = lines->size();
+
+	while (ctr < linesSize && ctr < offset + visible_items && ctr - visible_items + 1 < max_vscroll)
 	{
 		// Default colors
 		QColor address_color = darkblue;
@@ -126,7 +128,7 @@ void DisassemblyView::bufferDraw()
 
 		bool is_comment = line[ctr].type == DisassemblyType::Comment;
 		bool is_data = line[ctr].type == DisassemblyType::Data;
-		bool is_selected = selected > -1 && !is_comment && line[ctr].address == line[selected].address;
+		bool is_selected = selected > -1 && selected < linesSize && !is_comment && line[ctr].address == line[selected].address;
 		bool is_current = current > -1 && !is_comment && line[ctr].address == line[current].address;
 		bool has_breakpoint = emu_ptr->has_breakpoint(line[ctr].address) && !is_comment;
 
