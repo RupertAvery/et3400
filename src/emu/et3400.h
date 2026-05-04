@@ -33,6 +33,7 @@ public:
 	//void loadROM(offs_t address, uint8_t *buffer, size_t size);
 	void loadRAM(offs_t address, uint8_t *buffer, size_t size);
 	void loadMap(QString mapPath);
+
 	// uint8_t *get_memory();
 	bool get_running();
 	int get_cycles();
@@ -42,6 +43,8 @@ public:
 	void add_or_remove_breakpoint(offs_t address);
 	bool has_breakpoint(offs_t address);
 	void handle_breakpoint();
+	void set_pc(uint16_t pc);
+	byte read_byte(offs_t address);
 
 	memory_mapped_device *get_block_device(offs_t address);
 

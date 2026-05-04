@@ -31,7 +31,7 @@ void DebuggerDialog::setupUI()
 
     MakeButton(start_button, "Start (F5)", ":/buttons/Run_16x.png", Qt::Key_F5, start);
     MakeButton(stop_button, "Stop (F4)", ":/buttons/Stop_16x.png", Qt::Key_F4, stop);
-    MakeButton(step_button, "Step in (F10)", ":/buttons/StepIntoArrow_16x.png", Qt::Key_F10, step);
+    MakeButton(step_into_button, "Step in (F10)", ":/buttons/StepIntoArrow_16x.png", Qt::Key_F10, step_into);
     MakeButton(reset_button, "Reset (ESC)", ":/buttons/Restart_16x.png", Qt::Key_Escape, reset);
 
     panel_selector = new QToolButton(toolbar);
@@ -88,14 +88,14 @@ void DebuggerDialog::setupUI()
     toolbar->addSeparator();
     toolbar->addWidget(start_button);
     toolbar->addWidget(stop_button);
-    toolbar->addWidget(step_button);
+    toolbar->addWidget(step_into_button);
     toolbar->addWidget(reset_button);
     toolbar->addSeparator();
     toolbar->addWidget(panel_selector);
     toolbar->addWidget(labels_selector);
 
     memory_groupBox = new QGroupBox("Memory", this);
-    memory_groupBox->setMaximumWidth(380);
+    memory_groupBox->setMaximumWidth(480);
 
     disassembly_groupBox = new QGroupBox("Disassembly", this);
     status_groupBox = new QGroupBox("Status", this);
@@ -153,9 +153,9 @@ void DebuggerDialog::setupUI()
 
     QWidget *panels = new QWidget(this);
     QHBoxLayout *panels_layout = new QHBoxLayout(this);
+    panels_layout->addWidget(status_groupBox);
     panels_layout->addWidget(disassembly_groupBox);
     panels_layout->addWidget(memory_groupBox);
-    panels_layout->addWidget(status_groupBox);
     panels_layout->setMargin(10);
     panels->setLayout(panels_layout);
 

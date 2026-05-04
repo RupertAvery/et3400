@@ -65,6 +65,8 @@ protected:
 	void wheelEvent(QWheelEvent* event) override;
 	void resizeEvent(QResizeEvent* event) override;
 	void mousePressEvent(QMouseEvent* event) override;
+	void mouseMoveEvent(QMouseEvent* event) override;
+	void leaveEvent(QEvent* event) override;
 	void keyPressEvent(QKeyEvent* event) override;
 
 private:
@@ -74,7 +76,7 @@ private:
 	QPixmap breakpoint_icon;
 	QTimer* m_paintTimer;
 
-	et3400emu* emu_ptr;
+	et3400emu* emu_ptr = nullptr;
 	uint8_t* memory;
 
 	std::vector<DisassemblyLine>* lines;
@@ -88,6 +90,7 @@ private:
 	int max_vscroll;
 	int selected;
 	int current;
+	int hover_row = -1;
 
 	DisassemblyLine findLine(offs_t address);
 	void addOrRemoveBreakpoint(int line_number);

@@ -4,12 +4,15 @@
 #include <sys/types.h>
 #include <map>
 #include "memory_mapped_device.h"
+#include "../util/breakpoint_manager.h"
 
 class MemoryMapManager
 {
 public:
     MemoryMapManager();
     ~MemoryMapManager();
+
+    BreakpointManager *breakpoints = nullptr;
 
     void map(memory_mapped_device *device);
     memory_mapped_device *get_block_device(off_t address);

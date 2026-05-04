@@ -9,6 +9,7 @@ et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
     memory_map = new MemoryMapManager;
     breakpoints = new BreakpointManager;
     labels = new LabelManager;
+    memory_map->breakpoints = breakpoints;
 
     device = new m6800_cpu_device(memory_map);
     device->check_breakpoint = [this](uint32_t address) { return check_breakpoint(address); };
@@ -145,6 +146,16 @@ void et3400emu::start()
 {
     running = true;
     thread = std::thread(&et3400emu::worker, this);
+}
+
+byte et3400emu::read_byte(offs_t address)
+{
+    return memory_map->read(address);
+}
+
+void et3400emu::set_pc(uint16_t pc)
+{
+    device->m_pc.d = pc;
 }
 
 void et3400emu::reset()

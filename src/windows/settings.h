@@ -9,6 +9,8 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QSlider>
+#include <QComboBox>
+#include <QLineEdit>
 #include <QString>
 
 static QString format(int i)
@@ -39,8 +41,14 @@ signals:
 public slots:
     void setClockRate(int value);
 
+private slots:
+    void onFreqInputChanged();
+    void onUnitChanged(int index);
+
 private:
     QSlider *slider;
+    QComboBox *unit_combo;
+    QLineEdit *freq_input;
     QLabel *clock_rate_label;
     QLabel *warning_label;
     et3400emu *emu_ptr;

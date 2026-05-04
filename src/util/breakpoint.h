@@ -10,6 +10,9 @@
 struct Breakpoint
 {
     offs_t address;
+    int type; // 0 = execute, 1 = read, 2 = write
+    QString description;
+    QString condition;
     bool is_enabled;
 };
 

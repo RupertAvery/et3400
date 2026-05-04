@@ -1,6 +1,5 @@
 #include "settings.h"
-
-#include <QDebug>
+#include "log.h"
 #include <QString>
 #include <QDir>
 #include <QStringList>
@@ -48,7 +47,7 @@ Settings load_settings()
 
     if (success)
     {
-        qDebug() << settingsFile;
+        LOG_DEBUG << "Settings file:" << settingsFile;
 
         QFile file(settingsFile);
         if (!file.open(QIODevice::ReadOnly))
@@ -74,7 +73,7 @@ Settings load_settings()
                 {
                     settings.showMemoryView = true;
                 }
-                qDebug() << list1;
+                LOG_DEBUG << "Settings entry:" << list1;
             }
         }
 
@@ -88,11 +87,11 @@ void save_settings(Settings *settings)
 {
     bool success;
     QString settingsFile = getSettingsPath(success);
-    qDebug() << "Get path: " << success;
+    LOG_DEBUG << "Settings path found:" << success;
 
     if (success)
     {
-        qDebug() << "Saving settings to " << settingsFile;
+        LOG_DEBUG << "Saving settings to" << settingsFile;
 
         QFileInfo fi(settingsFile);
         QString settingsPath = fi.absolutePath();
@@ -121,6 +120,6 @@ void save_settings(Settings *settings)
 
         file.close();
 
-        qDebug() << "Saved settings";
+        LOG_DEBUG << "Saved settings";
     }
 };

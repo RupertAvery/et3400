@@ -1,5 +1,5 @@
-#include <QDebug>
 #include "memory_view.h"
+#include "../util/log.h"
 
 MemoryView::MemoryView(QWidget* parent)
 	: QFrame(parent)
@@ -21,20 +21,16 @@ MemoryView::MemoryView(QWidget* parent)
 	connect(this->m_paintTimer, &QTimer::timeout, this, &MemoryView::redraw);
 
 	buffer = new QPixmap;
-	// action = new QAction;
-	// connect(action, &QAction::triggered, this, &Display::redraw);
-
-	// this->setFixedSize(QSize(320, 85));
 	setLineWidth(3);
 }
 
 MemoryView::~MemoryView()
 {
-	qDebug() << "Memory view destroy";
+	LOG_DEBUG << "MemoryView destroy";
 	m_paintTimer->stop();
 	delete m_paintTimer;
 	delete buffer;
-	qDebug() << "Memory view destroy done";
+	LOG_DEBUG << "MemoryView destroy done";
 }
 
 void MemoryView::wheelEvent(QWheelEvent* event)
@@ -83,8 +79,10 @@ void MemoryView::bufferDraw()
 	//font.setStyleStrategy(QFont::NoAntialias);
 
 	painter.setFont(font);
+	item_height = QFontMetrics(font).lineSpacing();
+	visible_items = height() / item_height;
 
-	int y = 15;
+	int y = item_height;
 
 
 	QColor darkblue = QColor("#00018B");
@@ -171,5 +169,4 @@ void MemoryView::set_range(offs_t start, offs_t end, uint8_t* memory)
 void MemoryView::set_emulator(et3400emu* emu)
 {
 	emu_ptr = emu;
-
 }

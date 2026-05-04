@@ -72,7 +72,8 @@ protected:
 private:
 	QToolButton* start_button;
 	QToolButton* stop_button;
-	QToolButton* step_button;
+	QToolButton* step_into_button;
+	QToolButton* step_over_button;
 	QToolButton* reset_button;
 
 	// QSlider* slider;
@@ -111,7 +112,8 @@ private:
 
 	void start(bool checked);
 	void stop(bool checked);
-	void step(bool checked);
+	void step_into(bool checked);
+	void step_over(bool checked);
 	void reset(bool checked);
 
 	void setupUI();

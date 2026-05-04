@@ -40,7 +40,14 @@ public:
   void keyReleaseEvent(QKeyEvent *event) override;
   void closeEvent(QCloseEvent *event) override;
 
-  void execute_emu();
+  void start();
+
+  void setAddress(std::string address);
+  void setSpeed(std::string speed);
+  void setShowDebugger(bool show);
+  void setLabel(std::string labelFile);
+  void setRAM(std::string file);
+  void setROM(std::string file);
 
 private:
   long long last_cycles;
@@ -49,8 +56,11 @@ private:
   Keypad *keypad;
   SettingsDialog *settings_dialog;
   DebuggerDialog *debugger_dialog;
-  et3400emu *emu;
+  et3400emu *emu = nullptr;
+  uint16_t startAddress;
   
+  void init_emu();
+  void execute_emu();
   void load_ram();
   void save_ram();
   void show_about();

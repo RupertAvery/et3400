@@ -1,4 +1,5 @@
 #include "util.h"
+#include <QString>
 
 int toInt(QLineEdit *edit, bool &ok)
 {

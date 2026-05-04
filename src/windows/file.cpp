@@ -8,15 +8,23 @@ void File::load_ram(QWidget* parent, et3400emu* emu_ptr)
 		"Load File to RAM", "", "SREC Files (*.obj *.s19)");
 	if (fileName == nullptr) return;
 
-	std::vector<srec_block>* blocks = new std::vector<srec_block>;
+	File::load(emu_ptr, fileName);
 
-	// pause emulation to avoid overwriting memory while executing
+	// reset and resume emulation
+	emu_ptr->reset();
+	emu_ptr->start();
+}
+
+void File::load(et3400emu* emu_ptr, QString path)
+{
+		// pause emulation to avoid overwriting memory while executing
 	emu_ptr->stop();
 
 	// load S19 blocks
-	if (SrecReader::Read(fileName, blocks))
-	{
+	std::vector<srec_block>* blocks = new std::vector<srec_block>;
 
+	if (SrecReader::Read(path, blocks))
+	{
 		// write blocks to memory
 		for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
 		{
@@ -32,13 +40,8 @@ void File::load_ram(QWidget* parent, et3400emu* emu_ptr)
 
 	delete blocks;
 
-
 	emu_ptr->breakpoints->clearRamBreakpoints();
 	emu_ptr->labels->clearRamLabels();
-
-	// reset and resume emulation
-	emu_ptr->reset();
-	emu_ptr->start();
 }
 
 void File::save_ram(QWidget* parent, et3400emu* emu_ptr)

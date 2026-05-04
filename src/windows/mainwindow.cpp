@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include "../util/log.h"
+#include <filesystem>
 
 using namespace std;
 
@@ -75,17 +77,21 @@ MainWindow::MainWindow(QWidget *parent)
 
   setFixedSize(QSize(350, 500));
 
-  execute_emu();
-
   last_cycles = 0;
 
-  //setAttribute(Qt::WA_DeleteOnClose);
-  //connect( widget, SIGNAL(destroyed(QObject*)), this, SLOT(widgetDestroyed(QObject*)) );
+  init_emu();
+
+  // setAttribute(Qt::WA_DeleteOnClose);
+  // connect( widget, SIGNAL(destroyed(QObject*)), this, SLOT(widgetDestroyed(QObject*)) );
   if (settings.showTips)
   {
     show_tips();
   }
+}
 
+void MainWindow::start()
+{
+  execute_emu();
   QTimer *timer = new QTimer(this);
   connect(timer, &QTimer::timeout, this, QOverload<>::of(&MainWindow::fps));
   timer->start(1000);
@@ -110,7 +116,7 @@ void MainWindow::fps()
     cps = emu->total_cycles - last_cycles;
   }
 
-  std::cout << cps << std::endl;
+  LOG_DEBUG << "CPS:" << cps;
 
   last_cycles = emu->total_cycles;
 }
@@ -153,19 +159,21 @@ void MainWindow::updatecps()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+  if (emu)
+    emu->stop();
   debugger_dialog->close();
 }
 
 MainWindow::~MainWindow()
 {
-  qDebug() << "Main destroy";
+  LOG_DEBUG << "Main destroy";
   emu->stop();
   delete emu;
   delete display;
   delete keypad;
   delete settings_dialog;
   delete debugger_dialog;
-  qDebug() << "Main destroy done";
+  LOG_DEBUG << "Main destroy done";
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *ev)
@@ -283,10 +291,13 @@ void MainWindow::keyReleaseEvent(QKeyEvent *ev)
     break;
   }
 }
-void MainWindow::execute_emu()
-{
 
+void MainWindow::init_emu()
+{
+  LOG_DEBUG << "Creating emulator instance";
   emu = new et3400emu(keypad->device, display->device);
+
+  LOG_DEBUG << "Loading ROMs";
   emu->loadROM(":/rom/monitor.bin", MONITOR_ADDR, MONITOR_SIZE);
   emu->loadMap(":/rom/monitor.map");
 
@@ -294,13 +305,124 @@ void MainWindow::execute_emu()
   emu->loadMap(":/rom/fantomii.map");
 
   emu->loadROM(":/rom/tinybasic.bin", TINYBASIC_ADDR, TINYBASIC_SIZE);
+}
 
+void MainWindow::execute_emu()
+{
+
+  LOG_DEBUG << "Setting up debugger";
   debugger_dialog->set_emulator(emu);
   debugger_dialog->set_settings(&settings);
 
-  keypad->device->on_reset_press = [this] { emu->reset(); };
-  emu->on_render_frame = [this] { display->update_display(); };
+  keypad->device->on_reset_press = [this]
+  { emu->reset(); };
+  emu->on_render_frame = [this]
+  { display->update_display(); };
 
+  LOG_DEBUG << "Initializing and starting emulator";
   emu->init();
   emu->start();
+}
+
+void MainWindow::setAddress(std::string address)
+{
+  try
+  {
+    startAddress = (uint16_t)std::stoul(address, nullptr, 16);
+    //emu->set_pc(startAddress);
+  }
+  catch (const std::exception &)
+  {
+  }
+}
+
+void MainWindow::setSpeed(std::string speed)
+{
+  // allow parsing speed with % or with suffixes (Hz, kHz, MHz)
+  try
+  {
+    if (speed.back() == '%')
+    {
+      speed.pop_back();
+      int pct = std::stoi(speed, nullptr, 10);
+      emu->set_clock_rate(1000000 * pct / 100);
+      return;
+    }
+
+    if (speed.size() > 2)
+    {
+      std::string suffix = speed.substr(speed.size() - 2);
+      if (suffix == "Hz")
+      {
+        speed = speed.substr(0, speed.size() - 2);
+      }
+      else if (suffix == "hz" || speed.size() > 3)
+      {
+        std::string suffix3 = speed.substr(speed.size() - 3);
+        if (suffix3 == "kHz" || suffix3 == "Khz" || suffix3 == "KHz")
+        {
+          speed = speed.substr(0, speed.size() - 3);
+          emu->set_clock_rate(std::stoi(speed, nullptr, 10) * 1000);
+          return;
+        }
+        else if (suffix3 == "MHz" || suffix3 == "Mhz" || suffix3 == "MHZ")
+        {
+          speed = speed.substr(0, speed.size() - 3);
+          emu->set_clock_rate(std::stoi(speed, nullptr, 10) * 1000000);
+          return;
+        }
+      }
+    }
+
+    emu->set_clock_rate(std::stoi(speed, nullptr, 10));
+  }
+  catch (const std::exception &)
+  {
+  }
+}
+
+void MainWindow::setShowDebugger(bool show)
+{
+  // settings.showDebugger = show;
+}
+
+void MainWindow::setLabel(std::string labelFile)
+{
+  // check if file exists
+  if (!std::filesystem::exists(labelFile))
+  {
+    LOG_ERROR << "Label file does not exist:" << labelFile.c_str();
+    return;
+  }
+
+  emu->loadMap(QString::fromStdString(labelFile));
+}
+
+void MainWindow::setRAM(std::string file)
+{
+  LOG_DEBUG << "Loading RAM from file:" << QString::fromStdString(file);
+  if (!std::filesystem::exists(file))
+  {
+    LOG_ERROR << "File does not exist:" << file.c_str();
+    return;
+  }
+
+  File::load(emu, QString::fromStdString(file));
+}
+
+void MainWindow::setROM(std::string file)
+{
+  LOG_DEBUG << "Loading ROM from file:" << QString::fromStdString(file);
+  if (!std::filesystem::exists(file))
+  {
+    LOG_ERROR << "File does not exist:" << file.c_str();
+    return;
+  }
+
+  // calculate size of rom from file size
+  size_t size = std::filesystem::file_size(file);
+  // calculate address from FFFF - size
+  uint16_t address = 0xFFFF - size + 1;
+
+  emu->loadROM(QString::fromStdString(file), address, size);
 }

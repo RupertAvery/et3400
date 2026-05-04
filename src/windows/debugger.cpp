@@ -1,6 +1,32 @@
 #include "debugger.h"
 #include "debugger_ui.h"
 #include "goto.h"
+#include "../util/log.h"
+
+bool is_call_instruction(uint8_t opcode)
+{
+	// This is a simplified version. In a real implementation, you would need to handle all call instructions.
+	return opcode == 0x20; // JSR (Jump to Subroutine) in 6502
+}	
+
+int get_instruction_length(uint8_t opcode)
+{
+	// This is a simplified version. In a real implementation, you would need to handle all opcodes and their addressing modes.
+	switch (opcode)
+	{
+	case 0x00: // NOP
+		return 1;
+	case 0x01: // LDA (indirect,X)
+	case 0x05: // ORA (zero page)
+	case 0x09: // ORA (immediate)
+		return 2;
+	case 0x4C: // JMP (absolute)
+		return 3;
+	default:
+		return 1; // Default to 1 byte for unknown opcodes
+	}
+}
+
 
 DebuggerDialog::DebuggerDialog() : DebuggerDialog(nullptr)
 {
@@ -32,7 +58,7 @@ void DebuggerDialog::stop(bool checked)
 	}
 }
 
-void DebuggerDialog::step(bool checked)
+void DebuggerDialog::step_into(bool checked)
 {
 	if (!emu_ptr->get_running())
 	{
@@ -40,6 +66,31 @@ void DebuggerDialog::step(bool checked)
 		disassembly_scrollbar->setValue(disassembly_view->offset);
 	}
 }
+
+void DebuggerDialog::step_over(bool checked)
+{
+	if (!emu_ptr->get_running())
+	{
+		offs_t pc = emu_ptr->get_status().pc;
+		uint8_t opcode = emu_ptr->read_byte(pc);
+		int instruction_length = get_instruction_length(opcode);
+		offs_t next_instruction = pc + instruction_length;
+
+		stepAndUpdateDisassembler();
+
+		if (is_call_instruction(opcode))
+		{
+			while (emu_ptr->get_status().pc != next_instruction)
+			{
+				stepAndUpdateDisassembler();
+			}
+			disassembly_scrollbar->setValue(disassembly_view->offset);
+		}
+	}
+}
+
+
+
 
 void DebuggerDialog::refresh()
 {
@@ -94,14 +145,14 @@ void DebuggerDialog::toggle_status_panel(bool checked)
 
 DebuggerDialog::~DebuggerDialog()
 {
-	qDebug() << "Destroying debugger";
+	LOG_DEBUG << "DebuggerDialog destroy";
 	delete memory_view;
 	delete memory_scrollbar;
 	delete memory_selector;
 	delete disassembly_view;
 	delete disassembly_scrollbar;
 	delete disassembly_selector;
-	qDebug() << "Destroying debugger done";
+	LOG_DEBUG << "DebuggerDialog destroy done";
 }
 
 void DebuggerDialog::select_memory_location(int index)
@@ -198,7 +249,7 @@ void DebuggerDialog::update_button_state()
 	bool running = emu_ptr->get_running();
 	start_button->setEnabled(!running);
 	stop_button->setEnabled(running);
-	step_button->setEnabled(!running);
+	step_into_button->setEnabled(!running);
 	//reset_button->setEnabled(!running);
 }
 

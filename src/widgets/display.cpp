@@ -44,20 +44,6 @@ void Display::paintEvent(QPaintEvent * /* event */)
     painter.fillRect(this->rect(), painter.brush());
 
     painter.setPen(Qt::white);
-    // // Clear segment area only
-    // painter.save();
-    // for (int address = 0xC16F; address >= 0xC110; address--)
-    // {
-    //     if ((address & 0x08) != 0x08)
-    //     {
-    //         int position = 6 - ((address & 0xF0) >> 4);
-    //         painter.save();
-    //         painter.translate(20 + position * 45, 10);
-    //         painter.fillRect(QRect(0, 0, 38, 54), painter.brush());
-    //         painter.restore();
-    //     }
-    // }
-    // painter.restore();
 
     painter.save();
     for (int address = 0xC16F; address >= 0xC110; address--)

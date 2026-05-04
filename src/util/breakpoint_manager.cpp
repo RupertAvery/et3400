@@ -1,162 +1,88 @@
-#include "breakpoint_manager.h";
-
-BreakpointManager::BreakpointManager()
-{
-	breakpoints = new std::vector<Breakpoint>;
-}
-
-BreakpointManager::~BreakpointManager()
-{
-	delete breakpoints;
-}
-
-std::vector<Breakpoint>* BreakpointManager::getBreakpoints() {
-	return breakpoints;
-}
+#include "breakpoint_manager.h"
 
 bool BreakpointManager::hasBreakpoint(offs_t address)
 {
-	_lock.lock();
-	std::vector<Breakpoint>::const_iterator it = breakpoints->begin();
-	while (it != breakpoints->end())
-	{
-		if ((*it).address == address)
-		{
-			_lock.unlock();
-			return true;
-		}
-		it++;
-	}
-	_lock.unlock();
-	return false;
-}
-
-void BreakpointManager::addBreakpoints(std::vector<Breakpoint>* newBreakpoints)
-{
-	_lock.lock();
-	std::vector<Breakpoint>::iterator current = newBreakpoints->begin();
-	while (current != newBreakpoints->end())
-	{
-		bool bfound = false;
-		std::vector<Breakpoint>::iterator it = breakpoints->begin();
-		while (it != breakpoints->end())
-		{
-			if ((*it).address == (*current).address)
-			{
-				bfound = true;
-				break;
-			}
-			it++;
-		}
-
-		if (!bfound) {
-			breakpoints->push_back(*current);
-		}
-		current++;
-	}
-	_lock.unlock();
+    std::lock_guard<std::mutex> guard(_lock);
+    return breakpoints.count(address) > 0;
 }
 
 void BreakpointManager::addBreakpoint(offs_t address)
 {
-	_lock.lock();
-	std::vector<Breakpoint>::iterator it = breakpoints->begin();
-	while (it != breakpoints->end())
-	{
-		if ((*it).address == address)
-		{
-			return;
-		}
-		it++;
-	}
-
-	breakpoints->push_back(Breakpoint{ address, true });
-	_lock.unlock();
+    std::lock_guard<std::mutex> guard(_lock);
+    breakpoints.try_emplace(address, Breakpoint{ address, 0, {}, {}, true });
 }
 
-
-void BreakpointManager::clearRamBreakpoints()
+void BreakpointManager::addBreakpoints(std::vector<Breakpoint>* newBreakpoints)
 {
-	_lock.lock();
-	std::vector<Breakpoint>::iterator it = breakpoints->begin();
-	while (it != breakpoints->end())
-	{
-		if ((*it).address < 0x0400)
-		{
-			it = breakpoints->erase(it);
-		}
-		else
-		{
-			it++;
-		}
-	}
-	_lock.unlock();
+    std::lock_guard<std::mutex> guard(_lock);
+    for (const auto& bp : *newBreakpoints)
+        breakpoints.try_emplace(bp.address, bp);
 }
 
 void BreakpointManager::removeBreakpoint(offs_t address)
 {
-	_lock.lock();
-	std::vector<Breakpoint>::iterator it = breakpoints->begin();
-	while (it != breakpoints->end())
-	{
-		if ((*it).address == address)
-		{
-			it = breakpoints->erase(it);
-		}
-		else
-		{
-			it++;
-		}
-	}
-	_lock.unlock();
+    std::lock_guard<std::mutex> guard(_lock);
+    breakpoints.erase(address);
 }
 
 void BreakpointManager::addOrRemoveBreakpoint(offs_t address)
 {
-	_lock.lock();
-	std::vector<Breakpoint>::iterator it = breakpoints->begin();
-	while (it != breakpoints->end())
-	{
-		if ((*it).address == address)
-		{
-			it = breakpoints->erase(it);
-			_lock.unlock();
-			return;
-		}
-		else
-		{
-			it++;
-		}
-	}
+    std::lock_guard<std::mutex> guard(_lock);
+    auto it = breakpoints.find(address);
+    if (it != breakpoints.end())
+        breakpoints.erase(it);
+    else
+        breakpoints.emplace(address, Breakpoint{ address, 0, {}, {}, true });
+}
 
-	breakpoints->push_back(Breakpoint{ address, true });
-	_lock.unlock();
+void BreakpointManager::clearRamBreakpoints()
+{
+    std::lock_guard<std::mutex> guard(_lock);
+    for (auto it = breakpoints.begin(); it != breakpoints.end(); )
+    {
+        if (it->first < 0x0400)
+            it = breakpoints.erase(it);
+        else
+            ++it;
+    }
 }
 
 void BreakpointManager::loadBreakpoints(QString path, bool& success)
 {
-	std::vector<Breakpoint>* newBreakpoints = BreakpointReader::Read(path, success);
-	if (success)
-	{
-		addBreakpoints(newBreakpoints);
-	}
-	delete newBreakpoints;
+    std::vector<Breakpoint>* loaded = BreakpointReader::Read(path, success);
+    if (success)
+        addBreakpoints(loaded);
+    delete loaded;
 }
 
 void BreakpointManager::saveBreakpoints(QString path, bool& success)
 {
-	//std::vector<Label> filteredLabels;
-	//std::vector<Label>::iterator current = labels->begin();
+    std::vector<Breakpoint> vec;
+    {
+        std::lock_guard<std::mutex> guard(_lock);
+        vec.reserve(breakpoints.size());
+        for (const auto& pair : breakpoints)
+            vec.push_back(pair.second);
+    }
+    BreakpointReader::Write(path, &vec, success);
+}
 
-	//while (current != labels->end())
-	//{
-	//    if ((*current).start >= start && (*current).end <= end)
-	//    {
-	//        filteredLabels.push_back((*current));
-	//        break;
-	//    }
-	//    current++;
-	//}
+void BreakpointManager::check_read(offs_t address, uint8_t data)
+{
+    std::lock_guard<std::mutex> guard(_lock);
+    auto it = breakpoints.find(address);
+    if (it != breakpoints.end() && it->second.type == 1)
+    {
+        // hit read breakpoint
+    }
+}
 
-	BreakpointReader::Write(path, breakpoints, success);
+void BreakpointManager::check_write(offs_t address, uint8_t data)
+{
+    std::lock_guard<std::mutex> guard(_lock);
+    auto it = breakpoints.find(address);
+    if (it != breakpoints.end() && it->second.type == 2)
+    {
+        // hit write breakpoint
+    }
 }

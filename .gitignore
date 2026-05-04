@@ -2,3 +2,5 @@ build/
 .vscode
 /Debug
 /Release
+/.vs
+/CMakeFiles

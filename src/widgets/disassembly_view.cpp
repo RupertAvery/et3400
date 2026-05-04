@@ -1,5 +1,5 @@
-#include <QDebug>
 #include "disassembly_view.h"
+#include "../util/log.h"
 
 DisassemblyView::DisassemblyView(QWidget* parent)
 	: QFrame(parent)
@@ -29,20 +29,17 @@ DisassemblyView::DisassemblyView(QWidget* parent)
 	connect(this, &QFrame::customContextMenuRequested, this, &DisassemblyView::showContextMenu);
 
 	buffer = new QPixmap;
-	// action = new QAction;
-	// connect(action, &QAction::triggered, this, &Display::redraw);
-
-	// this->setFixedSize(QSize(320, 85));
+	setMouseTracking(true);
 	setLineWidth(3);
 }
 
 DisassemblyView::~DisassemblyView()
 {
-	qDebug() << "DisassemblyView view destroy";
+	LOG_DEBUG << "DisassemblyView destroy";
 	m_paintTimer->stop();
 	delete m_paintTimer;
 	delete buffer;
-	qDebug() << "DisassemblyView view destroy done";
+	LOG_DEBUG << "DisassemblyView destroy done";
 }
 
 void DisassemblyView::wheelEvent(QWheelEvent* event)
@@ -80,7 +77,7 @@ void DisassemblyView::scrollTo(int value)
 
 void DisassemblyView::bufferDraw()
 {
-	if (!is_memory_set)
+	if (!is_memory_set || emu_ptr == nullptr)
 		return;
 	QPainter painter(buffer);
 	//painter.setRenderHint(QPainter::TextAntialiasing);
@@ -94,8 +91,10 @@ void DisassemblyView::bufferDraw()
 	//font.setStyleStrategy(QFont::NoAntialias);
 
 	painter.setFont(font);
+	item_height = QFontMetrics(font).lineSpacing();
+	visible_items = height() / item_height;
 
-	int y = 15;
+	int y = item_height;
 	int ctr = offset;
 	int x = 5;
 	painter.save();
@@ -137,6 +136,14 @@ void DisassemblyView::bufferDraw()
 		if (has_breakpoint)
 		{
 			painter.drawPixmap(2, y - 13, 16, 16, breakpoint_icon);
+		}
+		else if (ctr == hover_row && !is_comment)
+		{
+			painter.save();
+			painter.setPen(QPen(Qt::red, 1.5));
+			painter.setBrush(Qt::NoBrush);
+			painter.drawEllipse(3, y - 12, 13, 13);
+			painter.restore();
 		}
 
 		if (is_current && is_selected)
@@ -439,6 +446,20 @@ void DisassemblyView::mousePressEvent(QMouseEvent* event)
 		}
 		setFocus();
 	}
+}
+
+void DisassemblyView::mouseMoveEvent(QMouseEvent* event)
+{
+	if (event->pos().x() < 20)
+		hover_row = offset + (event->pos().y() / item_height);
+	else
+		hover_row = -1;
+}
+
+void DisassemblyView::leaveEvent(QEvent* event)
+{
+	hover_row = -1;
+	QFrame::leaveEvent(event);
 }
 
 void DisassemblyView::redraw()

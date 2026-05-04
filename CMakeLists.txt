@@ -3,6 +3,10 @@ set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
 project(et3400 VERSION 0.1.0)
 
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
@@ -52,7 +56,8 @@ set(TOOLSRC
     src/util/label_manager.cpp  
     src/util/disassembly_builder.cpp 
     src/util/breakpoint_manager.cpp 
-    src/util/settings.cpp 
+    src/util/settings.cpp
+    src/util/log.cpp
     src/dasm/disassembler.cpp 
     )
 
@@ -77,10 +82,11 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 
-target_link_libraries(et3400 
-    PRIVATE 
-    Qt5::Core 
-    Qt5::Widgets 
-    Qt5::Gui 
+target_link_libraries(et3400
+    PRIVATE
+    Qt5::Core
+    Qt5::Widgets
+    Qt5::Gui
     Threads::Threads
+    DbgHelp
     )
