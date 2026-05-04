@@ -16,7 +16,7 @@ public:
     offs_t get_end() override;
 
 private:
-    uint8_t displaymem[96];
+    uint8_t displaymem[256];
 };
 
 #endif //DISPLAY_DEV_H
