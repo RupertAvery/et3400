@@ -8,7 +8,7 @@ display_io::display_io()
 uint8_t display_io::read(offs_t addr)
 {
 	addr = addr - 0xC100;
-	addr = addr & 0b01110111;
+	//addr = addr & 0b01110111;
 	return displaymem[addr];
 };
 
@@ -16,7 +16,11 @@ void display_io::write(offs_t addr, uint8_t data)
 {
 	addr = addr - 0xC100;
 	addr = addr & 0b01110111;
+	// write to all addresses that mirror the same data
 	displaymem[addr] = data;
+	displaymem[addr | 0x08] = data;
+	displaymem[addr | 0x80] = data;
+	displaymem[addr | 0x88] = data;
 };
 
 bool display_io::is_mapped(offs_t addr)
