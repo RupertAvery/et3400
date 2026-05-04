@@ -3,44 +3,18 @@
 #include <QString>
 #include <QDir>
 #include <QStringList>
-
-#ifdef _WIN32
-#include <Windows.h>
-#endif //_WIN32
-
-#ifdef _WINDOWS_
-#include <windows.h>
-#include <wchar.h>
-#include <KnownFolders.h>
-#include <shlobj.h>
-
-QString getSettingsPath(bool &success)
-{
-    QString spath;
-    PWSTR path = NULL;
-    HRESULT hr = SHGetKnownFolderPath(FOLDERID_RoamingAppData, 0, NULL, &path);
-    if (SUCCEEDED(hr))
-    {
-        spath = QString("%1").arg(path) + QDir::separator() + QString("ET3400") + QDir::separator() + QString("settings.ini");
-    }
-    CoTaskMemFree(path);
-    return spath;
-}
-
-#else
+#include <QCoreApplication>
 
 QString getSettingsPath(bool &success)
 {
     success = true;
-    return QString("~/.config/et3400/settings.ini");
+    return QCoreApplication::applicationDirPath() + "/settings.ini";
 }
-
-#endif
 
 Settings load_settings()
 {
 
-    Settings settings{ false, false };
+    Settings settings { false, false, 471000 };
 
     bool success;
     QString settingsFile = getSettingsPath(success);
@@ -53,7 +27,7 @@ Settings load_settings()
         if (!file.open(QIODevice::ReadOnly))
         {
             //QMessageBox::information(0, "error", file.errorString());
-            return Settings{true};
+            return settings;
         }
 
         QTextStream in(&file);
@@ -72,6 +46,10 @@ Settings load_settings()
                 else if (list1.at(0) == "ShowMemoryView" && list1.at(1) == "true")
                 {
                     settings.showMemoryView = true;
+                }
+                else if (list1.at(0) == "ClockRate")
+                {
+                    settings.clockRate = list1.at(1).toInt();
                 }
                 LOG_DEBUG << "Settings entry:" << list1;
             }
@@ -115,6 +93,8 @@ void save_settings(Settings *settings)
         out << "ShowTips=" << (settings->showTips ? "true" : "false");
         out << "\r\n";
         out << "ShowMemoryView=" << (settings->showMemoryView ? "true" : "false");
+        out << "\r\n";
+        out << "ClockRate=" << settings->clockRate;
 
         out.flush();
 

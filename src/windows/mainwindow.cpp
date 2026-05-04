@@ -297,6 +297,8 @@ void MainWindow::init_emu()
   LOG_DEBUG << "Creating emulator instance";
   emu = new et3400emu(keypad->device, display->device);
 
+  emu->set_clock_rate(settings.clockRate);
+
   LOG_DEBUG << "Loading ROMs";
   emu->loadROM(":/rom/monitor.bin", MONITOR_ADDR, MONITOR_SIZE);
   emu->loadMap(":/rom/monitor.map");
@@ -329,7 +331,7 @@ void MainWindow::setAddress(std::string address)
   try
   {
     startAddress = (uint16_t)std::stoul(address, nullptr, 16);
-    //emu->set_pc(startAddress);
+    // emu->set_pc(startAddress);
   }
   catch (const std::exception &)
   {

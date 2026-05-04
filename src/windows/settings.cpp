@@ -89,7 +89,7 @@ void SettingsDialog::setClockRate(int clock_rate)
     freq_input->setText(QString::number(display_val, 'g', 6));
     freq_input->blockSignals(false);
 
-    emu_ptr->set_clock_rate(clock_rate);
+    emu_ptr->set_clock_rate(clock_rate * 10000);
 }
 
 void SettingsDialog::onFreqInputChanged()
@@ -112,7 +112,7 @@ void SettingsDialog::onFreqInputChanged()
 
 void SettingsDialog::onUnitChanged(int index)
 {
-    double hz = (double)emu_ptr->get_clock_rate() * 10000.0;
+    double hz = (double)emu_ptr->get_clock_rate();
     double display_val;
     switch (index) {
         case 2:  display_val = hz / 1000000.0; break;
@@ -128,7 +128,7 @@ void SettingsDialog::set_emulator(et3400emu *emu)
 {
     emu_ptr = emu;
     int clock_rate = emu_ptr->get_clock_rate();
-    slider->setValue(clock_rate);
+    slider->setValue(clock_rate / 10000);
     if (clock_rate < 20)
     {
         warning_label->show();

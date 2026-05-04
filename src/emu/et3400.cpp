@@ -1,4 +1,5 @@
 #include "et3400.h"
+#include "../util/log.h"
 #include <chrono>
 #include <thread>
 
@@ -12,7 +13,8 @@ et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
     memory_map->breakpoints = breakpoints;
 
     device = new m6800_cpu_device(memory_map);
-    device->check_breakpoint = [this](uint32_t address) { return check_breakpoint(address); };
+    device->check_breakpoint = [this](uint32_t address)
+    { return check_breakpoint(address); };
 
     DebugConsoleAdapter *consoleAdapter = new DebugConsoleAdapter;
     mc6820 = new MC6820(consoleAdapter);
@@ -22,19 +24,19 @@ et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
     last_pc = 0xFFFF;
     total_cycles = 0;
 
-    //ram = new memory_device(0x0000, 0x0400, false);
+    // ram = new memory_device(0x0000, 0x0400, false);
     ram = new memory_device(0x0000, 0x0800, false);
-    //memory_device* bank2 = new memory_device(0x0400, 0x0400, false);
-    //memory_device* bank3 = new memory_device(0x0800, 0x0400, false);
-    //memory_device* bank4 = new memory_device(0x0C00, 0x0400, false);
+    // memory_device* bank2 = new memory_device(0x0400, 0x0400, false);
+    // memory_device* bank3 = new memory_device(0x0800, 0x0400, false);
+    // memory_device* bank4 = new memory_device(0x0C00, 0x0400, false);
 
     this->keypad = keypad_dev;
     this->display = display_dev;
 
     memory_map->map(ram);
-    //memory_map->map(bank2);
-    //memory_map->map(bank3);
-    //memory_map->map(bank4);
+    // memory_map->map(bank2);
+    // memory_map->map(bank3);
+    // memory_map->map(bank4);
     memory_map->map(keypad);
     memory_map->map(display);
     memory_map->map(mc6820);
@@ -181,18 +183,20 @@ int et3400emu::get_clock_rate()
 void et3400emu::worker()
 {
     using clk = std::chrono::steady_clock;
-    using us  = std::chrono::microseconds;
+    using us = std::chrono::microseconds;
 
-    const int frame_us    = 16667;
-    const int base_cycles = 1667;
-    const float pct       = 100.f;
+    const int frame_us = 16667;
+    const int base_cycles = 16667;
+    const float base_rate = 1000000.f;
+
+    LOG_INFO << "Emulator thread started with clock rate: " << clock_rate;
 
     auto deadline = clk::now();
     int excess = 0;
 
     while (this->running)
     {
-        int cycles_per_frame = (int)(base_cycles * (float)clock_rate / pct);
+        int cycles_per_frame = (int)(base_cycles * (float)clock_rate / (float)base_rate);
         device->m_icount = cycles_per_frame + excess;
         device->pre_execute_run();
         device->execute_run();

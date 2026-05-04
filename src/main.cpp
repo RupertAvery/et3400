@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QTimer>
 
+#ifdef _WIN32
 #include <Windows.h>
 #include <DbgHelp.h>
 
@@ -19,11 +20,15 @@ LONG WINAPI crashHandler(EXCEPTION_POINTERS *ep)
     }
     return EXCEPTION_EXECUTE_HANDLER;
 }
+#endif
 
 
 int main(int argc, char* argv[])
 {
+#ifdef _WIN32
     SetUnhandledExceptionFilter(crashHandler);
+    timeBeginPeriod(1);
+#endif
 	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 	QApplication app(argc, argv);
@@ -80,5 +85,9 @@ int main(int argc, char* argv[])
 
     QTimer::singleShot(0, &window, &MainWindow::start);
 
-	return app.exec();
+	int result = app.exec();
+#ifdef _WIN32
+    timeEndPeriod(1);
+#endif
+    return result;
 }

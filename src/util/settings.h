@@ -5,6 +5,7 @@ struct Settings
 {
     bool showTips;
     bool showMemoryView;
+    int clockRate;
 };
 
 Settings load_settings();

@@ -88,5 +88,8 @@ target_link_libraries(et3400
     Qt5::Widgets
     Qt5::Gui
     Threads::Threads
-    DbgHelp
     )
+
+if(WIN32)
+    target_link_libraries(et3400 PRIVATE DbgHelp winmm)
+endif()
