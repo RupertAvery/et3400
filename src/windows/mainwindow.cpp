@@ -336,6 +336,11 @@ void MainWindow::execute_emu()
   LOG_DEBUG << "Initializing and starting emulator";
   emu->init();
   emu->start();
+
+  if (showDebugger)
+  {
+    show_debugger();
+  }
 }
 
 void MainWindow::setAddress(std::string address)
@@ -397,7 +402,7 @@ void MainWindow::setSpeed(std::string speed)
 
 void MainWindow::setShowDebugger(bool show)
 {
-  // settings.showDebugger = show;
+  showDebugger = show;
 }
 
 void MainWindow::setLabel(std::string labelFile)

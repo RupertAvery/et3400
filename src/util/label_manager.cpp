@@ -1,4 +1,5 @@
 #include "label_manager.h"
+#include "log.h"
 
 LabelManager::LabelManager()
 {
@@ -21,6 +22,7 @@ void LabelManager::addLabels(std::vector<Label> *labels)
 
 	while (current != labels->end())
 	{
+		// LOG_DEBUG << "Label: " << (*current).comment << "type:" << (*current).type << "start:" << (*current).start << "end:" << (*current).end;
 		addLabel(*current);
 		current++;
 	}
@@ -108,10 +110,10 @@ void LabelManager::saveLabels(QString path, uint32_t start, uint32_t end, bool &
 
 	while (current != _labels->end())
 	{
+		// LOG_DEBUG << "Label: " << (*current).comment << "type:" << (*current).type << "start:" << (*current).start << "end:" << (*current).end;
 		if ((*current).start >= start && (*current).end <= end)
 		{
 			filteredLabels.push_back((*current));
-			break;
 		}
 		current++;
 	}

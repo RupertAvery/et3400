@@ -58,9 +58,10 @@ void GotoDialog::setLabels(std::vector<Label> *labels)
 
 	for (std::vector<Label>::iterator it = labels->begin(); it != labels->end(); ++it)
 	{
-		QString address = QString("$%1").arg((*it).start, 4, 16, QChar('0')).toUpper();
+		QString startAddress = QString("$%1").arg((*it).start, 4, 16, QChar('0')).toUpper();
+		QString endAddress = QString("$%1").arg((*it).end, 4, 16, QChar('0')).toUpper();
 
-		QStandardItem *item = new QStandardItem(QString("%1 - %2").arg(address).arg((*it).comment));
+		QStandardItem *item = new QStandardItem(QString("%1-%2: %3").arg(startAddress).arg(endAddress).arg((*it).comment));
 		item->setData((*it).start, Qt::UserRole);
 		item->setEditable(false);
 		parentItem->appendRow(item);

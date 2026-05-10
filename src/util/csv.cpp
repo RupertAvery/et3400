@@ -1,5 +1,6 @@
 
 #include "csv.h"
+#include "log.h"
 
 bool readCSVRow(QTextStream& in, QStringList* row) {
 
@@ -29,6 +30,7 @@ bool readCSVRow(QTextStream& in, QStringList* row) {
             t = 4;
         else {
             in >> ch;
+            if (ch == '\r') continue;
             if (ch == ',') t = 0;
             else if (ch == '\"') t = 1;
             else if (ch == '\n') t = 2;

@@ -85,7 +85,8 @@ uint8_t MemoryMapManager::read(offs_t addr)
 
     uint8_t data = device->read(addr);
 
-    if (breakpoints) breakpoints->check_read(addr, data);
+    if (breakpoints)
+        breakpoints->check_read(addr, data);
 
     return data;
 };
@@ -99,7 +100,8 @@ void MemoryMapManager::write(offs_t addr, uint8_t data)
 
     device->write(addr, data);
 
-    if (breakpoints) breakpoints->check_write(addr, data);
+    if (breakpoints)
+        breakpoints->check_write(addr, data);
 };
 
 memory_mapped_device *MemoryMapManager::get_block_device(off_t address)

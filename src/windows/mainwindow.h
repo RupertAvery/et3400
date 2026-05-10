@@ -57,7 +57,8 @@ private:
   SettingsDialog *settings_dialog;
   DebuggerDialog *debugger_dialog;
   et3400emu *emu = nullptr;
-  uint16_t startAddress;
+  int16_t startAddress = -1;
+  bool showDebugger;
   
   void init_emu();
   void execute_emu();

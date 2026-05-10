@@ -197,14 +197,24 @@ void et3400emu::worker()
     const int base_cycles = 16667;
     const float base_rate = 1000000.f;
 
+    int cycles_per_frame = (int)(base_cycles * (float)clock_rate / (float)base_rate);
+    if (cycles_per_frame <= 10)
+        cycles_per_frame = 10;
+
     LOG_INFO << "Emulator thread started with clock rate: " << clock_rate;
+    LOG_INFO << "CPS: " << cycles_per_frame;
 
     auto deadline = clk::now();
     int excess = 0;
 
+    LOG_INFO << "Reset Line: " << device->reset_line;
+    LOG_INFO << "PC: " << device->m_pc.d;
+
     while (this->running)
     {
-        int cycles_per_frame = (int)(base_cycles * (float)clock_rate / (float)base_rate);
+        cycles_per_frame = (int)(base_cycles * (float)clock_rate / (float)base_rate);
+        if (cycles_per_frame <= 10)
+            cycles_per_frame = 10;
         device->m_icount = cycles_per_frame + excess;
         device->pre_execute_run();
         device->execute_run();
