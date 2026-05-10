@@ -110,9 +110,20 @@ You can also open the `.sln` file in Visual Studio if you have C++ workload inst
 
 ## Installation
 
+Install the necessary packages (Note: This was from 2022)
+
 ```
 sudo apt-get update
 sudo apt install git build-essential cmake qt5-base qt5-multimedia
+```
+
+If this does not work, you might want to try the following (from https://github.com/RupertAvery/et3400/issues/13)
+
+```
+apt-get install cmake-dbgsym cmake-qt-gui-dbgsym cmake
+apt-get install qt5ct
+apt-get install qtbase5-dev
+apt-get install qtdeclarative5-dev
 ```
 
 ### Clone this repository
