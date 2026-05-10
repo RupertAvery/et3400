@@ -89,6 +89,7 @@ private:
 	QAction* toggle_status_action;
 
 	QToolButton* labels_selector; 
+	QAction* clear_labels_action;
 	QAction* add_label_action;
 	QAction* goto_label_action;
 
@@ -144,6 +145,7 @@ private:
 
 	void breakpoint_handler(bool checked);
 
+	void clear_labels();
 	void add_label();
 	void goto_label();
 

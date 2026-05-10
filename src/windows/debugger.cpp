@@ -482,6 +482,11 @@ void DebuggerDialog::after_load_ram()
 	}
 }
 
+void DebuggerDialog::clear_labels()
+{
+	disassembly_view->clearLabels();
+}
+
 void DebuggerDialog::add_label()
 {
 	disassembly_view->addLabel();

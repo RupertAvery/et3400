@@ -19,6 +19,9 @@ void DebuggerDialog::setupUI()
     labels_selector->setText("Labels   ");
     labels_selector->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
 
+    clear_labels_action = new QAction("Clear Labels (RAM)", this);
+    connect(clear_labels_action, &QAction::triggered, this, &DebuggerDialog::clear_labels);
+
     add_label_action = new QAction("Add Label", this);
     connect(add_label_action, &QAction::triggered, this, &DebuggerDialog::add_label);
 
@@ -27,6 +30,8 @@ void DebuggerDialog::setupUI()
     QMenu *labels_selector_menu = new QMenu(labels_selector);
     labels_selector_menu->addAction(add_label_action);
     labels_selector_menu->addAction(goto_label_action);
+    labels_selector_menu->addSeparator();
+    labels_selector_menu->addAction(clear_labels_action);
     labels_selector->setMenu(labels_selector_menu);
 
     MakeButton(start_button, "Start (F5)", ":/buttons/Run_16x.png", Qt::Key_F5, start);
@@ -55,7 +60,6 @@ void DebuggerDialog::setupUI()
 
     QAction *saveRam_action = new QAction("&Save RAM", this);
     saveRam_action->setShortcut(Qt::CTRL + Qt::Key_S);
-
 
     QAction *openRom_action = new QAction("Load ROM", this);
 

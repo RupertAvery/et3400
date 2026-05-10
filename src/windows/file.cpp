@@ -36,7 +36,7 @@ void File::load_ram(QWidget *parent, et3400emu *emu_ptr)
 	File::load(emu_ptr, fileName);
 
 	emu_ptr->breakpoints->clearRamBreakpoints();
-	emu_ptr->labels->clearRamLabels();
+	//emu_ptr->labels->clearRamLabels();
 
 	// reset and resume emulation
 	emu_ptr->reset();

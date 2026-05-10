@@ -64,11 +64,10 @@ void LabelManager::clearRamLabels()
 
 	while (current != _labels->end())
 	{
-		if (current->start < 0x0400)
-		{
+		if (current->start < 0x07FF)
 			current = _labels->erase(current);
-		}
-		current++;
+		else
+			++current;
 	}
 
 	_isDirty = true;
@@ -127,4 +126,3 @@ bool LabelManager::getIsDirty()
 {
 	return _isDirty;
 }
-

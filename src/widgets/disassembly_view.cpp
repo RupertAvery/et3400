@@ -1,10 +1,10 @@
 #include "disassembly_view.h"
 #include "../util/log.h"
 
-DisassemblyView::DisassemblyView(QWidget* parent)
+DisassemblyView::DisassemblyView(QWidget *parent)
 	: QFrame(parent)
 {
-	//setMidLineWidth(0);
+	// setMidLineWidth(0);
 	setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
 	setLineWidth(3);
 
@@ -42,7 +42,7 @@ DisassemblyView::~DisassemblyView()
 	LOG_DEBUG << "DisassemblyView destroy done";
 }
 
-void DisassemblyView::wheelEvent(QWheelEvent* event)
+void DisassemblyView::wheelEvent(QWheelEvent *event)
 {
 	int degrees = event->delta() / 8;
 	int steps = degrees / 15;
@@ -80,15 +80,15 @@ void DisassemblyView::bufferDraw()
 	if (!is_memory_set || emu_ptr == nullptr)
 		return;
 	QPainter painter(buffer);
-	//painter.setRenderHint(QPainter::TextAntialiasing);
-	// Clear display
+	// painter.setRenderHint(QPainter::TextAntialiasing);
+	//  Clear display
 	painter.setBrush(QBrush(Qt::white));
 
 	painter.fillRect(contentsRect(), painter.brush());
 
 	QFont font("Courier", 12);
 	font.setWeight(QFont::Medium);
-	//font.setStyleStrategy(QFont::NoAntialias);
+	// font.setStyleStrategy(QFont::NoAntialias);
 
 	painter.setFont(font);
 	item_height = QFontMetrics(font).lineSpacing();
@@ -113,7 +113,7 @@ void DisassemblyView::bufferDraw()
 
 	QColor white = QColor("#FFFFFF");
 
-	//emu_ptr->breakpoints->lock();
+	// emu_ptr->breakpoints->lock();
 
 	int linesSize = lines->size();
 
@@ -194,11 +194,11 @@ void DisassemblyView::bufferDraw()
 
 		if (is_comment)
 		{
-			//painter.setPen(address_color);
-			//painter.drawText(20, y, QString("$%1:").arg(line[ctr].address, 4, 16, QChar('0')).toUpper());
+			// painter.setPen(address_color);
+			// painter.drawText(20, y, QString("$%1:").arg(line[ctr].address, 4, 16, QChar('0')).toUpper());
 
-			//painter.setPen(opcode_color);
-			//painter.drawText(90, y, line[ctr].opcodes);
+			// painter.setPen(opcode_color);
+			// painter.drawText(90, y, line[ctr].opcodes);
 
 			painter.setPen(opcode_color);
 			painter.drawText(20, y, line[ctr].opcodes);
@@ -248,12 +248,12 @@ void DisassemblyView::bufferDraw()
 		y += item_height;
 	}
 
-	//emu_ptr->breakpoints->unlock();
+	// emu_ptr->breakpoints->unlock();
 
 	painter.restore();
 }
 
-void DisassemblyView::resizeEvent(QResizeEvent* event)
+void DisassemblyView::resizeEvent(QResizeEvent *event)
 {
 	QSize size = event->size();
 	buffer = new QPixmap(size);
@@ -280,14 +280,14 @@ DisassemblyLine DisassemblyView::findLine(offs_t address)
 		}
 		it++;
 	}
-	return DisassemblyLine{ 0, DisassemblyType::Empty, NULL, NULL, NULL };
+	return DisassemblyLine{0, DisassemblyType::Empty, NULL, NULL, NULL};
 }
 
 void DisassemblyView::addOrRemoveBreakpoint(int line_number)
 {
 	if (line_number > -1)
 	{
-		DisassemblyLine* line = &lines->at(line_number);
+		DisassemblyLine *line = &lines->at(line_number);
 		if (line->type == DisassemblyType::Assembly)
 		{
 			emit onAddorRemoveBreakpoint(line->address);
@@ -295,7 +295,7 @@ void DisassemblyView::addOrRemoveBreakpoint(int line_number)
 	}
 }
 
-void DisassemblyView::keyPressEvent(QKeyEvent* event)
+void DisassemblyView::keyPressEvent(QKeyEvent *event)
 {
 	switch (event->key())
 	{
@@ -345,7 +345,8 @@ void DisassemblyView::adjustSelected(int direction)
 
 	bool success = true;
 
-	while (lines->at(newSelected).type == DisassemblyType::Comment) {
+	while (lines->at(newSelected).type == DisassemblyType::Comment)
+	{
 		newSelected += direction;
 
 		if (newSelected < 0)
@@ -356,7 +357,7 @@ void DisassemblyView::adjustSelected(int direction)
 			break;
 		}
 
-		if (newSelected > lines->size()-1)
+		if (newSelected > lines->size() - 1)
 		{
 			offset = max_vscroll;
 			newSelected = lines->size() - 1;
@@ -365,21 +366,23 @@ void DisassemblyView::adjustSelected(int direction)
 		}
 	}
 
-	if (success) {
+	if (success)
+	{
 		selected = newSelected;
 	}
 	else
 	{
-		while (lines->at(newSelected).type == DisassemblyType::Comment) {
+		while (lines->at(newSelected).type == DisassemblyType::Comment)
+		{
 			newSelected += 1;
 		}
 		selected = newSelected;
 	}
 
-	//if (newSelected < 0)
+	// if (newSelected < 0)
 	//	newSelected = 0;
 
-	//if (newSelected > lines->size())
+	// if (newSelected > lines->size())
 	//	newSelected = lines->size();
 
 	if (selected > visible_items + offset - 1)
@@ -403,7 +406,7 @@ void DisassemblyView::adjustSelected(int direction)
 	}
 }
 
-void DisassemblyView::paintEvent(QPaintEvent* /* event */)
+void DisassemblyView::paintEvent(QPaintEvent * /* event */)
 {
 	QPainter painter(this);
 	if (is_memory_set)
@@ -414,7 +417,7 @@ void DisassemblyView::paintEvent(QPaintEvent* /* event */)
 	}
 }
 
-void DisassemblyView::mousePressEvent(QMouseEvent* event)
+void DisassemblyView::mousePressEvent(QMouseEvent *event)
 {
 	if (event->button() == Qt::MouseButton::LeftButton)
 	{
@@ -448,7 +451,7 @@ void DisassemblyView::mousePressEvent(QMouseEvent* event)
 	}
 }
 
-void DisassemblyView::mouseMoveEvent(QMouseEvent* event)
+void DisassemblyView::mouseMoveEvent(QMouseEvent *event)
 {
 	if (event->pos().x() < 20)
 		hover_row = offset + (event->pos().y() / item_height);
@@ -456,7 +459,7 @@ void DisassemblyView::mouseMoveEvent(QMouseEvent* event)
 		hover_row = -1;
 }
 
-void DisassemblyView::leaveEvent(QEvent* event)
+void DisassemblyView::leaveEvent(QEvent *event)
 {
 	hover_row = -1;
 	QFrame::leaveEvent(event);
@@ -548,7 +551,7 @@ void DisassemblyView::refresh()
 	redraw();
 }
 
-void DisassemblyView::setRange(offs_t start, offs_t end, uint8_t* memory)
+void DisassemblyView::setRange(offs_t start, offs_t end, uint8_t *memory)
 {
 	this->start = start;
 	this->end = end;
@@ -558,17 +561,23 @@ void DisassemblyView::setRange(offs_t start, offs_t end, uint8_t* memory)
 
 	DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
 
-	//int x = lines->size() - visible_items;
-	//max_vscroll = x > 0 ? x : 0;
-	//emit on_size(max_vscroll);
+	// int x = lines->size() - visible_items;
+	// max_vscroll = x > 0 ? x : 0;
+	// emit on_size(max_vscroll);
 	resizeEvent(new QResizeEvent(size(), size()));
 	offset = 0;
 	is_memory_set = true;
 }
 
-void DisassemblyView::setEmulator(et3400emu* emu)
+void DisassemblyView::setEmulator(et3400emu *emu)
 {
 	emu_ptr = emu;
+}
+
+void DisassemblyView::clearLabels()
+{
+	emu_ptr->labels->clearRamLabels();
+	refresh();
 }
 
 void DisassemblyView::addLabel()
@@ -581,7 +590,7 @@ void DisassemblyView::addLabel()
 		address = lines->at(selected).address;
 	}
 
-	labelDialog.setLabel(LabelInfo{ QString("New Label"), LabelType::COMMENT, address, address }, LabelDialogMode::Add);
+	labelDialog.setLabel(LabelInfo{QString("New Label"), LabelType::COMMENT, address, address}, LabelDialogMode::Add);
 
 	QDialog::DialogCode result = (QDialog::DialogCode)labelDialog.exec();
 
@@ -589,7 +598,7 @@ void DisassemblyView::addLabel()
 	{
 		LabelInfo label = labelDialog.getLabel();
 
-		emu_ptr->labels->addLabel(Label{ label.start, label.end, label.type, label.text });
+		emu_ptr->labels->addLabel(Label{label.start, label.end, label.type, label.text});
 
 		DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
 
@@ -599,10 +608,10 @@ void DisassemblyView::addLabel()
 	}
 }
 
-void DisassemblyView::addLabel(DisassemblyLine* line)
+void DisassemblyView::addLabel(DisassemblyLine *line)
 {
 	LabelDialog labelDialog;
-	labelDialog.setLabel(LabelInfo{ QString("New Label"), LabelType::DATA, line->address, line->address }, LabelDialogMode::Add);
+	labelDialog.setLabel(LabelInfo{QString("New Label"), LabelType::DATA, line->address, line->address}, LabelDialogMode::Add);
 
 	QDialog::DialogCode result = (QDialog::DialogCode)labelDialog.exec();
 
@@ -610,7 +619,7 @@ void DisassemblyView::addLabel(DisassemblyLine* line)
 	{
 		LabelInfo label = labelDialog.getLabel();
 
-		emu_ptr->labels->addLabel(Label{ label.start, label.end, label.type, label.text });
+		emu_ptr->labels->addLabel(Label{label.start, label.end, label.type, label.text});
 
 		DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
 
@@ -620,10 +629,10 @@ void DisassemblyView::addLabel(DisassemblyLine* line)
 	}
 }
 
-void DisassemblyView::editLabel(DisassemblyLine* line)
+void DisassemblyView::editLabel(DisassemblyLine *line)
 {
 	LabelDialog labelDialog;
-	labelDialog.setLabel(LabelInfo{ line->label->comment, line->label->type, line->label->start, line->label->end }, LabelDialogMode::Edit);
+	labelDialog.setLabel(LabelInfo{line->label->comment, line->label->type, line->label->start, line->label->end}, LabelDialogMode::Edit);
 
 	QDialog::DialogCode result = (QDialog::DialogCode)labelDialog.exec();
 
@@ -633,7 +642,7 @@ void DisassemblyView::editLabel(DisassemblyLine* line)
 
 		emu_ptr->labels->removeLabel(line->label);
 
-		emu_ptr->labels->addLabel(Label{ label.start, label.end, label.type, label.text });
+		emu_ptr->labels->addLabel(Label{label.start, label.end, label.type, label.text});
 
 		DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
 
@@ -643,7 +652,7 @@ void DisassemblyView::editLabel(DisassemblyLine* line)
 	}
 }
 
-void DisassemblyView::removeLabel(DisassemblyLine* line)
+void DisassemblyView::removeLabel(DisassemblyLine *line)
 {
 	RemoveLabelDialog remove_label;
 	remove_label.setLabel(QString(line->label->comment));
@@ -662,13 +671,13 @@ void DisassemblyView::removeLabel(DisassemblyLine* line)
 	}
 }
 
-void DisassemblyView::showContextMenu(const QPoint& pos)
+void DisassemblyView::showContextMenu(const QPoint &pos)
 {
 	// int line_number = offset + (pos.y() / item_height);
 
 	if (selected > -1)
 	{
-		DisassemblyLine* line = &lines->at(selected);
+		DisassemblyLine *line = &lines->at(selected);
 
 		QMenu contextMenu(tr("Context menu"), this);
 		QAction addLabelAction("Add label", this);
@@ -677,14 +686,17 @@ void DisassemblyView::showContextMenu(const QPoint& pos)
 
 		if (line->label == NULL)
 		{
-			connect(&addLabelAction, &QAction::triggered, this, [this, line] { addLabel(line); });
+			connect(&addLabelAction, &QAction::triggered, this, [this, line]
+					{ addLabel(line); });
 			contextMenu.addAction(&addLabelAction);
 		}
 		else
 		{
-			connect(&editLabelAction, &QAction::triggered, this, [this, line] { editLabel(line); });
+			connect(&editLabelAction, &QAction::triggered, this, [this, line]
+					{ editLabel(line); });
 			contextMenu.addAction(&editLabelAction);
-			connect(&removeLabelAction, &QAction::triggered, this, [this, line] { removeLabel(line); });
+			connect(&removeLabelAction, &QAction::triggered, this, [this, line]
+					{ removeLabel(line); });
 			contextMenu.addAction(&removeLabelAction);
 		}
 
@@ -692,10 +704,10 @@ void DisassemblyView::showContextMenu(const QPoint& pos)
 	}
 
 	////connect(&action1, &QAction::triggered(), this, SLOT(removeDataPoint()));
-	//QAction action3("Remove Breakpoint", this);
-	//QAction action4("Add Breakpoint", this);
+	// QAction action3("Remove Breakpoint", this);
+	// QAction action4("Add Breakpoint", this);
 
-	//if (line->type == DisassemblyType::Assembly)
+	// if (line->type == DisassemblyType::Assembly)
 	//{
 	//	if (line->has_breakpoint)
 	//	{
@@ -707,5 +719,5 @@ void DisassemblyView::showContextMenu(const QPoint& pos)
 	//		//connect(&action1, &QAction::triggered(), this, SLOT(removeDataPoint()));
 	//		contextMenu.addAction(&action4);
 	//	}
-	//}
+	// }
 }
