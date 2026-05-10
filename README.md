@@ -16,6 +16,10 @@ A built-in ROM is provided. The ROM contains the Monitor program for the Heathki
 
 # Features
 
+* [Debugger](#debugger)
+* [Breakpoints](#breakpoints)
+* [Labels](#labels)
+
 ## Debugger
 
 The emulator features a debugger which allows you to stop emulation and step into each instruction and see memory and registers update in real time.
@@ -52,11 +56,41 @@ When emulator execution reaches the instruction, the emulator will stop and the 
 
 <img width="369" height="112" alt="image" src="https://github.com/user-attachments/assets/b5fa37c9-e53c-41ac-a976-545754f6ceee" />
 
+### Loading and Saving Breakpoints
+
+Breakpoints can be loaded and saved from the toolbar menu (File > Load Breakpoints and File > Save Breakpoints)
+
 ## Labels
 
 Labels allow you to label and categorize areas of memory and change the way the memory is disassembled. For example, you can set an area of memory as DATA, and the disassembler will skip over the area, preventing it from being disassembled as instructions.
 
+Below is a view of a section of RAM before and after adding labels.
+
 <img alt="image" src="documentation/et3400-labels.png" />
+
+### Adding Labels
+
+Labels can be added from the toolbar menu (Labels > Add Label) or by right-clicking on an unlabeled line in the disassembly view. 
+
+<img width="331" height="123" alt="image" src="https://github.com/user-attachments/assets/de78fb0d-3617-4b67-b7f3-144beaa01530" />
+
+You will be prompted to select a type of label, Comment or Data. 
+
+**Comment** will treat memory at the start address as an instruction, not affecting disassembly.
+
+**Data** requires a start address and end address, will treat memory between the the start and end address as data, skipping disassembly over the range and displaying the memory as raw data.
+
+<img width="352" height="282" alt="image" src="https://github.com/user-attachments/assets/71a626c5-8c9c-4918-bd41-fe08327cfad3" />
+
+### Editing and Removing Labels
+
+You can edit or remove a label by right-clicking on a labeled range in the disassembly view.
+
+<img width="402" height="214" alt="image" src="https://github.com/user-attachments/assets/a22ba124-099a-4eb6-b172-2490e59c5c9d" />
+
+### Loading and Saving Labels
+
+Labels can be loaded and saved from the toolbar menu (File > Load Labels (RAM) and File > Save Labels (RAM))
 
 # Manual
 
