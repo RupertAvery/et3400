@@ -33,7 +33,7 @@ public:
     virtual offs_t get_end() { return 0; }
     std::string name;
 
-    memory_mapped_device *next;
+    memory_mapped_device *next = nullptr;
 };
 
 struct mapped_memory_block

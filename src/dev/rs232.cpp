@@ -45,10 +45,10 @@ uint8_t RS232Adapter::receive()
 
     if (rcvState == 0)
     {
-         if (!inputBuffer->empty() > 0)
+         if (!inputBuffer.empty())
          {
-             tempBuffer = inputBuffer->front();
-             inputBuffer->pop();
+             tempBuffer = inputBuffer.front();
+             inputBuffer.pop();
              rcvState++;
              value = 0xFF;
          }
@@ -127,6 +127,11 @@ uint8_t RS232Adapter::receive()
 
 //     return value;
 // }
+
+void RS232Adapter::queue(uint8_t data)
+{
+    inputBuffer.push(data);
+}
 
 void RS232Adapter::send(uint8_t value)
 {

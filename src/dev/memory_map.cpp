@@ -107,10 +107,13 @@ void MemoryMapManager::write(offs_t addr, uint8_t data)
 memory_mapped_device *MemoryMapManager::get_block_device(off_t address)
 {
     int block = address / BLOCK_SIZE;
+
     memory_mapped_device *device = blocks[block].device;
+
     while (device != NULL && !device->is_mapped(address))
     {
         device = device->next;
     }
+
     return device;
 }

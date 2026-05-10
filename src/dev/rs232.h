@@ -19,7 +19,7 @@ private:
     int sendBuffer = 0;
     int rcvState = 0;
     uint8_t rcvBuffer = 0x7F;
-    std::queue<uint8_t> *inputBuffer;
+    std::queue<uint8_t> inputBuffer;
     uint8_t tempBuffer;
 
 
