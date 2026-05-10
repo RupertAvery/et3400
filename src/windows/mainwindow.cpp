@@ -25,6 +25,8 @@ MainWindow::MainWindow(QWidget *parent)
   QAction *saveRam_action = new QAction("&Save RAM", this);
   saveRam_action->setShortcut(Qt::CTRL + Qt::Key_S);
 
+  QAction *openRom_action = new QAction("Load ROM", this);
+
   QAction *quit_action = new QAction("E&xit", this);
   quit_action->setShortcut(Qt::CTRL + Qt::Key_X);
 
@@ -32,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent)
   file = menuBar()->addMenu("&File");
   file->addAction(openRam_action);
   file->addAction(saveRam_action);
+  file->addSeparator();
+  file->addAction(openRom_action);
   file->addSeparator();
   file->addAction(quit_action);
 
@@ -48,6 +52,8 @@ MainWindow::MainWindow(QWidget *parent)
 
   display = new Display;
   keypad = new Keypad;
+
+  connect(openRom_action, &QAction::triggered, this, &MainWindow::load_rom);
 
   connect(openRam_action, &QAction::triggered, this, &MainWindow::load_ram);
   connect(saveRam_action, &QAction::triggered, this, &MainWindow::save_ram);
@@ -137,6 +143,12 @@ void MainWindow::show_settings()
 {
   settings_dialog->set_emulator(emu);
   settings_dialog->show();
+}
+
+void MainWindow::load_rom()
+{
+  File::load_rom(this, emu);
+  debugger_dialog->after_load_rom();
 }
 
 void MainWindow::load_ram()

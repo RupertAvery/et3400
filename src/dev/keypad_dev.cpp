@@ -3,6 +3,7 @@
 keypad_io::keypad_io()
 {
     next = NULL;
+    name = "Keypad";
 }
 
 void keypad_io::init()

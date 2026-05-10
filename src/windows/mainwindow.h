@@ -61,6 +61,7 @@ private:
   
   void init_emu();
   void execute_emu();
+  void load_rom();
   void load_ram();
   void save_ram();
   void show_about();

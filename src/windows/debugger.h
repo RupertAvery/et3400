@@ -64,6 +64,7 @@ public:
 	void update_button_state();
 	void refresh();
 	void after_load_ram();
+	void after_load_rom();
 
 protected:
 	void keyPressEvent(QKeyEvent* event) override;
@@ -146,6 +147,7 @@ private:
 	void add_label();
 	void goto_label();
 
+	void load_rom();
 	void load_ram();
 	void save_ram();
 	void load_breakpoints();

@@ -1,7 +1,7 @@
 #ifndef MEMORY_MAPPED_DEVICE_H
 #define MEMORY_MAPPED_DEVICE_H
 
-
+#include <string>
 #include "../common/common_defs.h"
 
 /*
@@ -31,6 +31,7 @@ public:
     virtual uint8_t *get_mapped_memory() { return nullptr; }
     virtual offs_t get_start() { return 0; }
     virtual offs_t get_end() { return 0; }
+    std::string name;
 
     memory_mapped_device *next;
 };

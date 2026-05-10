@@ -10,6 +10,7 @@
 class File
 {
 public:
+    static void load_rom(QWidget *parent, et3400emu *emu_ptr);
     static void load_ram(QWidget *parent, et3400emu *emu_ptr);
     static void save_ram(QWidget *parent, et3400emu *emu_ptr);
     static void load(et3400emu *emu_ptr, QString path);

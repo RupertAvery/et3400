@@ -7,7 +7,7 @@
 class memory_device : public memory_mapped_device
 {
 public:
-    memory_device(offs_t start, size_t size, bool readonly);
+    memory_device(std::string name, offs_t start, size_t size, bool readonly);
     ~memory_device();
     uint8_t read(offs_t addr) override;
     void write(offs_t addr, uint8_t data) override;

@@ -3,6 +3,7 @@
 display_io::display_io()
 {
 	next = nullptr;
+	name = "Display";
 }
 
 uint8_t display_io::read(offs_t addr)

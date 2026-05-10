@@ -380,6 +380,12 @@ void DebuggerDialog::add_or_remove_breakpoint(offs_t address)
 	emu_ptr->add_or_remove_breakpoint(address);
 }
 
+void DebuggerDialog::load_rom()
+{
+	File::load_rom(this, emu_ptr);
+	after_load_rom();
+}
+
 void DebuggerDialog::load_ram()
 {
 	File::load_ram(this, emu_ptr);
@@ -444,6 +450,22 @@ void DebuggerDialog::save_labels()
 
 	emu_ptr->labels->saveLabels(fileName, 0x1400, 0x1BFF, success);
 }
+
+void DebuggerDialog::after_load_rom()
+{
+	refresh();
+	update_button_state();
+	memory_scrollbar->setValue(0);
+
+	QVariant v = disassembly_selector->itemText(disassembly_selector->currentIndex());
+	QString s = v.value<QString>();
+
+	if (s == "ROM")
+	{
+		disassembly_scrollbar->setValue(0);
+	}
+}
+
 
 void DebuggerDialog::after_load_ram()
 {

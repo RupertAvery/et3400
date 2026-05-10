@@ -25,7 +25,7 @@ et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
     total_cycles = 0;
 
     // ram = new memory_device(0x0000, 0x0400, false);
-    ram = new memory_device(0x0000, 0x0800, false);
+    ram = new memory_device("RAM", 0x0000, 0x0800, false);
     // memory_device* bank2 = new memory_device(0x0400, 0x0400, false);
     // memory_device* bank3 = new memory_device(0x0800, 0x0400, false);
     // memory_device* bank4 = new memory_device(0x0C00, 0x0400, false);
@@ -68,7 +68,15 @@ void et3400emu::loadROM(QString romPath, offs_t address, size_t size)
         file.read(buffer, size);
     }
 
-    memory_device *rom = new memory_device(address, size, true);
+    memory_mapped_device *current_device = memory_map->get_block_device(address);
+    if (current_device != NULL)
+    {
+        LOG_DEBUG << "Unmapping device " << QString::fromStdString(current_device->name);
+        memory_map->unmap(current_device);
+        delete current_device;
+    }
+
+    memory_device *rom = new memory_device("ROM", address, size, true);
     rom->load(address, (uint8_t *)buffer, size);
     memory_map->map(rom);
 }

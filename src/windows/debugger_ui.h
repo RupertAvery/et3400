@@ -19,7 +19,7 @@ void DebuggerDialog::setupUI()
     labels_selector->setText("Labels   ");
     labels_selector->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
 
-    add_label_action = new QAction("Add Label", this); 
+    add_label_action = new QAction("Add Label", this);
     connect(add_label_action, &QAction::triggered, this, &DebuggerDialog::add_label);
 
     MakeTriggeredAction(goto_label_action, "Goto Label", Qt::CTRL + Qt::Key_G, goto_label);
@@ -56,6 +56,9 @@ void DebuggerDialog::setupUI()
     QAction *saveRam_action = new QAction("&Save RAM", this);
     saveRam_action->setShortcut(Qt::CTRL + Qt::Key_S);
 
+
+    QAction *openRom_action = new QAction("Load ROM", this);
+
     QAction *openBrk_action = new QAction("Load Breakpoints", this);
     QAction *saveBrk_action = new QAction("Save Breakpoints", this);
 
@@ -71,16 +74,23 @@ void DebuggerDialog::setupUI()
     file_menu->addAction(openRam_action);
     file_menu->addAction(saveRam_action);
     file_menu->addSeparator();
+    file_menu->addAction(openRom_action);
+    file_menu->addSeparator();
     file_menu->addAction(openBrk_action);
     file_menu->addAction(saveBrk_action);
+    file_menu->addSeparator();
     file_menu->addAction(openMap_action);
     file_menu->addAction(saveMap_action);
     file_button->setMenu(file_menu);
 
     connect(openRam_action, &QAction::triggered, this, &DebuggerDialog::load_ram);
     connect(saveRam_action, &QAction::triggered, this, &DebuggerDialog::save_ram);
+
+    connect(openRom_action, &QAction::triggered, this, &DebuggerDialog::load_rom);
+
     connect(openBrk_action, &QAction::triggered, this, &DebuggerDialog::load_breakpoints);
     connect(saveBrk_action, &QAction::triggered, this, &DebuggerDialog::save_breakpoints);
+
     connect(openMap_action, &QAction::triggered, this, &DebuggerDialog::load_labels);
     connect(saveMap_action, &QAction::triggered, this, &DebuggerDialog::save_labels);
 
@@ -195,7 +205,7 @@ void DebuggerDialog::setupUI()
 
     resize(QSize(985, 721));
 
-    //setFixedSize(QSize(985, 721));
+    // setFixedSize(QSize(985, 721));
     setWindowTitle("Debugger");
 }
 

@@ -15,6 +15,7 @@ public:
     BreakpointManager *breakpoints = nullptr;
 
     void map(memory_mapped_device *device);
+    void unmap(memory_mapped_device *device);
     memory_mapped_device *get_block_device(off_t address);
 
     uint8_t read(offs_t addr);

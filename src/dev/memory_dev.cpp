@@ -1,12 +1,14 @@
 #include "stdlib.h"
 #include "memory_dev.h"
 #include "string.h"
+#include <string>
 
-memory_device::memory_device(offs_t start, size_t size, bool readonly)
+memory_device::memory_device(std::string name, offs_t start, size_t size, bool readonly)
 {
     this->readonly = readonly;
     this->start = start;
     this->size = size;
+    this->name = name;
     end = start + size - 1;
     memory = (uint8_t *)malloc(size);
     next = NULL;
@@ -16,6 +18,7 @@ memory_device::~memory_device()
 {
     free(memory);
 }
+
 uint8_t memory_device::read(offs_t addr)
 {
     return memory[addr - start];
