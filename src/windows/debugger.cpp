@@ -448,7 +448,7 @@ void DebuggerDialog::save_labels()
 	if (fileName == nullptr)
 		return;
 
-	emu_ptr->labels->saveLabels(fileName, 0x1400, 0x1BFF, success);
+	emu_ptr->labels->saveLabels(fileName, 0x0000, 0x07FF, success);
 }
 
 void DebuggerDialog::after_load_rom()
