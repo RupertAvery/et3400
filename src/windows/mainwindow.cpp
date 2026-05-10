@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "../util/log.h"
 #include <filesystem>
+#include <algorithm>
 
 using namespace std;
 
@@ -335,6 +336,13 @@ void MainWindow::execute_emu()
 
   LOG_DEBUG << "Initializing and starting emulator";
   emu->init();
+
+  if (startAddress > -1)
+  {
+    LOG_DEBUG << "Setting PC to " << startAddress;
+    emu->set_pc(startAddress);
+  }
+
   emu->start();
 
   if (showDebugger)
@@ -348,7 +356,6 @@ void MainWindow::setAddress(std::string address)
   try
   {
     startAddress = (uint16_t)std::stoul(address, nullptr, 16);
-    // emu->set_pc(startAddress);
   }
   catch (const std::exception &)
   {
@@ -368,29 +375,26 @@ void MainWindow::setSpeed(std::string speed)
       return;
     }
 
-    if (speed.size() > 2)
+    auto tolower_str = [](std::string s) {
+      std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+      return s;
+    };
+
+    if (speed.size() > 3 && tolower_str(speed.substr(speed.size() - 3)) == "khz")
     {
-      std::string suffix = speed.substr(speed.size() - 2);
-      if (suffix == "Hz")
-      {
-        speed = speed.substr(0, speed.size() - 2);
-      }
-      else if (suffix == "hz" || speed.size() > 3)
-      {
-        std::string suffix3 = speed.substr(speed.size() - 3);
-        if (suffix3 == "kHz" || suffix3 == "Khz" || suffix3 == "KHz")
-        {
-          speed = speed.substr(0, speed.size() - 3);
-          emu->set_clock_rate(std::stoi(speed, nullptr, 10) * 1000);
-          return;
-        }
-        else if (suffix3 == "MHz" || suffix3 == "Mhz" || suffix3 == "MHZ")
-        {
-          speed = speed.substr(0, speed.size() - 3);
-          emu->set_clock_rate(std::stoi(speed, nullptr, 10) * 1000000);
-          return;
-        }
-      }
+      speed = speed.substr(0, speed.size() - 3);
+      emu->set_clock_rate(std::stoi(speed, nullptr, 10) * 1000);
+      return;
+    }
+    if (speed.size() > 3 && tolower_str(speed.substr(speed.size() - 3)) == "mhz")
+    {
+      speed = speed.substr(0, speed.size() - 3);
+      emu->set_clock_rate(std::stoi(speed, nullptr, 10) * 1000000);
+      return;
+    }
+    if (speed.size() > 2 && tolower_str(speed.substr(speed.size() - 2)) == "hz")
+    {
+      speed = speed.substr(0, speed.size() - 2);
     }
 
     emu->set_clock_rate(std::stoi(speed, nullptr, 10));
