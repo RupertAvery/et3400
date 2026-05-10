@@ -72,7 +72,7 @@ bool SrecReader::Write(QString path, std::vector<srec_block> *blocks)
 
     while (block != blocks->end())
     {
-        uint8_t checksum = (*block).bytecount + (*block).address >> 8 & 0xFF + (*block).address & 0xFF;
+        uint8_t checksum = ((*block).bytecount + 3) + (((*block).address >> 8) & 0xFF) + ((*block).address & 0xFF);
         out << "S1"
             << QString("%1").arg((*block).bytecount + 3, 2, 16, QChar('0')).toUpper()
             << QString("%1").arg((*block).address, 4, 16, QChar('0')).toUpper();
