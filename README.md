@@ -1,18 +1,68 @@
 # ET-3400 Emulator
 
-This is an [ET-3400 Trainer](http://www.oldcomputermuseum.com/heathkit_et3400.html) Emulator built in C++.
+This is an emulator for the [Heathkit ET-3400 Trainer](http://www.oldcomputermuseum.com/heathkit_et3400.html) built in C++.
 
-This is a port of the emulator built in C# (https://github.com/RupertAvery/et3400-emu) with the goal of better performance and speed accuracy, as well as portability, with Windows and Linux targets.
+This is a port of my emulator built in C# (https://github.com/RupertAvery/et3400-emu) with the goal of better performance and speed accuracy, as well as portability, with Windows and Linux targets.
 
-It emulates the Motorola 6800 CPU, the 6 7-segment LED displays and the hex keypad. The ROM contains the Monitor program for the Heathkit ET-3400 Trainer, which interacts with the keypad and display to run programs and view CPU registers.
+## What's emulated
 
-![emulator](https://user-images.githubusercontent.com/1910659/99161743-41c0cd00-2730-11eb-83b4-651fbd18b973.png)
+* Motorola 8-bit 6800 CPU running at 471kHz 
+* 6 7-segment LED displays
+* the hex keypad
 
-The emulator also features a debugger which allows you to stop emulation and step into each instruction and see memory and registers update in real time. You can also set breakpoints (separate from the software breakpoints allowed by the Monitor ROM) and add labels to the disassembly to clean up the output. 
+A built-in ROM is provided. The ROM contains the Monitor program for the Heathkit ET-3400 Trainer, which interacts with the keypad and display to run programs and view CPU registers.
 
-![debugger](https://user-images.githubusercontent.com/1910659/99161744-44bbbd80-2730-11eb-8ce4-54aec7b27489.png)
+<img width="352" height="532" alt="emulator" src="https://github.com/user-attachments/assets/acf8accc-402a-432c-8053-54c7b466c3fe" />
 
-The manual for this trainer is available here: https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer
+# Features
+
+## Debugger
+
+The emulator features a debugger which allows you to stop emulation and step into each instruction and see memory and registers update in real time.
+
+### Controls
+
+Aside from the controls in the toolbar, emulation can be controlled with the following keys
+
+* F5 - Start emulation
+* F4 - Stop emulation
+* F9 - Toggle breakpoint
+* 10 - Step into next instruction
+* ESC - Reset emulator
+
+<img width="987" height="753" alt="debugger" src="https://github.com/user-attachments/assets/9c0e19d1-5436-4fec-85eb-26ff87c84b39" />
+
+## Breakpoints
+
+### Setting a breakpoint
+
+You can toggle a breakpoint at the currently selected line in the disassembly view by pressing F9.
+
+You can also toggle a breakpoint at any line by hovering over the leftmost side of the disassembly view. An empty red circle will appear indicating a breakpoint can be set.
+
+<img width="400" height="148" alt="image" src="https://github.com/user-attachments/assets/fdbd20bd-87d1-40d7-b7df-72c119d5d4a2" />
+
+Setting a breakpoint will add a filled red circle to the left of the instructions, indicating that a breakpoint has been set.
+
+<img width="386" height="127" alt="image" src="https://github.com/user-attachments/assets/9f69236c-5d10-4c56-99d1-7534d80a2c8c" />
+
+### Hitting a breakpoint
+
+When emulator execution reaches the instruction, the emulator will stop and the background color of the line will change to yellow, indicating that the instruction will be executed next when the emulator advances.
+
+<img width="369" height="112" alt="image" src="https://github.com/user-attachments/assets/b5fa37c9-e53c-41ac-a976-545754f6ceee" />
+
+## Labels
+
+Labels allow you to label and categorize areas of memory and change the way the memory is disassembled. For example, you can set an area of memory as DATA, and the disassembler will skip over the area, preventing it from being disassembled as instructions.
+
+<img alt="image" src="documentation/et3400-labels.png" />
+
+# Manual
+
+The original manual for this trainer is available in pdf format here: https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer
+
+# Development
 
 ## Windows
 
