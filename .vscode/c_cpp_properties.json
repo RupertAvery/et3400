@@ -1,0 +1,30 @@
+{
+    "configurations": [
+        {
+            "name": "x64",
+            "intelliSenseMode": "msvc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "compileCommands": "${workspaceFolder}/out/build/x64-Debug (default)/compile_commands.json",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "D:/git/vcpkg/installed/x64-windows/include",
+                "D:/git/vcpkg/installed/x64-windows/include/QtGui",
+                "D:/git/vcpkg/installed/x64-windows/include/QtCore",
+                "D:/git/vcpkg/installed/x64-windows/include/QtWidgets"
+            ],
+            "defines": [],
+            "compilerPath": "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "D:/git/vcpkg/installed/x64-windows/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        }
+    ],
+    "version": 4
+}
