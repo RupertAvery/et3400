@@ -15,7 +15,22 @@ MemoryView::MemoryView(QWidget *parent)
 	end = 0x100;
 	offset = 0;
 	is_memory_set = false;
-	;
+
+	m_font = QFont("Courier", 12);
+	m_font.setWeight(QFont::Medium);
+	m_fm = new QFontMetrics(m_font);
+	item_height = m_fm->lineSpacing();
+
+	QColor cold = QColor("#ffffff");
+	QColor hot = QColor("#d8ce44");
+	for (int i = 0; i < 16; ++i)
+	{
+		float t = i / 15.0f;
+		m_heat_colors[i] = QColor(
+			cold.red()   + t * (hot.red()   - cold.red()),
+			cold.green() + t * (hot.green() - cold.green()),
+			cold.blue()  + t * (hot.blue()  - cold.blue()));
+	}
 
 	m_paintTimer = new QTimer(this);
 	m_paintTimer->start(100); // 10fps is plenty for a memory view
@@ -31,6 +46,7 @@ MemoryView::~MemoryView()
 	m_paintTimer->stop();
 	delete m_paintTimer;
 	delete buffer;
+	delete m_fm;
 	LOG_DEBUG << "MemoryView destroy done";
 }
 
@@ -70,43 +86,16 @@ void MemoryView::scrollTo(int value)
 void MemoryView::bufferDraw()
 {
 	QPainter painter(buffer);
-	// painter.setRenderHint(QPainter::TextAntialiasing);
-	//  Clear display
 	painter.setBrush(QBrush(Qt::white));
 	painter.fillRect(contentsRect(), painter.brush());
 
-	QFont font("Courier", 12);
-	font.setWeight(QFont::Medium);
-	// font.setStyleStrategy(QFont::NoAntialias);
-
-	painter.setFont(font);
-	QFontMetrics fm(font);
-	item_height = fm.lineSpacing();
+	painter.setFont(m_font);
 	visible_items = height() / item_height;
 
 	int y = item_height;
 
 	QColor darkblue = QColor("#00018B");
-	QColor black = QColor("#000000");
 	QColor darkred = QColor("#8B0000");
-	QColor green = QColor("#7db700");
-	QColor heat_colors[16];
-
-	{
-		QColor cold = QColor("#ffffff");
-		QColor hot = QColor("#d8ce44");
-		for (int i = 0; i < 16; ++i)
-		{
-			float t = i / 15.0f;
-			heat_colors[i] = QColor(
-				cold.red() + t * (hot.red() - cold.red()),
-				cold.green() + t * (hot.green() - cold.green()),
-				cold.blue() + t * (hot.blue() - cold.blue()));
-		}
-	}
-
-	// QString addr = QString("$%1:");
-	// QString data = QString("%1 %2 %3 %4 %5 %6 %7 %8");
 
 	QChar filler = QLatin1Char('0');
 
@@ -115,15 +104,15 @@ void MemoryView::bufferDraw()
 	// Snapshot live memory once — all reads below use shadow, not the live buffer
 	memcpy(shadow_memory, memory, end - start + 1);
 
-	for (int i = 0; i < end - start + 1; i++)
+	if (heat_map_enabled)
 	{
-		if (last_memory[i] - shadow_memory[i] != 0)
+		for (int i = 0; i < end - start + 1; i++)
 		{
-			heat_map[i] = 255;
-		}
-		else
-		{
-			if (heat_map[i] > 0)
+			if (last_memory[i] - shadow_memory[i] != 0)
+			{
+				heat_map[i] = 255;
+			}
+			else if (heat_map[i] > 0)
 			{
 				heat_map[i] = heat_map[i] > 12 ? heat_map[i] - 12 : 0;
 			}
@@ -137,24 +126,20 @@ void MemoryView::bufferDraw()
 		painter.setPen(darkblue);
 		painter.drawText(5, y, QString("$%1:").arg(address, 4, 16, filler).toUpper());
 
-		// QString data = QString("%1 %2 %3 %4 %5 %6 %7 %8");
 		int i = 0;
 
 		while (address + i <= end && i < 8)
 		{
-
 			int heat_idx = address + i - start;
 			int text_x = 80 + i * 30;
 			painter.setPen(darkred);
-			if (heat_map[heat_idx] > 0)
+			if (heat_map_enabled && heat_map[heat_idx] > 0)
 			{
-				painter.fillRect(text_x - 2, y - fm.ascent(), 28, fm.ascent() + fm.descent(),
-								 heat_colors[heat_map[heat_idx] / 16]);
+				painter.fillRect(text_x - 2, y - m_fm->ascent(), 28, m_fm->ascent() + m_fm->descent(),
+								 m_heat_colors[heat_map[heat_idx] / 16]);
 			}
 
 			painter.drawText(text_x, y, QString("%1").arg(shadow_memory[address + i - start], 2, 16, filler).toUpper());
-
-			// data = data.arg(memory[address + i - start], 2, 16, filler).toUpper();
 			i++;
 		}
 
@@ -162,7 +147,6 @@ void MemoryView::bufferDraw()
 		{
 			painter.setPen(darkred);
 			painter.drawText(80 + i * 30, y, QString("%1").arg(0, 2, 16, filler).toUpper());
-			// data = data.arg(0, 2, 16, filler);
 			i++;
 		}
 
@@ -172,6 +156,11 @@ void MemoryView::bufferDraw()
 	memcpy(last_memory, shadow_memory, end - start + 1);
 
 	painter.restore();
+}
+
+void MemoryView::setHeatMapEnabled(bool enabled)
+{
+	heat_map_enabled = enabled;
 }
 
 void MemoryView::resizeEvent(QResizeEvent *event)

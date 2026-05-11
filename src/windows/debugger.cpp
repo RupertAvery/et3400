@@ -120,6 +120,11 @@ void DebuggerDialog::toggle_memory_panel(bool checked)
 	// save_settings(settings);
 }
 
+void DebuggerDialog::toggle_heat_map(bool checked)
+{
+	memory_view->setHeatMapEnabled(checked);
+}
+
 void DebuggerDialog::toggle_disassembly_panel(bool checked)
 {
 	// if (count_open_panels() == 0)

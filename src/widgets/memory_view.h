@@ -14,6 +14,7 @@
 #include <QScrollBar>
 #include <QAction>
 #include <QFont>
+#include <QFontMetrics>
 #include <QWheelEvent>
 
 #include "../emu/et3400.h"
@@ -35,6 +36,7 @@ public:
     void scrollTo(int value);
     void set_emulator(et3400emu *emu);
     void set_range(offs_t start, offs_t end, uint8_t *memory);
+    void setHeatMapEnabled(bool enabled);
 
 signals:
     void on_scroll(int steps);
@@ -65,10 +67,15 @@ private:
     uint8_t *heat_map = nullptr;
 
     bool is_memory_set;
+    bool heat_map_enabled = true;
     int offset;
     int visible_items;
     int item_height = 20;
     int max_vscroll;
+
+    QFont m_font;
+    QFontMetrics *m_fm = nullptr;
+    QColor m_heat_colors[16];
 
     void bufferDraw();
 };

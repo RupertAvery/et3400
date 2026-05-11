@@ -50,9 +50,11 @@ void DebuggerDialog::setupUI()
 
     // MakeAction(toggle_disassembly_action, "Disassembly", Qt::CTRL + Qt::Key_2, toggle_disassembly_panel);
     MakeToggledAction(toggle_memory_action, "Memory", Qt::CTRL + Qt::Key_M, toggle_memory_panel);
+    MakeToggledAction(toggle_heat_map_action, "Heat Map", Qt::CTRL + Qt::Key_H, toggle_heat_map);
     // MakeAction(toggle_status_action, "Status", Qt::CTRL + Qt::Key_3, toggle_status_panel);
 
     panel_selector_menu->addAction(toggle_memory_action);
+    panel_selector_menu->addAction(toggle_heat_map_action);
     // panel_selector_menu->addAction(toggle_disassembly_action);
     // panel_selector_menu->addAction(toggle_status_action);
     panel_selector->setMenu(panel_selector_menu);

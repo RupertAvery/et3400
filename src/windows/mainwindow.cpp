@@ -317,7 +317,8 @@ void MainWindow::init_emu()
 
   emu->memory_map->map(new memory_device("Monitor ROM", MONITOR_ADDR, MONITOR_SIZE, true));
 
-  File::load_memory(":/rom/monitor.bin", "Monitor ROM", emu, MONITOR_ADDR);
+  bool success;
+  File::load_memory(":/rom/monitor.bin", "Monitor ROM", emu, MONITOR_ADDR, success);
   // File::load_memory(":/rom/fantomii.bin", "Fantom II", emu, FANTOMII_ADDR);
   // File::load_memory(":/rom/tinybasic.bin", "Tiny BASIC", emu, TINYBASIC_ADDR);
 
@@ -435,7 +436,9 @@ void MainWindow::setRAM(std::string file)
     return;
   }
 
-  File::load_memory(QString::fromStdString(file), "RAM", emu, 0x0000);
+  bool success;
+
+  File::load_memory(QString::fromStdString(file), "RAM", emu, 0x0000, success);
 }
 
 void MainWindow::setROM(std::string file)
@@ -447,5 +450,7 @@ void MainWindow::setROM(std::string file)
     return;
   }
 
-  File::load_memory(QString::fromStdString(file), "Monitor ROM", emu, 0xFC00);
+  bool success;
+
+  File::load_memory(QString::fromStdString(file), "Monitor ROM", emu, 0xFC00, success);
 }

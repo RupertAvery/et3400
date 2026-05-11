@@ -89,6 +89,7 @@ private:
 	QAction *toggle_memory_action;
 	QAction *toggle_disassembly_action;
 	QAction *toggle_status_action;
+	QAction *toggle_heat_map_action;
 
 	QToolButton *labels_selector;
 	QAction *clear_labels_action;
@@ -139,6 +140,7 @@ private:
 	void toggle_memory_panel(bool checked);
 	void toggle_disassembly_panel(bool checked);
 	void toggle_status_panel(bool checked);
+	void toggle_heat_map(bool checked);
 
 	void pauseAndUpdateDisassembler();
 	void stepAndUpdateDisassembler();
