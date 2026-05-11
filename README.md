@@ -4,6 +4,8 @@ This is an emulator for the [Heathkit ET-3400 Trainer](http://www.oldcomputermus
 
 This is a port of my emulator built in C# (https://github.com/RupertAvery/et3400-emu) with the goal of better performance and speed accuracy, as well as portability, with Windows and Linux targets.
 
+The Heathkit ET-3400 Trainer is a device intended to teach microprocessor basics and assembly programming.
+
 ## What's emulated
 
 * Motorola 8-bit 6800 CPU running at 471kHz 
@@ -14,7 +16,114 @@ A built-in ROM is provided. The ROM contains the Monitor program for the Heathki
 
 <img width="352" height="532" alt="emulator" src="https://github.com/user-attachments/assets/acf8accc-402a-432c-8053-54c7b466c3fe" />
 
+# Manual
+
+The original manual for this trainer is available in pdf format here: https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer
+
+The manual describes assembling the kit and includes sample program listings as well as an incomplete listing of the monitor ROM program.
+
+| PDF Page | Manual Page | Section          | 
+|:--------:|:-----------:|------------------|
+| 47       |     45      | Operation        |
+| 57       |     55      | Sample Programs  |
+| 75       |     74      | Monitor Listing  |
+| 89       |     87      | Memory Map       |
+| 91       |     89      | Instruction Set  |
+
+## Basic Usage
+
+On startup, the display will read `CPU UP`.
+
+Pressing one of the buttons will execute one of the built-in commands in the ROM. You can press the button by clicking with a mouse pointer, or pressing the corresponding key on the keybaord.
+
+| Keypress |    Button     | Action                                            | 
+|:--------:|:-------------:|---------------------------------------------------|
+|    1     |  **ACCA**     | View contents of Accumulator A Register           |
+|    2     |  **ACCB**     | View contents of Accumulator B Register		   |
+|    3     |  **PC**       | View contents of Program Counter Register		   |
+|    4     |  **INDEX**    | View contents of Index Pointer Register		   |
+|    5     |  **CC**       | View contents of Condition Codes Register		   |
+|    6     |  **SP**       | View contents of Stack Pointer Register		   |
+|    7     |  **RTI**      | Execute Return from Interrupt							   |
+|    8     |  **SS**       | Single Step									   |
+|    9     |  **BR**       | Break											   |
+|    A     |  **AUTO**     | Start entering hex at specified address		   |
+|    B     |  **BACK**     | During Examine mode, move address back		       |
+|    C     |  **CHAN**     | During Examine mode, edit hex at specified address. During ACCA/ACCB/PC mode, edit hex in selected register |
+|    D     |  **DO**       | Execute RAM at given address                      |
+|    E     |  **EXAM**     | Start viewing hex at specified address            |
+|    F     |  **FWD**      | During Examine mode, move address forward         |
+|   ESC    |  **RESET**    | Reset the CPU         |
+
+## Sample Program
+
+This sample program will light up each segment on each display and repeat.
+
+To enter the program, press `A` then enter `0000` to start entering hex data.
+
+Enter the instructions in the Instr column below, ensuring that each instruction starts at the correct address. If you make a mistake, you can press ESC to reset then press `A` and enter the address to resume entering instructions.
+
+You can press `E` to review the data at each address, and press `F` or `B` to move up and down memory.
+
+Do run the program, press `D` and enter `0000`.
+
+```
+Addr Instr     Label    Disassembly        Comments
+=============================================================================
+0000 BD FCBC   START    JSR    REDIS       SET UP FIRST DISPLAY ADDRESS
+0003 86 01              LDA A  #S01        FIRST SEGMENT CODE
+0005 20 07              BRA    OUT         
+0007 D6 F1     SAME     LDA B  DIGADD+1    FIX DISPLAY ADDRESS
+0009 CB 10              ADD B  #$10        FOR NEXT SEGMENT
+000B D7 F1              STA B  DIGADD+1    
+000D 48                 ASL A              NEXT SEGMENT CODE
+000E BD FE3A   OUT      JSR    OUTCH       OUTPUT SEGMENT
+0011 CE 2F00            LDX    #$2F00      TIME TO WAIT
+0014 09        WAIT     DEX                
+0015 26 FD              BNE    WAIT        TIME OUT YET?
+0017 16                 TAB                
+0018 5D                 TST B              LAST SEGMENT THIS DISPLAY?
+0019 26 EC              BNE    SAME        NEXT SEGMENT
+001B 86 01              LDA A  #$01        RESET SEGMENT CODE
+001D DE F0              LDX    DIGADD      NEXT DISPLAY
+001F 8C C10F            CPX    #$C10F      LAST DISPLAY YET?
+0022 26 EA              BNE    OUT         
+0024 20 DA              BRA    START       DO AGAIN
+```
+
+The labels `REDIS`, `DIGADD`, and `OUTCH` refer to subroutines in the ROM that perform certain functions.
+
+# Command Line Arguments
+
+```
+Usage: et3400.exe [options] [file]
+
+Options:
+  -m <path>            Load monitor ROM from file
+  -s <speed>           Set clock speed
+  -d                   Show debugger on startup
+  -l <path>            Load labels from file
+  <file>               Load RAM contents from file (SREC obj)
+```
+
+The speed argument accepts the following formats:
+
+```
+n%            - e.g. 25% will set the clock rate at 25% of 471kHz
+n[k|M]Hz      - the speed of the clock specified in Hz, kHz or MHz (case insensitive)
+                      e.g. 1000Hz will set the clock to 1000Hz
+                           471kHz will set the clock to 471kHz 
+```
+
+# SREC (.OBJ) file format
+
+The emulator supports SREC (S19) format files. Click `File` > `Load RAM` and select your .OBJ file to load it into memory. 
+
 # Features
+
+* [Debugger](#debugger)
+* [Breakpoints](#breakpoints)
+* [Labels](#labels)
 
 ## Debugger
 
@@ -52,15 +161,41 @@ When emulator execution reaches the instruction, the emulator will stop and the 
 
 <img width="369" height="112" alt="image" src="https://github.com/user-attachments/assets/b5fa37c9-e53c-41ac-a976-545754f6ceee" />
 
+### Loading and Saving Breakpoints
+
+Breakpoints can be loaded and saved from the toolbar menu (File > Load Breakpoints and File > Save Breakpoints)
+
 ## Labels
 
 Labels allow you to label and categorize areas of memory and change the way the memory is disassembled. For example, you can set an area of memory as DATA, and the disassembler will skip over the area, preventing it from being disassembled as instructions.
 
+Below is a view of a section of RAM before and after adding labels.
+
 <img alt="image" src="documentation/et3400-labels.png" />
 
-# Manual
+### Adding Labels
 
-The original manual for this trainer is available in pdf format here: https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer
+Labels can be added from the toolbar menu (Labels > Add Label) or by right-clicking on an unlabeled line in the disassembly view. 
+
+<img width="331" height="123" alt="image" src="https://github.com/user-attachments/assets/de78fb0d-3617-4b67-b7f3-144beaa01530" />
+
+You will be prompted to select a type of label, Comment or Data. 
+
+**Comment** will treat memory at the start address as an instruction, not affecting disassembly.
+
+**Data** requires a start address and end address, will treat memory between the the start and end address as data, skipping disassembly over the range and displaying the memory as raw data.
+
+<img width="352" height="282" alt="image" src="https://github.com/user-attachments/assets/71a626c5-8c9c-4918-bd41-fe08327cfad3" />
+
+### Editing and Removing Labels
+
+You can edit or remove a label by right-clicking on a labeled range in the disassembly view.
+
+<img width="402" height="214" alt="image" src="https://github.com/user-attachments/assets/a22ba124-099a-4eb6-b172-2490e59c5c9d" />
+
+### Loading and Saving Labels
+
+Labels can be loaded and saved from the toolbar menu (File > Load Labels (RAM) and File > Save Labels (RAM))
 
 # Development
 
