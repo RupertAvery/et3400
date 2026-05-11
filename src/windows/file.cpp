@@ -2,29 +2,90 @@
 #include "../util/srec.h"
 #include "../util/breakpoint.h"
 #include <filesystem>
+#include <algorithm>
+#include "../common/util.h"
+#include "../util/log.h"
 
-void File::load_rom(QWidget *parent, et3400emu *emu_ptr)
+void File::load_rom_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &settings)
 {
+	// LoadDialog loadDialog;
+
+	// loadDialog.setSettings(settings);
+
+	// QDialog::DialogCode result = (QDialog::DialogCode)loadDialog.exec();
+
+	// if (result == QDialog::DialogCode::Accepted)
+	// {
+	//	settings = loadDialog.getSettings();
+
 	QString fileName = QFileDialog::getOpenFileName(parent,
-													"Load File to ROM", "", "BIN Files (*.bin);;All files (*)");
+													"Load File to ROM", "", "BIN Files (*.bin);;SREC Files (*.obj, *.s19);;All files (*)");
 	if (fileName == nullptr)
 		return;
 
-	// calculate size of rom from file size
-	size_t size = std::filesystem::file_size(fileName.toStdString());
-	// calculate address from FFFF - size
-	uint16_t address = 0xFFFF - size + 1;
-
 	emu_ptr->stop();
 
-	emu_ptr->loadROM(fileName, address, size);
+	load_memory(fileName, "Monitor ROM", emu_ptr, settings.start);
 
 	emu_ptr->reset();
 	emu_ptr->start();
+	//}
+}
+/*
+Loads a file into the specified location
+*/
+size_t File::load_memory(QString path, QString device_name, et3400emu *emu_ptr, uint16_t address)
+{
+	size_t size = 0;
+	bool success;
+
+	memory_mapped_device *device = emu_ptr->memory_map->try_get_block_device(device_name.toStdString());
+
+	if (device)
+	{
+		if (is_srec(path))
+		{
+			std::vector<srec_block> *blocks = new std::vector<srec_block>;
+
+			success = SrecFile::Read(path, blocks);
+
+			if (success)
+			{
+				for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
+				{
+					device->load(it->address, it->data, it->length);
+				}
+				SrecFile::Free(blocks);
+			}
+		}
+		else
+		{
+			char *buffer = load_bin(path, size, success);
+
+			if (success)
+			{
+				device->load(address, (uint8_t *)buffer, size);
+
+				free(buffer);
+			}
+		}
+	}
+
+	return size;
 }
 
-void File::load_ram(QWidget *parent, et3400emu *emu_ptr)
+void File::load_ram_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &settings)
 {
+	// LoadDialog loadDialog;
+
+	// loadDialog.setSettings(settings);
+
+	// QDialog::DialogCode result = (QDialog::DialogCode)loadDialog.exec();
+
+	// if (result == QDialog::DialogCode::Accepted)
+	// {
+	//	settings = loadDialog.getSettings();
+
 	QString fileName = QFileDialog::getOpenFileName(parent,
 													"Load File to RAM", "", "SREC Files (*.obj *.s19);;All files (*)");
 	if (fileName == nullptr)
@@ -33,41 +94,29 @@ void File::load_ram(QWidget *parent, et3400emu *emu_ptr)
 	// pause emulation to avoid overwriting memory while executing
 	emu_ptr->stop();
 
-	File::load(emu_ptr, fileName);
+	load_memory(fileName, "RAM", emu_ptr, settings.start);
 
 	emu_ptr->breakpoints->clearRamBreakpoints();
-	//emu_ptr->labels->clearRamLabels();
+	// emu_ptr->labels->clearRamLabels();
 
 	// reset and resume emulation
 	emu_ptr->reset();
 	emu_ptr->start();
+	//}
 }
 
-void File::load(et3400emu *emu_ptr, QString path)
+void File::save_ram_dialog(QWidget *parent, et3400emu *emu_ptr, SaveSettings &settings)
 {
-	// load S19 blocks
-	std::vector<srec_block> *blocks = new std::vector<srec_block>;
+	// SaveDialog saveDialog;
 
-	if (SrecReader::Read(path, blocks))
-	{
-		// write blocks to memory
-		for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
-		{
-			emu_ptr->loadRAM(it->address, it->data, it->bytecount);
-		}
-	}
+	// saveDialog.setSettings(settings);
 
-	// clean up
-	for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
-	{
-		free(it->data);
-	}
+	// QDialog::DialogCode result = (QDialog::DialogCode)saveDialog.exec();
 
-	delete blocks;
-}
+	// if (result == QDialog::DialogCode::Accepted)
+	// {
+	// 	settings = saveDialog.getSettings();
 
-void File::save_ram(QWidget *parent, et3400emu *emu_ptr)
-{
 	QString fileName = QFileDialog::getSaveFileName(parent,
 													"Save RAM Contents", "", "SREC Files (*.s19)");
 
@@ -83,37 +132,24 @@ void File::save_ram(QWidget *parent, et3400emu *emu_ptr)
 
 	uint8_t *memory = ram->get_mapped_memory();
 
-	static const int BLOCK_SIZE = 16;
-	int bytecount = 16;
-	int i = 0;
-	int address = 0;
+	static const uint16_t BLOCK_SIZE = 16;
 
-	while (address <= ram->get_end())
+	uint16_t address = settings.start;
+	uint16_t endAddress = std::min(((uint16_t)ram->get_end()), (uint16_t)settings.end);
+
+	while (address < endAddress)
 	{
-		// check if this block of data is all zeros
-		int zeros = 0;
-		for (int i = 0; i < 16 && address + i <= ram->get_end(); i++)
-		{
-#ifdef _DEBUG
-			zeros += memory[address + i] == 0xCD ? 1 : 0;
-#else
-			zeros += memory[address + i] == 0x00 ? 1 : 0;
-#endif // DEBUG
-		}
-
-		if (zeros < BLOCK_SIZE)
-		{
-			blocks->push_back(srec_block{bytecount, address, &memory[address]});
-		}
-
-		address += BLOCK_SIZE;
+		uint16_t bytecount = std::min((uint16_t)(endAddress - address + 1), BLOCK_SIZE);
+		blocks->push_back(srec_block{bytecount, address, &memory[address]});
+		address += bytecount;
 	}
 
 	// save S19 blocks
-	SrecReader::Write(fileName, blocks);
+	SrecFile::Write(fileName, settings.header, blocks, 0);
 
 	delete blocks;
 
 	// resume emulation
 	emu_ptr->start();
+	//}
 }

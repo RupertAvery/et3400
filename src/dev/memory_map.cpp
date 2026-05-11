@@ -104,6 +104,34 @@ void MemoryMapManager::write(offs_t addr, uint8_t data)
         breakpoints->check_write(addr, data);
 };
 
+std::vector<memory_mapped_device *> MemoryMapManager::get_block_devices()
+{
+    std::vector<memory_mapped_device *> result;
+
+    for (int block = 0; block < 64; block++)
+    {
+        memory_mapped_device *device = blocks[block].device;
+        while (device != nullptr)
+        {
+            // deduplicate: a device mapped across multiple blocks appears in each one
+            bool already_added = false;
+            for (auto *d : result)
+            {
+                if (d == device)
+                {
+                    already_added = true;
+                    break;
+                }
+            }
+            if (!already_added)
+                result.push_back(device);
+            device = device->next;
+        }
+    }
+
+    return result;
+}
+
 memory_mapped_device *MemoryMapManager::get_block_device(off_t address)
 {
     int block = address / BLOCK_SIZE;
@@ -116,4 +144,24 @@ memory_mapped_device *MemoryMapManager::get_block_device(off_t address)
     }
 
     return device;
+}
+
+memory_mapped_device *MemoryMapManager::try_get_block_device(std::string device_name)
+{
+    for (int block = 0; block < 64; block++)
+    {
+        memory_mapped_device *device = blocks[block].device;
+
+        while (device != NULL)
+        {
+            if (device->name == device_name)
+            {
+                return device;
+            }
+
+            device = device->next;
+        }
+    }
+
+    return nullptr;
 }

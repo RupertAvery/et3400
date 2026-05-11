@@ -1,35 +1,35 @@
 #ifndef DEBUGGER_H
 #define DEBUGGER_H
 
-
 #define MakeButton(button, toolTip, icon, seq, delegate) \
-    button = new QToolButton(toolbar); \
-    button->setToolTip(toolTip); \
-    button->setIcon(QIcon(icon)); \
-    button->setShortcut(QKeySequence(seq)); \
-    connect(button, &QToolButton::clicked, this, &DebuggerDialog::delegate)
+	button = new QToolButton(toolbar);                   \
+	button->setToolTip(toolTip);                         \
+	button->setIcon(QIcon(icon));                        \
+	button->setShortcut(QKeySequence(seq));              \
+	connect(button, &QToolButton::clicked, this, &DebuggerDialog::delegate)
 
 #define MakeTriggeredAction(action, name, seq, delegate) \
-    action = new QAction(name, this); \
-    action->setShortcut(QKeySequence(seq)); \
-    connect(action, &QAction::triggered, this, &DebuggerDialog::delegate)
-
+	action = new QAction(name, this);                    \
+	action->setShortcut(QKeySequence(seq));              \
+	connect(action, &QAction::triggered, this, &DebuggerDialog::delegate)
 
 #define MakeToggledAction(action, name, seq, delegate) \
-    action = new QAction(name, this); \
-    action->setCheckable(true); \
-    action->setChecked(true); \
-    action->setShortcut(QKeySequence(seq)); \
-    connect(action, &QAction::toggled, this, &DebuggerDialog::delegate)
+	action = new QAction(name, this);                  \
+	action->setCheckable(true);                        \
+	action->setChecked(true);                          \
+	action->setShortcut(QKeySequence(seq));            \
+	connect(action, &QAction::toggled, this, &DebuggerDialog::delegate)
 
-
-//#include "memory_location.h"
+// #include "memory_location.h"
 #include "../emu/et3400.h"
 #include "../widgets/memory_view.h"
 #include "../widgets/disassembly_view.h"
 #include "../widgets/status_view.h"
 #include "../util/settings.h"
 #include "file.h"
+#include "save.h"
+
+class MainWindow;
 
 #include <QObject>
 #include <QVariant>
@@ -57,56 +57,60 @@ class DebuggerDialog : public QDialog
 
 public:
 	DebuggerDialog();
-	DebuggerDialog(QWidget* parent);
+	DebuggerDialog(QWidget *parent);
 	~DebuggerDialog();
-	void set_emulator(et3400emu* emu);
-	void set_settings(Settings* settings);
+	void set_emulator(et3400emu *emu);
+	void set_settings(Settings *settings);
+	void set_parent_window(MainWindow *parent);
 	void update_button_state();
 	void refresh();
 	void after_load_ram();
 	void after_load_rom();
 
 protected:
-	void keyPressEvent(QKeyEvent* event) override;
-	void keyReleaseEvent(QKeyEvent* event) override;
+	void keyPressEvent(QKeyEvent *event) override;
+	void keyReleaseEvent(QKeyEvent *event) override;
+	void resizeEvent(QResizeEvent *event) override;
 
 private:
-	QToolButton* start_button;
-	QToolButton* stop_button;
-	QToolButton* step_into_button;
-	QToolButton* step_over_button;
-	QToolButton* reset_button;
+	QToolButton *start_button;
+	QToolButton *stop_button;
+	QToolButton *step_into_button;
+	QToolButton *step_over_button;
+	QToolButton *reset_button;
 
 	// QSlider* slider;
-	QLabel* label;
+	QLabel *label;
 
-	QComboBox* memory_selector;
-	QComboBox* disassembly_selector;
+	QComboBox *memory_selector;
+	QComboBox *disassembly_selector;
 
-	QToolButton* panel_selector;
-	QAction* toggle_memory_action;
-	QAction* toggle_disassembly_action;
-	QAction* toggle_status_action;
+	QToolButton *panel_selector;
+	QAction *toggle_memory_action;
+	QAction *toggle_disassembly_action;
+	QAction *toggle_status_action;
 
-	QToolButton* labels_selector; 
-	QAction* clear_labels_action;
-	QAction* add_label_action;
-	QAction* goto_label_action;
+	QToolButton *labels_selector;
+	QAction *clear_labels_action;
+	QAction *add_label_action;
+	QAction *goto_label_action;
 
-	QScrollBar* memory_scrollbar;
-	QGroupBox* memory_groupBox;
-	QGroupBox* disassembly_groupBox;
-	QScrollBar* disassembly_scrollbar;
-	QGroupBox* status_groupBox;
+	QScrollBar *memory_scrollbar;
+	QGroupBox *memory_groupBox;
+	QGroupBox *disassembly_groupBox;
+	QScrollBar *disassembly_scrollbar;
+	QGroupBox *status_groupBox;
 
-	QAction* breakpoint_handler_action;
+	QAction *breakpoint_handler_action;
 
-	MemoryView* memory_view;
-	DisassemblyView* disassembly_view;
-	StatusView* status_view;
+	MemoryView *memory_view = nullptr;
+	DisassemblyView *disassembly_view = nullptr;
+	StatusView *status_view = nullptr;
 
-	et3400emu* emu_ptr;
-	Settings* settings;
+	et3400emu *emu_ptr = nullptr;
+	Settings *settings = nullptr;
+
+	MainWindow *parent_window = nullptr;
 
 	bool emu_set;
 

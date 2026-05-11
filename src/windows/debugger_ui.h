@@ -7,6 +7,7 @@
 void DebuggerDialog::setupUI()
 {
     QToolBar *toolbar = new QToolBar(this);
+    //toolbar->setStyleSheet("QLabel { font-size:9pt; }");
 
     // QLabel *memory_label = new QLabel("Memory");
     // memory_label->setStyleSheet("margin: 0px 5px 0px 5px;");
@@ -28,6 +29,7 @@ void DebuggerDialog::setupUI()
     MakeTriggeredAction(goto_label_action, "Goto Label", Qt::CTRL + Qt::Key_G, goto_label);
 
     QMenu *labels_selector_menu = new QMenu(labels_selector);
+    //labels_selector_menu->setStyleSheet("QLabel { font-size:9pt; }");
     labels_selector_menu->addAction(add_label_action);
     labels_selector_menu->addAction(goto_label_action);
     labels_selector_menu->addSeparator();
@@ -109,9 +111,10 @@ void DebuggerDialog::setupUI()
     toolbar->addWidget(labels_selector);
 
     memory_groupBox = new QGroupBox("Memory", this);
-    memory_groupBox->setMaximumWidth(480);
+    memory_groupBox->setMinimumWidth(360);
 
     disassembly_groupBox = new QGroupBox("Disassembly", this);
+    disassembly_groupBox->setMinimumWidth(400);
     status_groupBox = new QGroupBox("Status", this);
 
     memory_scrollbar = new QScrollBar(Qt::Orientation::Vertical);
@@ -122,12 +125,7 @@ void DebuggerDialog::setupUI()
     status_view = new StatusView(this);
 
     memory_selector = new QComboBox(toolbar);
-    memory_selector->addItem("RAM", 0x0000);
-    memory_selector->addItem("Keypad", 0xC003);
-    memory_selector->addItem("Display", 0xC110);
-    memory_selector->addItem("Fantom II ROM", 0x1400);
-    memory_selector->addItem("TinyBasic ROM", 0x1C00);
-    memory_selector->addItem("Monitor ROM", 0xFC00);
+
 
     QWidget *inner_memory = new QWidget(memory_groupBox);
     QHBoxLayout *memory_groupBox_layout = new QHBoxLayout(inner_memory);
@@ -142,10 +140,6 @@ void DebuggerDialog::setupUI()
     memory_groupBox->setLayout(memory_groupBox_layout_v);
 
     disassembly_selector = new QComboBox(toolbar);
-    disassembly_selector->addItem("RAM", 0x0000);
-    disassembly_selector->addItem("Fantom II ROM", 0x1400);
-    disassembly_selector->addItem("TinyBasic ROM", 0x1C00);
-    disassembly_selector->addItem("Monitor ROM", 0xFC00);
 
     QWidget *inner_disassembly = new QWidget(disassembly_groupBox);
     QHBoxLayout *disassembly_groupBox_layout = new QHBoxLayout(this);
@@ -163,7 +157,7 @@ void DebuggerDialog::setupUI()
     status_groupBox_layout->addWidget(status_view);
     status_groupBox_layout->setMargin(10);
     status_groupBox->setLayout(status_groupBox_layout);
-    status_groupBox->setFixedWidth(177);
+    status_groupBox->setFixedWidth(200);
 
     QWidget *panels = new QWidget(this);
     QHBoxLayout *panels_layout = new QHBoxLayout(this);
@@ -187,7 +181,6 @@ void DebuggerDialog::setupUI()
     connect(disassembly_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::disassembly_slider_moved);
     connect(memory_scrollbar, &QScrollBar::valueChanged, this, &DebuggerDialog::memory_slider_moved);
     connect(disassembly_scrollbar, &QScrollBar::valueChanged, this, &DebuggerDialog::disassembly_slider_moved);
-    // this->setStyleSheet("QLabel { font-size:12px; height: 20px }");
 
     connect(memory_view, &MemoryView::on_scroll, this, &DebuggerDialog::update_memory_scrollbar);
     connect(disassembly_view, &DisassemblyView::onScroll, this, &DebuggerDialog::adjustDisassemblyScrollbar);
@@ -211,6 +204,7 @@ void DebuggerDialog::setupUI()
 
     // setFixedSize(QSize(985, 721));
     setWindowTitle("Debugger");
+    
 }
 
 #endif // DEBUGGER_UI_H

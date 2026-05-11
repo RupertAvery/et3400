@@ -6,8 +6,6 @@ GotoDialog::GotoDialog() : QDialog(0, Qt::WindowTitleHint | Qt::WindowSystemMenu
 	setupUi(this);
 	_selectedAddress = -1;
 
-	this->setStyleSheet("QLabel { font-size:12px; height: 20px }");
-
 	setFixedSize(QSize(350, 250));
 	setWindowTitle("Goto Address");
 }
@@ -22,7 +20,10 @@ void GotoDialog::setupUi(QDialog *Dialog)
 	address = new QLineEdit(this);
 	mainLayout->addWidget(address);
 
+	QFont font("Courier", 12);
+
 	listView = new QListView(this);
+	listView->setFont(font);
 
 	mainLayout->addWidget(listView);
 

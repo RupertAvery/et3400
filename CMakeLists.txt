@@ -25,6 +25,8 @@ set(WINDOWS_SRC
     ${WIDGETS_SRC} 
     src/windows/mainwindow.cpp 
     src/windows/about.cpp 
+    src/windows/save.cpp  
+    src/windows/load.cpp  
     src/windows/settings.cpp  
     src/windows/debugger.cpp 
     src/windows/file.cpp 
@@ -92,4 +94,5 @@ target_link_libraries(et3400
 
 if(WIN32)
     target_link_libraries(et3400 PRIVATE DbgHelp winmm)
+    target_compile_definitions(et3400 PRIVATE NOMINMAX)
 endif()

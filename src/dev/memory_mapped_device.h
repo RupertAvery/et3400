@@ -27,10 +27,13 @@ class memory_mapped_device
 public:
     virtual uint8_t read(offs_t addr) { return 0; }
     virtual void write(offs_t addr, uint8_t data) {}
+    virtual void write_block(offs_t addr, uint8_t *data, size_t size) {}
     virtual bool is_mapped(offs_t addr) { return true; }
     virtual uint8_t *get_mapped_memory() { return nullptr; }
     virtual offs_t get_start() { return 0; }
     virtual offs_t get_end() { return 0; }
+    virtual offs_t get_size() { return get_end() - get_start() + 1; };
+    virtual void load(offs_t addr, uint8_t *data, size_t size) {}
     std::string name;
 
     memory_mapped_device *next = nullptr;

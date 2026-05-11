@@ -1,13 +1,14 @@
 #include "debugger.h"
 #include "debugger_ui.h"
 #include "goto.h"
+#include "mainwindow.h"
 #include "../util/log.h"
 
 bool is_call_instruction(uint8_t opcode)
 {
 	// This is a simplified version. In a real implementation, you would need to handle all call instructions.
 	return opcode == 0x20; // JSR (Jump to Subroutine) in 6502
-}	
+}
 
 int get_instruction_length(uint8_t opcode)
 {
@@ -26,7 +27,6 @@ int get_instruction_length(uint8_t opcode)
 		return 1; // Default to 1 byte for unknown opcodes
 	}
 }
-
 
 DebuggerDialog::DebuggerDialog() : DebuggerDialog(nullptr)
 {
@@ -89,9 +89,6 @@ void DebuggerDialog::step_over(bool checked)
 	}
 }
 
-
-
-
 void DebuggerDialog::refresh()
 {
 	disassembly_view->refresh();
@@ -120,7 +117,7 @@ void DebuggerDialog::toggle_memory_panel(bool checked)
 	// }
 	memory_groupBox->setVisible(checked);
 	settings->showMemoryView = checked;
-	save_settings(settings);
+	// save_settings(settings);
 }
 
 void DebuggerDialog::toggle_disassembly_panel(bool checked)
@@ -157,29 +154,25 @@ DebuggerDialog::~DebuggerDialog()
 
 void DebuggerDialog::select_memory_location(int index)
 {
-	QVariant v = memory_selector->itemData(index);
-	offs_t address = (offs_t)v.toInt();
+	QVariant v = disassembly_selector->itemData(index);
+	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
 
-	memory_mapped_device *device = emu_ptr->get_block_device(address);
-	int start = device->get_start();
-	int end = device->get_end();
-	uint8_t *memory = device->get_mapped_memory();
+	if (device == nullptr)
+		return;
 
-	memory_view->set_range(start, end, memory);
+	memory_view->set_range(device->get_start(), device->get_end(), device->get_mapped_memory());
 	memory_scrollbar->setValue(0);
 }
 
 void DebuggerDialog::select_disassembly_location(int index)
 {
 	QVariant v = disassembly_selector->itemData(index);
-	offs_t address = (offs_t)v.toInt();
+	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
 
-	memory_mapped_device *device = emu_ptr->get_block_device(address);
-	int start = device->get_start();
-	int end = device->get_end();
-	uint8_t *memory = device->get_mapped_memory();
+	if (device == nullptr)
+		return;
 
-	disassembly_view->setRange(start, end, memory);
+	disassembly_view->set_range(device->get_start(), device->get_end(), device->get_mapped_memory());
 	disassembly_scrollbar->setValue(0);
 }
 
@@ -215,7 +208,8 @@ void DebuggerDialog::set_emulator(et3400emu *emu)
 	if (!emu_set)
 	{
 		emu_ptr = emu;
-		emu_ptr->on_breakpoint = [this] {
+		emu_ptr->on_breakpoint = [this]
+		{
 			// We cannot update UI items from another thread, so we trigger a QAction breakpoint_handler_action call breakpoint_handler asynchronously
 			breakpoint_handler_action->trigger();
 		};
@@ -223,8 +217,29 @@ void DebuggerDialog::set_emulator(et3400emu *emu)
 		memory_view->set_emulator(emu);
 		disassembly_view->setEmulator(emu);
 		status_view->set_emulator(emu);
+
+		auto devices = emu->memory_map->get_block_devices();
+		for (auto *device : devices)
+		{
+			disassembly_selector->addItem(QString::fromStdString(device->name), QVariant::fromValue((quintptr)device));
+			memory_selector->addItem(QString::fromStdString(device->name), QVariant::fromValue((quintptr)device));
+		}
+
+		// memory_selector->addItem("RAM", 0x0000);
+		// memory_selector->addItem("Keypad", 0xC003);
+		// memory_selector->addItem("Display", 0xC110);
+		// memory_selector->addItem("Fantom II ROM", 0x1400);
+		// memory_selector->addItem("TinyBasic ROM", 0x1C00);
+		// memory_selector->addItem("Monitor ROM", 0xFC00);
+
+		// disassembly_selector->addItem("RAM", 0x0000);
+		// disassembly_selector->addItem("Fantom II ROM", 0x1400);
+		// disassembly_selector->addItem("TinyBasic ROM", 0x1C00);
+		// disassembly_selector->addItem("Monitor ROM", 0xFC00);
+
 		memory_selector->setCurrentIndex(0);
-		disassembly_selector->setCurrentIndex(3);
+		disassembly_selector->setCurrentIndex(0);
+
 		select_memory_location(0);
 	}
 	update_button_state();
@@ -235,6 +250,11 @@ void DebuggerDialog::set_settings(Settings *settings)
 	this->settings = settings;
 	memory_groupBox->setVisible(settings->showMemoryView);
 	toggle_memory_action->setChecked(settings->showMemoryView);
+}
+
+void DebuggerDialog::set_parent_window(MainWindow *parent)
+{
+	parent_window = parent;
 }
 
 void DebuggerDialog::breakpoint_handler(bool checked)
@@ -250,7 +270,7 @@ void DebuggerDialog::update_button_state()
 	start_button->setEnabled(!running);
 	stop_button->setEnabled(running);
 	step_into_button->setEnabled(!running);
-	//reset_button->setEnabled(!running);
+	// reset_button->setEnabled(!running);
 }
 
 void DebuggerDialog::memory_slider_moved(int value)
@@ -266,16 +286,16 @@ void DebuggerDialog::disassembly_slider_moved(int value)
 void DebuggerDialog::keyPressEvent(QKeyEvent *event)
 {
 	// These are now handled by the toolbar actions
-	//switch (event->key())
+	// switch (event->key())
 	//{
-	//case Qt::Key_F4:
+	// case Qt::Key_F4:
 	//	if (emu_ptr->get_running())
 	//	{
 	//		pauseAndUpdateDisassembler();
 	//		update_button_state();
 	//	}
 	//	break;
-	//case Qt::Key_F5:
+	// case Qt::Key_F5:
 	//	if (!emu_ptr->get_running())
 	//	{
 	//		emu_ptr->resume();
@@ -283,13 +303,13 @@ void DebuggerDialog::keyPressEvent(QKeyEvent *event)
 	//		update_button_state();
 	//	}
 	//	break;
-	//case Qt::Key_F10:
+	// case Qt::Key_F10:
 	//	if (!emu_ptr->get_running())
 	//	{
 	//		stepAndUpdateDisassembler();
 	//	}
 	//	break;
-	//case Qt::Key_Escape:
+	// case Qt::Key_Escape:
 	//	emu_ptr->reset();
 	//	break;
 	//}
@@ -301,19 +321,19 @@ void DebuggerDialog::pauseAndUpdateDisassembler()
 	emu_ptr->halt();
 	offs_t address = emu_ptr->get_status().pc;
 
-	memory_mapped_device *device = emu_ptr->get_block_device(address);
-	int start = 0xFC00;
+	// memory_mapped_device *device = emu_ptr->get_block_device(address);
+	// int start = 0xFC00;
 
-	if (device == nullptr)
-	{
-		address = start;
-	}
-	else
-	{
-		start = device->get_start();
-	}
+	// if (device == nullptr)
+	// {
+	// 	address = start;
+	// }
+	// else
+	// {
+	// 	start = device->get_start();
+	// }
 
-	selectByAddress(start);
+	selectByAddress(address);
 
 	disassembly_view->setCurrent(address);
 }
@@ -323,19 +343,19 @@ void DebuggerDialog::stepAndUpdateDisassembler()
 	emu_ptr->step();
 	offs_t address = emu_ptr->get_status().pc;
 
-	memory_mapped_device *device = emu_ptr->get_block_device(address);
-	int start = 0xFC00;
+	// memory_mapped_device *device = emu_ptr->get_block_device(address);
+	// int start = 0xFC00;
 
-	if (device == nullptr)
-	{
-		address = start;
-	}
-	else
-	{
-		start = device->get_start();
-	}
+	// if (device == nullptr)
+	// {
+	// 	address = start;
+	// }
+	// else
+	// {
+	// 	start = device->get_start();
+	// }
 
-	selectByAddress(start);
+	selectByAddress(address);
 
 	disassembly_view->setCurrent(address);
 	disassembly_view->clearSelected();
@@ -343,27 +363,28 @@ void DebuggerDialog::stepAndUpdateDisassembler()
 
 void DebuggerDialog::selectByAddress(offs_t address)
 {
-	if (address == 0x0000)
+	for (int i = 0; i < disassembly_selector->count(); ++i)
 	{
-		disassembly_selector->setCurrentIndex(0);
-	}
-	else if (address == 0x1400)
-	{
-		disassembly_selector->setCurrentIndex(1);
-	}
-	else if (address == 0x1C00)
-	{
-		disassembly_selector->setCurrentIndex(2);
-	}
-	else if (address == 0xFC00)
-	{
-		disassembly_selector->setCurrentIndex(3);
+		memory_mapped_device *device = (memory_mapped_device *)(quintptr)disassembly_selector->itemData(i).toULongLong();
+		if (device && address >= device->get_start() && address <= device->get_end())
+		{
+			disassembly_selector->setCurrentIndex(i);
+			return;
+		}
 	}
 }
 
-void DebuggerDialog::keyReleaseEvent(QKeyEvent *event){
+void DebuggerDialog::keyReleaseEvent(QKeyEvent *event) {
 
 };
+
+void DebuggerDialog::resizeEvent(QResizeEvent *event)
+{
+	QDialog::resizeEvent(event);
+	LOG_DEBUG << "memory_groupBox width:" << memory_groupBox->width()
+			  << "disassembly_groupBox width:" << disassembly_groupBox->width()
+			  << "status_groupBox width:" << status_groupBox->width();
+}
 
 void DebuggerDialog::add_breakpoint(offs_t address)
 {
@@ -382,19 +403,19 @@ void DebuggerDialog::add_or_remove_breakpoint(offs_t address)
 
 void DebuggerDialog::load_rom()
 {
-	File::load_rom(this, emu_ptr);
+	File::load_rom_dialog(this, emu_ptr, parent_window->load_rom_settings);
 	after_load_rom();
 }
 
 void DebuggerDialog::load_ram()
 {
-	File::load_ram(this, emu_ptr);
+	File::load_ram_dialog(this, emu_ptr, parent_window->load_ram_settings);
 	after_load_ram();
 }
 
 void DebuggerDialog::save_ram()
 {
-	File::save_ram(this, emu_ptr);
+	File::save_ram_dialog(this, emu_ptr, parent_window->save_ram_settings);
 }
 
 void DebuggerDialog::load_breakpoints()
@@ -465,7 +486,6 @@ void DebuggerDialog::after_load_rom()
 		disassembly_scrollbar->setValue(0);
 	}
 }
-
 
 void DebuggerDialog::after_load_ram()
 {

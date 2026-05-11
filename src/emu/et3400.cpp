@@ -2,10 +2,11 @@
 #include "../util/log.h"
 #include <chrono>
 #include <thread>
+#include "../common/default.h"
 
 et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
 {
-    clock_rate = 100;
+    clock_rate = DEFAULT_CLOCK_RATE;
 
     memory_map = new MemoryMapManager;
     breakpoints = new BreakpointManager;
@@ -16,8 +17,8 @@ et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
     device->check_breakpoint = [this](uint32_t address)
     { return check_breakpoint(address); };
 
-    DebugConsoleAdapter *consoleAdapter = new DebugConsoleAdapter;
-    mc6820 = new MC6820(consoleAdapter);
+    // DebugConsoleAdapter *consoleAdapter = new DebugConsoleAdapter;
+    // mc6820 = new MC6820(consoleAdapter);
 
     running = false;
     cycles = 0;
@@ -25,7 +26,7 @@ et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
     total_cycles = 0;
 
     // ram = new memory_device(0x0000, 0x0400, false);
-    ram = new memory_device("RAM", 0x0000, 0x0800, false);
+    ram = new memory_device("RAM", 0x0000, 0x0400, false);
     // memory_device* bank2 = new memory_device(0x0400, 0x0400, false);
     // memory_device* bank3 = new memory_device(0x0800, 0x0400, false);
     // memory_device* bank4 = new memory_device(0x0C00, 0x0400, false);
@@ -39,7 +40,7 @@ et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
     // memory_map->map(bank4);
     memory_map->map(keypad);
     memory_map->map(display);
-    memory_map->map(mc6820);
+    //memory_map->map(mc6820);
 }
 
 et3400emu::~et3400emu()
@@ -51,24 +52,10 @@ et3400emu::~et3400emu()
     delete device;
 }
 
-void et3400emu::loadROM(QString romPath, offs_t address, size_t size)
+void et3400emu::load_rom(std::string device_name, offs_t address, uint8_t *buffer, size_t size)
 {
-    QFile file(romPath);
-
-    char *buffer;
-
-    if (!file.open(QIODevice::ReadOnly))
-    {
-        throw -10010;
-    }
-    else
-    {
-        buffer = (char *)malloc(size);
-
-        file.read(buffer, size);
-    }
-
     memory_mapped_device *current_device = memory_map->get_block_device(address);
+
     if (current_device != NULL)
     {
         LOG_DEBUG << "Unmapping device " << QString::fromStdString(current_device->name);
@@ -76,20 +63,24 @@ void et3400emu::loadROM(QString romPath, offs_t address, size_t size)
         delete current_device;
     }
 
-    memory_device *rom = new memory_device("ROM", address, size, true);
+    memory_device *rom = new memory_device(device_name, address, size, true);
+
+    LOG_DEBUG << "Mapping device " << QString::fromStdString(rom->name) << " address: " << rom->get_start() << " size: " << rom->get_size();
+
     rom->load(address, (uint8_t *)buffer, size);
+
     memory_map->map(rom);
 }
 
-void et3400emu::loadRAM(offs_t address, uint8_t *buffer, size_t size)
+void et3400emu::load_ram(offs_t address, uint8_t *buffer, size_t size)
 {
     ram->load(address, buffer, size);
 }
 
-void et3400emu::loadMap(QString mapPath)
+void et3400emu::load_labels(QString path)
 {
     bool success;
-    labels->loadLabels(mapPath, success);
+    labels->loadLabels(path, success);
 }
 
 bool et3400emu::get_running()

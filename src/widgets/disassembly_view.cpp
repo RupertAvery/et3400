@@ -551,7 +551,7 @@ void DisassemblyView::refresh()
 	redraw();
 }
 
-void DisassemblyView::setRange(offs_t start, offs_t end, uint8_t *memory)
+void DisassemblyView::set_range(offs_t start, offs_t end, uint8_t *memory)
 {
 	this->start = start;
 	this->end = end;

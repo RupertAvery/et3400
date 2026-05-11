@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "../util/log.h"
 #include <filesystem>
-#include <algorithm>
+#include "../common/default.h"
 
 using namespace std;
 
@@ -131,6 +131,7 @@ void MainWindow::fps()
 void MainWindow::show_debugger()
 {
   debugger_dialog->set_emulator(emu);
+  debugger_dialog->set_parent_window(this);
   debugger_dialog->show();
 }
 
@@ -148,19 +149,19 @@ void MainWindow::show_settings()
 
 void MainWindow::load_rom()
 {
-  File::load_rom(this, emu);
+  File::load_rom_dialog(this, emu, load_rom_settings);
   debugger_dialog->after_load_rom();
 }
 
 void MainWindow::load_ram()
 {
-  File::load_ram(this, emu);
+  File::load_ram_dialog(this, emu, load_ram_settings);
   debugger_dialog->after_load_ram();
 }
 
 void MainWindow::save_ram()
 {
-  File::save_ram(this, emu);
+  File::save_ram_dialog(this, emu, save_ram_settings);
 }
 
 void MainWindow::updatecps()
@@ -313,13 +314,15 @@ void MainWindow::init_emu()
   emu->set_clock_rate(settings.clockRate);
 
   LOG_DEBUG << "Loading ROMs";
-  emu->loadROM(":/rom/monitor.bin", MONITOR_ADDR, MONITOR_SIZE);
-  emu->loadMap(":/rom/monitor.map");
 
-  emu->loadROM(":/rom/fantomii.bin", FANTOMII_ADDR, FANTOMII_SIZE);
-  emu->loadMap(":/rom/fantomii.map");
+  emu->memory_map->map(new memory_device("Monitor ROM", MONITOR_ADDR, MONITOR_SIZE, true));
 
-  emu->loadROM(":/rom/tinybasic.bin", TINYBASIC_ADDR, TINYBASIC_SIZE);
+  File::load_memory(":/rom/monitor.bin", "Monitor ROM", emu, MONITOR_ADDR);
+  // File::load_memory(":/rom/fantomii.bin", "Fantom II", emu, FANTOMII_ADDR);
+  // File::load_memory(":/rom/tinybasic.bin", "Tiny BASIC", emu, TINYBASIC_ADDR);
+
+  emu->load_labels(":/rom/monitor.map");
+  // emu->load_labels(":/rom/fantomii.map");
 }
 
 void MainWindow::execute_emu()
@@ -329,6 +332,7 @@ void MainWindow::execute_emu()
   debugger_dialog->set_emulator(emu);
   debugger_dialog->set_settings(&settings);
 
+  LOG_DEBUG << "Setting up event handlers";
   keypad->device->on_reset_press = [this]
   { emu->reset(); };
   emu->on_render_frame = [this]
@@ -371,11 +375,12 @@ void MainWindow::setSpeed(std::string speed)
     {
       speed.pop_back();
       int pct = std::stoi(speed, nullptr, 10);
-      emu->set_clock_rate(1000000 * pct / 100);
+      emu->set_clock_rate(DEFAULT_CLOCK_RATE * pct / 100);
       return;
     }
 
-    auto tolower_str = [](std::string s) {
+    auto tolower_str = [](std::string s)
+    {
       std::transform(s.begin(), s.end(), s.begin(), ::tolower);
       return s;
     };
@@ -418,7 +423,7 @@ void MainWindow::setLabel(std::string labelFile)
     return;
   }
 
-  emu->loadMap(QString::fromStdString(labelFile));
+  emu->load_labels(QString::fromStdString(labelFile));
 }
 
 void MainWindow::setRAM(std::string file)
@@ -430,7 +435,7 @@ void MainWindow::setRAM(std::string file)
     return;
   }
 
-  File::load(emu, QString::fromStdString(file));
+  File::load_memory(QString::fromStdString(file), "RAM", emu, 0x0000);
 }
 
 void MainWindow::setROM(std::string file)
@@ -442,10 +447,5 @@ void MainWindow::setROM(std::string file)
     return;
   }
 
-  // calculate size of rom from file size
-  size_t size = std::filesystem::file_size(file);
-  // calculate address from FFFF - size
-  uint16_t address = 0xFFFF - size + 1;
-
-  emu->loadROM(QString::fromStdString(file), address, size);
+  File::load_memory(QString::fromStdString(file), "Monitor ROM", emu, 0xFC00);
 }

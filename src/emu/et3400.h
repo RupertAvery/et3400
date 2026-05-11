@@ -29,10 +29,10 @@ public:
 	void step();
 	void resume();
 
-	void loadROM(QString romPath, offs_t address, size_t size);
+	void load_rom(std::string string, offs_t address, uint8_t *buffer, size_t size);
 	//void loadROM(offs_t address, uint8_t *buffer, size_t size);
-	void loadRAM(offs_t address, uint8_t *buffer, size_t size);
-	void loadMap(QString mapPath);
+	void load_ram(offs_t address, uint8_t *buffer, size_t size);
+	void load_labels(QString path);
 
 	// uint8_t *get_memory();
 	bool get_running();

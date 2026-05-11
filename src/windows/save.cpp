@@ -1,16 +1,15 @@
-#include "label.h"
+#include "save.h"
 #include "../common/util.h"
 
-
-LabelDialog::LabelDialog() : QDialog(0, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
+SaveDialog::SaveDialog() : QDialog(0, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
     setupUi(this);
 
     setFixedSize(QSize(350, 250));
-    setWindowTitle("Add Label");
+    setWindowTitle("SREC Options");
 }
 
-void LabelDialog::setupUi(QDialog *Dialog)
+void SaveDialog::setupUi(QDialog *Dialog)
 {
     mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(10);
@@ -20,14 +19,6 @@ void LabelDialog::setupUi(QDialog *Dialog)
     horizontalLayout = new QHBoxLayout();
     horizontalLayout->setSpacing(6);
     horizontalLayout->setContentsMargins(-1, -1, -1, 0);
-
-    comment_radio = new QRadioButton(this);
-
-    horizontalLayout->addWidget(comment_radio);
-
-    data_radio = new QRadioButton(this);
-
-    horizontalLayout->addWidget(data_radio);
 
     horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -60,7 +51,9 @@ void LabelDialog::setupUi(QDialog *Dialog)
     gridLayout->addWidget(text_edit, 0, 2, 1, 1);
 
     start_edit = new QLineEdit(this);
+
     QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
     sizePolicy.setHorizontalStretch(0);
     sizePolicy.setVerticalStretch(0);
     sizePolicy.setHeightForWidth(start_edit->sizePolicy().hasHeightForWidth());
@@ -102,77 +95,31 @@ void LabelDialog::setupUi(QDialog *Dialog)
 
     setLayout(mainLayout);
 
-    connect(comment_radio, &QRadioButton::clicked, this, &LabelDialog::set_comment);
-    connect(data_radio, &QRadioButton::clicked, this, &LabelDialog::set_data);
-
     retranslateUi(Dialog);
-    connect(buttonBox, &QDialogButtonBox::accepted, this, &LabelDialog::validate);
-    connect(buttonBox, &QDialogButtonBox::rejected, this, &LabelDialog::reject);
+    connect(buttonBox, &QDialogButtonBox::accepted, this, &SaveDialog::validate);
+    connect(buttonBox, &QDialogButtonBox::rejected, this, &SaveDialog::reject);
 
     QMetaObject::connectSlotsByName(Dialog);
 
-    comment_radio->setChecked(true);
-
 } // setupUi
 
-void LabelDialog::set_comment(bool checked)
-{
-    start_label->setText(QApplication::translate("Dialog", "Address", nullptr));
-    end_label->setText(QApplication::translate("Dialog", "End", nullptr));
-    end_label->setVisible(false);
-    end_edit->setVisible(false);
-    description_label->setText("Add a comment at the specified address. This does not affect disassembly.");
-}
-
-void LabelDialog::set_data(bool checked)
-{
-    start_label->setText(QApplication::translate("Dialog", "Start", nullptr));
-    end_label->setVisible(true);
-    end_edit->setVisible(true);
-    description_label->setText("Mark the range as data, preventing the disassembler from processing it as code");
-}
-
-void LabelDialog::retranslateUi(QDialog *Dialog)
+void SaveDialog::retranslateUi(QDialog *Dialog)
 {
     Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", nullptr));
-
-    comment_radio->setText(QApplication::translate("Dialog", "Comment", nullptr));
-    data_radio->setText(QApplication::translate("Dialog", "Data", nullptr));
-
     start_label->setText(QApplication::translate("Dialog", "Start", nullptr));
     end_label->setText(QApplication::translate("Dialog", "End", nullptr));
-    text_label->setText(QApplication::translate("Dialog", "Text", nullptr));
+    text_label->setText(QApplication::translate("Dialog", "Header", nullptr));
 
 } // retranslateUi
 
-void LabelDialog::setLabel(LabelInfo label, LabelDialogMode mode)
+void SaveDialog::setSettings(SaveSettings settings)
 {
-    if (mode == LabelDialogMode::Edit)
-    {
-        setWindowTitle("Edit Label");
-        if (label.type == LabelType::DATA)
-        {
-            set_data();
-        }
-        else
-        {
-            set_comment();
-        }
-    }
-    else
-    {
-        label.type = LabelType::COMMENT;
-        set_comment();
-    }
-    text_edit->setText(label.text);
-
-    data_radio->setChecked(label.type == LabelType::DATA);
-    comment_radio->setChecked(label.type == LabelType::COMMENT);
-    start_edit->setText(QString("$%1").arg(label.start, 4, 16, QChar('0')).toUpper());
-    end_edit->setText(QString("$%1").arg(label.end, 4, 16, QChar('0')).toUpper());
+    text_edit->setText(settings.header);
+    start_edit->setText(QString("$%1").arg(settings.start, 4, 16, QChar('0')).toUpper());
+    end_edit->setText(QString("$%1").arg(settings.end, 4, 16, QChar('0')).toUpper());
 }
 
-void LabelDialog::validate()
+void SaveDialog::validate()
 {
     bool ok1;
     bool ok2;
@@ -180,18 +127,17 @@ void LabelDialog::validate()
     toInt(start_edit, ok1);
     toInt(end_edit, ok2);
 
-    if (ok1 && (!data_radio->isChecked() || (data_radio->isChecked() && ok2)))
+    if (ok1)
     {
         accept();
     }
 }
 
-LabelInfo LabelDialog::getLabel()
+SaveSettings SaveDialog::getSettings()
 {
     bool ok;
-    return LabelInfo{
+    return SaveSettings{
         text_edit->text(),
-        data_radio->isChecked() ? LabelType::DATA : LabelType::COMMENT,
         (offs_t)toInt(start_edit, ok),
         (offs_t)toInt(end_edit, ok),
     };

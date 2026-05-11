@@ -11,6 +11,7 @@
 #include "settings.h"
 #include "tips.h"
 #include "file.h"
+#include "save.h"
 
 #include <fstream>
 #include <iostream>
@@ -49,6 +50,10 @@ public:
   void setRAM(std::string file);
   void setROM(std::string file);
 
+  SaveSettings save_ram_settings{"", 0, 0};
+  LoadSettings load_rom_settings{"Monitor ROM", 0xFC00, 0};
+  LoadSettings load_ram_settings{"RAM", 0x0000, 0};
+
 private:
   long long last_cycles;
   Settings settings;
@@ -59,7 +64,7 @@ private:
   et3400emu *emu = nullptr;
   int16_t startAddress = -1;
   bool showDebugger = false;
-  
+
   void init_emu();
   void execute_emu();
   void load_rom();
@@ -71,6 +76,7 @@ private:
   void show_tips();
   void updatecps();
   void fps();
+
 };
 
 #endif // MAINWINDOW_H

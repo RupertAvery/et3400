@@ -60,6 +60,9 @@ private:
     offs_t start;
     offs_t end;
     uint8_t *memory;
+    uint8_t *last_memory = nullptr;
+    uint8_t *shadow_memory = nullptr;
+    uint8_t *heat_map = nullptr;
 
     bool is_memory_set;
     int offset;

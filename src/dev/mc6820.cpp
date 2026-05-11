@@ -3,6 +3,7 @@
 MC6820::MC6820(RS232Adapter *rs232adapter)
 {
     _rs232adapter = rs232adapter;
+    name = "MC6820";
 }
 
 uint8_t MC6820::read(offs_t addr)
@@ -22,7 +23,8 @@ bool MC6820::is_mapped(offs_t addr)
 
 uint8_t *MC6820::get_mapped_memory()
 {
-    return nullptr;
+    uint8_t dummy[6];
+    return dummy;
 }
 
 offs_t MC6820::get_start()

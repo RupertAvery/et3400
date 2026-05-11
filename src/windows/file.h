@@ -6,14 +6,17 @@
 #include <QString>
 #include <QFileDialog>
 #include <vector>
+#include "load.h"
+#include "save.h"
 
 class File
 {
 public:
-    static void load_rom(QWidget *parent, et3400emu *emu_ptr);
-    static void load_ram(QWidget *parent, et3400emu *emu_ptr);
-    static void save_ram(QWidget *parent, et3400emu *emu_ptr);
-    static void load(et3400emu *emu_ptr, QString path);
+    static void load_rom_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &settings);
+    static void load_ram_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &settings);
+    static void save_ram_dialog(QWidget *parent, et3400emu *emu_ptr, SaveSettings &settings);
+
+    static size_t load_memory(QString path, QString device_name, et3400emu *emu_ptr, uint16_t address);
 };
 
 #endif // FILE_H

@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QTimer>
 #include <iostream>
+#include "common/default.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -61,7 +62,7 @@ static void printHelp(const char *argv0)
     std::cout << "  -m <path>            Load monitor ROM from file" << std::endl;
     // std::cout << "  -a <start address>   Set start address for execution (hex)" << std::endl;
     std::cout << "  -s <speed>           Set clock speed:" << std::endl;
-    std::cout << "                          n% - Percent of default clock speed (471KHz)" << std::endl;
+    std::cout << "                          n% - Percent of default clock speed (" << (DEFAULT_CLOCK_RATE / 1000) << "KHz)" << std::endl;
     std::cout << "                          n[k|M]Hz - speed in Hz, kHz or MHz" << std::endl;
     std::cout << "  -d                   Show debugger on startup" << std::endl;
     std::cout << "  -l <path>            Load labels from file" << std::endl;
@@ -101,7 +102,22 @@ int main(int argc, char *argv[])
 
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+    QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
     QApplication app(argc, argv);
+
+    app.setStyleSheet(
+        "QToolButton  { font-size: 10pt; }"
+        "QComboBox    { font-size: 10pt; }"
+        "QButton      { font-size: 10pt; }"
+        "QPushButton  { font-size: 10pt; }"
+        "QGroupBox    { font-size: 10pt; }"
+        "QLineEdit    { font-size: 10pt; }"
+        "QListView    { font-size: 10pt; }"
+        "QRadioButton { font-size: 10pt; }"
+        "QMenuBar     { font-size: 10pt; }"
+        "QMenu        { font-size: 10pt; }"
+        "QLabel       { font-size: 10pt; }"
+    );
 
     std::vector<std::string> args(argv + 1, argv + argc);
     std::string addr, speed, label, path;
