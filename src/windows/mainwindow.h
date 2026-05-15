@@ -50,9 +50,9 @@ public:
   void setRAM(std::string file);
   void setROM(std::string file);
 
-  SaveSettings save_ram_settings{"", 0, 0};
-  LoadSettings load_rom_settings{"Monitor ROM", 0xFC00, 0};
-  LoadSettings load_ram_settings{"RAM", 0x0000, 0};
+  LoadSettings load_ram_settings{"RAM", 0x0000, 0x1FFF};
+  SaveSettings save_ram_settings{"", 0x0000, 0x01FF};
+  LoadSettings load_rom_settings{"Monitor ROM", 0xFC00, 0xFFFF};
 
 private:
   long long last_cycles;
