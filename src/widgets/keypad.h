@@ -5,6 +5,8 @@
 #include <QPushButton>
 #include <QSize>
 #include <QGridLayout>
+#include <QMap>
+#include <QPair>
 #include <QWidget>
 #include <QIcon>
 #include "../dev/keypad_dev.h"
@@ -24,7 +26,11 @@ public slots:
     void release_key(keypad_io::Keys key);
 
 private:
-    QPushButton *create_button(QString name, QString icon, keypad_io::Keys key);
+    QMap<keypad_io::Keys, QPushButton*> _buttons;
+    QMap<keypad_io::Keys, QPair<QIcon, QIcon>> _icons;
+    QPushButton *create_button(QString name, QString icon_src, QString icon_pressed_src, keypad_io::Keys key);
+
+
 };
 
 #endif // KEYPAD_H

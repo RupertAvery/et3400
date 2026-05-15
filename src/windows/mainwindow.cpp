@@ -195,55 +195,55 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
   switch (ev->key())
   {
   case Qt::Key_0:
-    emu->keypad->press_key(keypad_io::Key0);
+    keypad->press_key(keypad_io::Key0);
     break;
   case Qt::Key_1:
-    emu->keypad->press_key(keypad_io::Key1);
+    keypad->press_key(keypad_io::Key1);
     break;
   case Qt::Key_2:
-    emu->keypad->press_key(keypad_io::Key2);
+    keypad->press_key(keypad_io::Key2);
     break;
   case Qt::Key_3:
-    emu->keypad->press_key(keypad_io::Key3);
+    keypad->press_key(keypad_io::Key3);
     break;
   case Qt::Key_4:
-    emu->keypad->press_key(keypad_io::Key4);
+    keypad->press_key(keypad_io::Key4);
     break;
   case Qt::Key_5:
-    emu->keypad->press_key(keypad_io::Key5);
+    keypad->press_key(keypad_io::Key5);
     break;
   case Qt::Key_6:
-    emu->keypad->press_key(keypad_io::Key6);
+    keypad->press_key(keypad_io::Key6);
     break;
   case Qt::Key_7:
-    emu->keypad->press_key(keypad_io::Key7);
+    keypad->press_key(keypad_io::Key7);
     break;
   case Qt::Key_8:
-    emu->keypad->press_key(keypad_io::Key8);
+    keypad->press_key(keypad_io::Key8);
     break;
   case Qt::Key_9:
-    emu->keypad->press_key(keypad_io::Key9);
+    keypad->press_key(keypad_io::Key9);
     break;
   case Qt::Key_A:
-    emu->keypad->press_key(keypad_io::KeyA);
+    keypad->press_key(keypad_io::KeyA);
     break;
   case Qt::Key_B:
-    emu->keypad->press_key(keypad_io::KeyB);
+    keypad->press_key(keypad_io::KeyB);
     break;
   case Qt::Key_C:
-    emu->keypad->press_key(keypad_io::KeyC);
+    keypad->press_key(keypad_io::KeyC);
     break;
   case Qt::Key_D:
-    emu->keypad->press_key(keypad_io::KeyD);
+    keypad->press_key(keypad_io::KeyD);
     break;
   case Qt::Key_E:
-    emu->keypad->press_key(keypad_io::KeyE);
+    keypad->press_key(keypad_io::KeyE);
     break;
   case Qt::Key_F:
-    emu->keypad->press_key(keypad_io::KeyF);
+    keypad->press_key(keypad_io::KeyF);
     break;
   case Qt::Key_Escape:
-    emu->keypad->press_key(keypad_io::KeyReset);
+    keypad->press_key(keypad_io::KeyReset);
     break;
   }
 }
@@ -253,55 +253,55 @@ void MainWindow::keyReleaseEvent(QKeyEvent *ev)
   switch (ev->key())
   {
   case Qt::Key_0:
-    emu->keypad->release_key(keypad_io::Key0);
+    keypad->release_key(keypad_io::Key0);
     break;
   case Qt::Key_1:
-    emu->keypad->release_key(keypad_io::Key1);
+    keypad->release_key(keypad_io::Key1);
     break;
   case Qt::Key_2:
-    emu->keypad->release_key(keypad_io::Key2);
+    keypad->release_key(keypad_io::Key2);
     break;
   case Qt::Key_3:
-    emu->keypad->release_key(keypad_io::Key3);
+    keypad->release_key(keypad_io::Key3);
     break;
   case Qt::Key_4:
-    emu->keypad->release_key(keypad_io::Key4);
+    keypad->release_key(keypad_io::Key4);
     break;
   case Qt::Key_5:
-    emu->keypad->release_key(keypad_io::Key5);
+    keypad->release_key(keypad_io::Key5);
     break;
   case Qt::Key_6:
-    emu->keypad->release_key(keypad_io::Key6);
+    keypad->release_key(keypad_io::Key6);
     break;
   case Qt::Key_7:
-    emu->keypad->release_key(keypad_io::Key7);
+    keypad->release_key(keypad_io::Key7);
     break;
   case Qt::Key_8:
-    emu->keypad->release_key(keypad_io::Key8);
+    keypad->release_key(keypad_io::Key8);
     break;
   case Qt::Key_9:
-    emu->keypad->release_key(keypad_io::Key9);
+    keypad->release_key(keypad_io::Key9);
     break;
   case Qt::Key_A:
-    emu->keypad->release_key(keypad_io::KeyA);
+    keypad->release_key(keypad_io::KeyA);
     break;
   case Qt::Key_B:
-    emu->keypad->release_key(keypad_io::KeyB);
+    keypad->release_key(keypad_io::KeyB);
     break;
   case Qt::Key_C:
-    emu->keypad->release_key(keypad_io::KeyC);
+    keypad->release_key(keypad_io::KeyC);
     break;
   case Qt::Key_D:
-    emu->keypad->release_key(keypad_io::KeyD);
+    keypad->release_key(keypad_io::KeyD);
     break;
   case Qt::Key_E:
-    emu->keypad->release_key(keypad_io::KeyE);
+    keypad->release_key(keypad_io::KeyE);
     break;
   case Qt::Key_F:
-    emu->keypad->release_key(keypad_io::KeyF);
+    keypad->release_key(keypad_io::KeyF);
     break;
   case Qt::Key_Escape:
-    emu->keypad->release_key(keypad_io::KeyReset);
+    keypad->release_key(keypad_io::KeyReset);
     break;
   }
 }

@@ -24,6 +24,23 @@
         <file>buttons/key E.bmp</file>
         <file>buttons/key F.bmp</file>
         <file>buttons/Reset.bmp</file>
+        <file>buttons/0_on.bmp</file>
+        <file>buttons/1_on.bmp</file>
+        <file>buttons/2_on.bmp</file>
+        <file>buttons/3_on.bmp</file>
+        <file>buttons/4_on.bmp</file>
+        <file>buttons/5_on.bmp</file>
+        <file>buttons/6_on.bmp</file>
+        <file>buttons/7_on.bmp</file>
+        <file>buttons/8_on.bmp</file>
+        <file>buttons/9_on.bmp</file>
+        <file>buttons/key A_on.bmp</file>
+        <file>buttons/key B_on.bmp</file>
+        <file>buttons/key C_on.bmp</file>
+        <file>buttons/key D_on.bmp</file>
+        <file>buttons/key E_on.bmp</file>
+        <file>buttons/key F_on.bmp</file>
+        <file>buttons/Reset_on.bmp</file>
         <file>buttons/Add_16x.png</file>
         <file>buttons/BreakpointDisable_16x.png</file>
         <file>buttons/BreakpointEnable_16x.png</file>
