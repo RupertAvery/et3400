@@ -11,7 +11,7 @@ StatusView::StatusView(QWidget *parent)
     is_emulator_set = false;
 
     m_paintTimer = new QTimer(this);
-    m_paintTimer->start(36); // 38ms, or every 1/30th of a second
+    m_paintTimer->start(100); 
     connect(this->m_paintTimer, &QTimer::timeout, this, &StatusView::update);
 
     QString style = "border: 1px solid black; font-size: 12pt; font-family: Courier";

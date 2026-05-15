@@ -21,8 +21,8 @@ DisassemblyView::DisassemblyView(QWidget *parent)
 	lines = new std::vector<DisassemblyLine>;
 
 	m_paintTimer = new QTimer(this);
-	m_paintTimer->start(36); // 38ms, or every 1/30th of a second
-	connect(this->m_paintTimer, &QTimer::timeout, this, &DisassemblyView::redraw);
+	m_paintTimer->start(100); 
+	connect(this->m_paintTimer, &QTimer::timeout, this, &DisassemblyView::refresh);
 
 	setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -467,7 +467,7 @@ void DisassemblyView::leaveEvent(QEvent *event)
 
 void DisassemblyView::redraw()
 {
-	//  DisassemblyBuilder::build(lines, start, end, memory, maps);
+	// DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
 
 	// int x = lines->size() - visible_items + 1;
 	// max_vscroll = x > 0 ? x : 0;
