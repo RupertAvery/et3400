@@ -40,10 +40,10 @@ private:
     QSpacerItem *horizontalSpacer;
     QGridLayout *gridLayout;
     QSpacerItem *verticalSpacer;
-    QLabel *text_label;
+    //QLabel *text_label;
     QLabel *start_label;
     QLabel *end_label;
-    QLineEdit *text_edit;
+    //QLineEdit *text_edit;
     QLineEdit *start_edit;
     QLineEdit *end_edit;
     QLabel *description_label;

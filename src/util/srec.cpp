@@ -1,21 +1,15 @@
 #include "srec.h"
 
+/*
+ * Functions for reading and writing the Motorola S-record file format 
+ */
+
 bool is_srec(QString filename)
 {
     return filename.endsWith(".obj", Qt::CaseInsensitive) || filename.endsWith(".s19", Qt::CaseInsensitive);
 }
 
-void SrecFile::Free(std::vector<srec_block> *blocks)
-{
-    for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
-    {
-        free(it->data);
-    }
-
-    delete blocks;
-}
-
-bool SrecFile::Read(QString path, std::vector<srec_block> *blocks)
+bool SrecFile::Read(QString path, std::vector<data_block> *blocks)
 {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly))
@@ -55,7 +49,7 @@ bool SrecFile::Read(QString path, std::vector<srec_block> *blocks)
                     buffer[ptr] = data.mid(ptr * 2, 2).toUInt(&success, 16);
                 }
 
-                blocks->push_back(srec_block{length, address, buffer});
+                blocks->push_back(data_block{length, address, buffer});
 
                 checksum = line.mid(bytecount * 2 + 2, 2);
 
@@ -67,7 +61,7 @@ bool SrecFile::Read(QString path, std::vector<srec_block> *blocks)
     return true;
 }
 
-bool SrecFile::Write(QString path, QString header, std::vector<srec_block> *blocks, uint16_t startAddress)
+bool SrecFile::Write(QString path, QString header, std::vector<data_block> *blocks, uint16_t startAddress)
 {
     QFile file(path);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
@@ -107,9 +101,9 @@ void SrecFile::WriteHeader(QTextStream &out, QString header)
     out << "\r\n";
 }
 
-uint16_t SrecFile::WriteRecords(QTextStream &out, std::vector<srec_block> *blocks)
+uint16_t SrecFile::WriteRecords(QTextStream &out, std::vector<data_block> *blocks)
 {
-    std::vector<srec_block>::iterator block = blocks->begin();
+    std::vector<data_block>::iterator block = blocks->begin();
     uint16_t recordCount = 0;
 
     while (block != blocks->end())

@@ -6,7 +6,7 @@ SaveDialog::SaveDialog() : QDialog(0, Qt::WindowTitleHint | Qt::WindowSystemMenu
     setupUi(this);
 
     setFixedSize(QSize(350, 250));
-    setWindowTitle("SREC Options");
+    setWindowTitle("Save RAM Options");
 }
 
 void SaveDialog::setupUi(QDialog *Dialog)
@@ -42,13 +42,13 @@ void SaveDialog::setupUi(QDialog *Dialog)
 
     gridLayout->addWidget(start_label, 1, 0, 1, 1);
 
-    text_label = new QLabel(this);
-    text_label->setAlignment(Qt::AlignRight | Qt::AlignTrailing | Qt::AlignVCenter);
+    // text_label = new QLabel(this);
+    // text_label->setAlignment(Qt::AlignRight | Qt::AlignTrailing | Qt::AlignVCenter);
 
-    gridLayout->addWidget(text_label, 0, 0, 1, 1);
+    // gridLayout->addWidget(text_label, 0, 0, 1, 1);
 
-    text_edit = new QLineEdit(this);
-    gridLayout->addWidget(text_edit, 0, 2, 1, 1);
+    // text_edit = new QLineEdit(this);
+    // gridLayout->addWidget(text_edit, 0, 2, 1, 1);
 
     start_edit = new QLineEdit(this);
 
@@ -72,7 +72,7 @@ void SaveDialog::setupUi(QDialog *Dialog)
     description_label = new QLabel(this);
     description_label->setWordWrap(true);
 
-    gridLayout->addWidget(description_label, 3, 2, 1, 1);
+    gridLayout->addWidget(description_label, 0, 2, 1, 1);
 
     gridLayout->setColumnMinimumWidth(0, 50);
     gridLayout->setRowMinimumHeight(0, 20);
@@ -106,15 +106,16 @@ void SaveDialog::setupUi(QDialog *Dialog)
 void SaveDialog::retranslateUi(QDialog *Dialog)
 {
     Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", nullptr));
+    description_label->setText(QApplication::translate("Dialog", "Select the range of RAM to save", nullptr));
     start_label->setText(QApplication::translate("Dialog", "Start", nullptr));
     end_label->setText(QApplication::translate("Dialog", "End", nullptr));
-    text_label->setText(QApplication::translate("Dialog", "Header", nullptr));
+    //text_label->setText(QApplication::translate("Dialog", "Header", nullptr));
 
 } // retranslateUi
 
 void SaveDialog::setSettings(SaveSettings settings)
 {
-    text_edit->setText(settings.header);
+    //text_edit->setText(settings.header);
     start_edit->setText(QString("$%1").arg(settings.start, 4, 16, QChar('0')).toUpper());
     end_edit->setText(QString("$%1").arg(settings.end, 4, 16, QChar('0')).toUpper());
 }
@@ -137,7 +138,7 @@ SaveSettings SaveDialog::getSettings()
 {
     bool ok;
     return SaveSettings{
-        text_edit->text(),
+        "", //text_edit->text(),
         (offs_t)toInt(start_edit, ok),
         (offs_t)toInt(end_edit, ok),
     };

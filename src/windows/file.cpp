@@ -1,5 +1,6 @@
 #include "file.h"
 #include "../util/srec.h"
+#include "../util/hex.h"
 #include "../util/breakpoint.h"
 #include <filesystem>
 #include <algorithm>
@@ -21,7 +22,7 @@ void File::load_rom_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &se
 	//	settings = loadDialog.getSettings();
 
 	QString fileName = QFileDialog::getOpenFileName(parent,
-													"Load File to ROM", "", "BIN Files (*.bin);;SREC Files (*.obj *.s19);;All files (*)");
+													"Load File to ROM", "", "BIN Files (*.bin);;Motorola S-record files (*.s19 *.obj);;Intel HEX files (*.hex);;All files (*)");
 	if (fileName == nullptr)
 		return;
 
@@ -57,13 +58,15 @@ size_t File::load_memory(QString path, QString device_name, et3400emu *emu_ptr, 
 	{
 		if (is_srec(path))
 		{
-			std::vector<srec_block> *blocks = new std::vector<srec_block>;
+			LOG_DEBUG << "Loading SREC file";
+
+			std::vector<data_block> *blocks = new std::vector<data_block>;
 
 			success = SrecFile::Read(path, blocks);
 
 			if (success)
 			{
-				for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
+				for (std::vector<data_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
 				{
 					if (device->get_start() > it->address || device->get_end() < it->address)
 					{
@@ -74,15 +77,47 @@ size_t File::load_memory(QString path, QString device_name, et3400emu *emu_ptr, 
 					}
 				}
 
-				for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
+				for (std::vector<data_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
 				{
 					device->load(it->address, it->data, it->length);
 				}
-				SrecFile::Free(blocks);
+
+				free_blocks(blocks);
+			}
+		}
+		else if (is_hex(path))
+		{
+			LOG_DEBUG << "Loading HEX file";
+
+			std::vector<data_block> *blocks = new std::vector<data_block>;
+
+			success = HexFile::Read(path, blocks);
+
+			if (success)
+			{
+				for (std::vector<data_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
+				{
+					if (device->get_start() > it->address || device->get_end() < it->address)
+					{
+						error = "Failed to load \"" + path + "\". ";
+						error += "Address was out of the target device's range";
+						success = false;
+						return size;
+					}
+				}
+
+				for (std::vector<data_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
+				{
+					device->load(it->address, it->data, it->length);
+				}
+
+				free_blocks(blocks);
 			}
 		}
 		else
 		{
+			LOG_DEBUG << "Loading BIN file";
+
 			char *buffer = load_bin(path, size, success);
 
 			if (success)
@@ -98,11 +133,17 @@ size_t File::load_memory(QString path, QString device_name, et3400emu *emu_ptr, 
 				}
 				free(buffer);
 			}
-			else
-			{
-				error = "Failed to load \"" + path + "\".";
-			}
 		}
+
+		if (!success)
+		{
+			error = "Failed to load \"" + path + "\".";
+		}
+	}
+	else
+	{
+		success = false;
+		error = "Failed to acquire device \"" + device_name + "\".";
 	}
 
 	return size;
@@ -121,7 +162,7 @@ void File::load_ram_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &se
 	//	settings = loadDialog.getSettings();
 
 	QString fileName = QFileDialog::getOpenFileName(parent,
-													"Load File to RAM", "", "SREC Files (*.obj *.s19);;All files (*)");
+													"Load File to RAM", "", "Motorola S-record files (*.s19 *.obj);;Intel HEX files (*.hex);;All files (*)");
 	if (fileName == nullptr)
 		return;
 
@@ -152,49 +193,62 @@ void File::load_ram_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &se
 
 void File::save_ram_dialog(QWidget *parent, et3400emu *emu_ptr, SaveSettings &settings)
 {
-	// SaveDialog saveDialog;
+	SaveDialog saveDialog;
 
-	// saveDialog.setSettings(settings);
+	saveDialog.setSettings(settings);
 
-	// QDialog::DialogCode result = (QDialog::DialogCode)saveDialog.exec();
+	QDialog::DialogCode result = (QDialog::DialogCode)saveDialog.exec();
 
-	// if (result == QDialog::DialogCode::Accepted)
-	// {
-	// 	settings = saveDialog.getSettings();
-
-	QString fileName = QFileDialog::getSaveFileName(parent,
-													"Save RAM Contents", "", "SREC Files (*.s19)");
-
-	if (fileName == nullptr)
-		return;
-
-	std::vector<srec_block> *blocks = new std::vector<srec_block>;
-
-	// pause emulation to avoid reading changing memory while executing
-	emu_ptr->stop();
-
-	memory_mapped_device *ram = emu_ptr->memory_map->get_block_device(0x0000);
-
-	uint8_t *memory = ram->get_mapped_memory();
-
-	static const uint16_t BLOCK_SIZE = 16;
-
-	uint16_t address = settings.start;
-	uint16_t endAddress = std::min(((uint16_t)ram->get_end()), (uint16_t)settings.end);
-
-	while (address < endAddress)
+	if (result == QDialog::DialogCode::Accepted)
 	{
-		uint16_t bytecount = std::min((uint16_t)(endAddress - address + 1), BLOCK_SIZE);
-		blocks->push_back(srec_block{bytecount, address, &memory[address]});
-		address += bytecount;
+		settings = saveDialog.getSettings();
+
+		QString fileName = QFileDialog::getSaveFileName(parent,
+														"Save RAM Contents", "", "Motorola S-record files (*.s19 *.obj);;Intel HEX files (*.hex);;All files (*)");
+
+		if (fileName == nullptr)
+			return;
+
+		std::vector<data_block> *blocks = new std::vector<data_block>;
+
+		// pause emulation to avoid reading changing memory while executing
+		emu_ptr->stop();
+
+		memory_mapped_device *ram = emu_ptr->memory_map->get_block_device(0x0000);
+
+		uint8_t *memory = ram->get_mapped_memory();
+
+		static const uint16_t BLOCK_SIZE = 16;
+
+		uint16_t address = settings.start;
+		uint16_t endAddress = std::min(((uint16_t)ram->get_end()), (uint16_t)settings.end);
+
+		while (address < endAddress)
+		{
+			uint16_t bytecount = std::min((uint16_t)(endAddress - address + 1), BLOCK_SIZE);
+			blocks->push_back(data_block{bytecount, address, &memory[address]});
+			address += bytecount;
+		}
+
+		if (is_srec(fileName))
+		{
+			// save S19 blocks
+			SrecFile::Write(fileName, settings.header, blocks, 0);
+		}
+		else if (is_hex(fileName))
+		{
+			// save S19 blocks
+			HexFile::Write(fileName, blocks);
+		}
+		else
+		{
+			// save S19 blocks
+			SrecFile::Write(fileName, settings.header, blocks, 0);
+		}
+
+		delete blocks;
+
+		// resume emulation
+		emu_ptr->start();
 	}
-
-	// save S19 blocks
-	SrecFile::Write(fileName, settings.header, blocks, 0);
-
-	delete blocks;
-
-	// resume emulation
-	emu_ptr->start();
-	//}
 }

@@ -43,7 +43,7 @@ char *load_srec(QString path, size_t &size, bool &success)
 {
     char *buffer = nullptr;
 
-    std::vector<srec_block> *blocks = new std::vector<srec_block>;
+    std::vector<data_block> *blocks = new std::vector<data_block>;
 
     LOG_DEBUG << "Loading SREC";
 
@@ -53,7 +53,7 @@ char *load_srec(QString path, size_t &size, bool &success)
         uint16_t highest_address = 0x0000;
 
         // determine bounds
-        for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
+        for (std::vector<data_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
         {
             uint16_t end = (it->address + it->length - 1);
 
@@ -73,7 +73,7 @@ char *load_srec(QString path, size_t &size, bool &success)
         buffer = (char *)malloc(size);
 
         // copy blocks to buffer
-        for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
+        for (std::vector<data_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
         {
             uint16_t offset = it->address - lowest_address;
             memcpy(&buffer[offset], it->data, it->length);
@@ -81,7 +81,7 @@ char *load_srec(QString path, size_t &size, bool &success)
     }
 
     // clean up
-    for (std::vector<srec_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
+    for (std::vector<data_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
     {
         free(it->data);
     }

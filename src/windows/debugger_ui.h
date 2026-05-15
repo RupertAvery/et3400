@@ -43,7 +43,7 @@ void DebuggerDialog::setupUI()
 
     panel_selector = new QToolButton(toolbar);
     panel_selector->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    panel_selector->setText("Panels   ");
+    panel_selector->setText("View   ");
     panel_selector->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
 
     QMenu *panel_selector_menu = new QMenu(panel_selector);

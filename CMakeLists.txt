@@ -52,6 +52,8 @@ set(EMUSRC
 
 set(TOOLSRC 
     src/util/csv.cpp 
+    src/util/io.cpp
+    src/util/hex.cpp 
     src/util/srec.cpp 
     src/util/label.cpp 
     src/util/breakpoint.cpp 
