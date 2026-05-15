@@ -372,13 +372,6 @@ void MainWindow::setSpeed(std::string speed)
   // allow parsing speed with % or with suffixes (Hz, kHz, MHz)
   try
   {
-    if (speed.back() == '%')
-    {
-      speed.pop_back();
-      int pct = std::stoi(speed, nullptr, 10);
-      emu->set_clock_rate(DEFAULT_CLOCK_RATE * pct / 100);
-      return;
-    }
 
     auto tolower_str = [](std::string s)
     {
@@ -392,18 +385,22 @@ void MainWindow::setSpeed(std::string speed)
       emu->set_clock_rate(std::stoi(speed, nullptr, 10) * 1000);
       return;
     }
-    if (speed.size() > 3 && tolower_str(speed.substr(speed.size() - 3)) == "mhz")
+    else if (speed.size() > 3 && tolower_str(speed.substr(speed.size() - 3)) == "mhz")
     {
       speed = speed.substr(0, speed.size() - 3);
       emu->set_clock_rate(std::stoi(speed, nullptr, 10) * 1000000);
       return;
     }
-    if (speed.size() > 2 && tolower_str(speed.substr(speed.size() - 2)) == "hz")
+    else if (speed.size() > 2 && tolower_str(speed.substr(speed.size() - 2)) == "hz")
     {
       speed = speed.substr(0, speed.size() - 2);
     }
-
-    emu->set_clock_rate(std::stoi(speed, nullptr, 10));
+    else 
+    {
+      int pct = std::stoi(speed, nullptr, 10);
+      emu->set_clock_rate(DEFAULT_CLOCK_RATE * pct / 100);
+      return;
+    }
   }
   catch (const std::exception &)
   {
