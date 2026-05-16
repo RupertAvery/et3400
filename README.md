@@ -6,13 +6,54 @@ This is a port of my emulator built in C# (https://github.com/RupertAvery/et3400
 
 The Heathkit ET-3400 Trainer is a device intended to teach microprocessor basics and assembly programming. The trainer was sold in kit form, requiring the user to build the device from parts.
 
-## What's emulated
+# Acknowledgement
+
+I would like to thank Rick Nungester for all his interactions and the folks at [groups.io/ET-3400](https://groups.io/g/ET-3400) for the community and wealth of information and documentation made available that has made this emulator much more accurate and useful.
+
+For more information on the kit itself as well as access to the information, programs, listings and other files, please join the group.
+
+# Command Line Arguments
+
+Here are the optional command line arguments:
+
+```
+Usage: et3400.exe [options] [file]
+
+Options:
+  -m <path>            Load alternate monitor ROM from file (.s19, .hex, .bin)
+  -s <speed>           Set clock speed 
+  -d                   Show debugger on startup
+  -l <path>            Load labels from file (.lbl) (see note 1)
+
+  <file>               Load RAM contents from file (.s19, .obj)
+```
+
+The speed argument accepts the following formats:
+
+```
+n             - a percentage e.g. -s 25 will set the clock rate at 25% of 471kHz (see note 2)
+n[k|M]Hz      - the speed of the clock specified in Hz, kHz or MHz (case insensitive)
+                      e.g. -s 1000hz will set the clock to 1000Hz
+                           -s 1Mhz will set the clock to 1MHz 
+```
+
+Notes:
+
+1. See [Labels](#labels) for a description of this feature 
+
+2. The default clock speed of 471kHz was suggested by Rick Nungester from tests on an actual ET-3400.
+
+# What's emulated
 
 * Motorola 8-bit 6800 CPU running at 471kHz 
 * 6 7-segment LED displays
-* the hex keypad
+* a hex keypad
+* 1KB RAM
+* 1KB Monitor ROM
 
-A built-in ROM is provided. The ROM contains the Monitor program for the Heathkit ET-3400 Trainer, which interacts with the keypad and display to run programs and view CPU registers.
+The built-in ROM contains the Monitor program designed for the Heathkit ET-3400 Trainer, which interacts with the keypad and display to run programs and view CPU registers.
+
+# Screenshot
 
 <img width="352" height="532" alt="emulator" src="https://github.com/user-attachments/assets/acf8accc-402a-432c-8053-54c7b466c3fe" />
 
@@ -65,15 +106,11 @@ Raw Binary <sup>2</sup> | `.BIN`
 
 <sup>2</sup> The BIN format is raw bytes in binary format with no headers. The file should be exactly 1024 bytes to fit in the ROM address space.
 
-
-
 ## Labels
 
 Labels allow you to label and categorize areas of memory and affect the way the memory is disassembled. The main purpose of this is to set a range of memory memory as a "data" block, forcing the disassembler to skip over the range and prevent it from being disassembled as instructions.
 
-This is important when you have a section of memory that does not contain code and should not be disassembled as instructions.
-
-This allows any code following the data to be disassembled correctly.
+This is important when you have a section of memory that does not contain code and should not be disassembled as instructions. This allows any code following the data to be disassembled correctly.
 
 Below is a view of a section of RAM before and after adding labels.
 
@@ -85,11 +122,11 @@ Labels can be added from the toolbar menu (Labels > Add Label) or by right-click
 
 <img width="331" height="123" alt="image" src="https://github.com/user-attachments/assets/de78fb0d-3617-4b67-b7f3-144beaa01530" />
 
-You will be prompted to select a type of label, Comment or Data. 
+You will be prompted to select a type of label: Comment or Data. 
 
-**Comment** will treat memory at the start address as an instruction, not affecting disassembly.
+**Comment** marks the instruction at the start address with a label, without affecting disassembly.
 
-**Data** requires a start address and end address, will treat memory between the the start and end address as data, skipping disassembly over the range and displaying the memory as raw data.
+**Data** marks a range of memory (from start to end address) as raw data, suppressing disassembly and displaying the bytes directly.
 
 <img width="352" height="282" alt="image" src="https://github.com/user-attachments/assets/71a626c5-8c9c-4918-bd41-fe08327cfad3" />
 
@@ -101,23 +138,79 @@ You can edit or remove a label by right-clicking on a labeled range in the disas
 
 ### Loading and Saving Labels
 
-Labels can be loaded and saved from the toolbar menu (File > Load Labels (RAM) and File > Save Labels (RAM))
+Labels can be loaded and saved from the toolbar menu (**File > Load Labels (RAM)** and **File > Save Labels (RAM)**)
 
 ## Debugger
 
-The emulator features a debugger which allows you to stop emulation and step into each instruction and see memory and registers update in real time.
+Pressing the "Debugger" menu item in the main window will display the debugger dialog.
+
+The debugger lets you pause, step through instructions, and inspect CPU state, disassembly and memory.
 
 ### Controls
 
-Aside from the controls in the toolbar, emulation can be controlled with the following keys
+The following buttons can be found in the toolbar
 
-* F5 - Start emulation
-* F4 - Stop emulation
-* F9 - Toggle Breakpoint on the currently highlighted line
-* 10 - Step into next instruction
-* ESC - Reset emulator
+* **Start** - Resumes emulation
+* **Stop** - Pauses emulation
+* **Step in** - Steps into next instruction 
+* **Escape** - Reset emulator
+
+The following keyboard shortcuts are also available:
+
+* **F5** - Resumes emulation
+* **F4** - Pauses emulation
+* **F9** - Toggle Breakpoint on the currently highlighted line
+* **F10** - Steps into next instruction
+* **ESC** - Reset emulator
 
 <img width="987" height="753" alt="debugger" src="https://github.com/user-attachments/assets/9c0e19d1-5436-4fec-85eb-26ff87c84b39" />
+
+### Status Pane
+
+The Status Pane displays the live contents of the following CPU registers:
+
+* PC - Program Counter
+* SP - Stack Pointer
+* IX - Index
+* ACCA - Accumulator A
+* ACCB - Accumulator B
+* CC - Status in Binary as --HINZVC
+
+### Disassembly Pane
+
+At the top of the pane you will see a dropdown containing the current list of memory-mapped devices
+
+- RAM
+- Keypad
+- Display
+- ROM
+
+Selecting one of these will display the disassembled contents of addressed memory of the selected memory-mapped device.
+
+The disassembler will decode consecutive contents of memory as instructions and arguments.
+
+For example the consecutive bytes `BD FC BC` as `JSR $FCBC`
+
+When instructions are preceded by variables or lookup data, this can affect how the instruction are disassembled due to the the disassembler interpreting previous memory as instructions.
+
+To avoid this problem, you can add [labels](#labels) to the code to force the disassembler to treat ranges of code differently.
+
+You can set [breakpoints](#breakpoints) in the disassembly pane.
+
+You can also see the next line to be executed highlighted in yellow when the emulator is stopped (manually or because of a breakpoint).
+
+### Memory Pane
+
+Similar to the Disassmbler pane you will see a dropdown containing the current list of memory-mapped devices
+
+- RAM
+- Keypad
+- Display
+- ROM
+
+Selecting one of these will display the raw byte contents of addressed memory of the selected memory-mapped device.
+
+Heat map
 
 ## Breakpoints
 
@@ -213,18 +306,15 @@ Pressing one of the buttons will execute one of the built-in commands in the ROM
 
 **Notes**
 
-<sup>1</sup> Resetting only takes effect while the CPU is being clocked. Pressing RESET or ESC while the CPU is paused will have no effect. Pressing  it and then single stepping will also have no effect as the RESET line will have been released when you release the button. 
-
+<sup>1</sup> RESET only takes effect while the CPU is running. It has no effect when the CPU is paused, and single-stepping after pressing RESET will also have no effect — the RESET line is released as soon as the key is released.
 
 ## Sample Program
 
-This sample program will light up each segment on each display and repeat.
+This sample program cycles through each segment on each display, repeating continuously.
 
-To enter the program, press `A` then enter `0000` to start entering hex data.
+To enter the program, press `A`, then type `0000` to begin entering hex data at that address. Enter the bytes from the Instr column below, making sure each instruction lands at the correct address. If you make a mistake, press `ESC` or `RESET` to reset, then press `A` again and enter the address where you want to resume.
 
-Enter the instructions in the Instr column below, ensuring that each instruction starts at the correct address. If you make a mistake, you can press ESC to reset then press `A` and enter the address to resume entering instructions.
-
-You can press `E` to review the data at each address, and press `F` or `B` to move up and down memory.
+Press `E` to inspect memory, then `F` or `B` to step forward or backward through addresses.
 
 To run the program, press `D` and enter `0000`.
 
@@ -252,34 +342,11 @@ Addr Instr     Label    Disassembly        Comments
 0024 20 DA              BRA    START       DO AGAIN
 ```
 
-The labels `REDIS`, `DIGADD`, and `OUTCH` refer to subroutines in the ROM that perform certain functions.
-
-# Command Line Arguments
-
-```
-Usage: et3400.exe [options] [file]
-
-Options:
-  -m <path>            Load monitor ROM from file
-  -s <speed>           Set clock speed
-  -d                   Show debugger on startup
-  -l <path>            Load labels from file
-  <file>               Load RAM contents from file (SREC obj)
-```
-
-The speed argument accepts the following formats:
-
-```
-n             - e.g. 25 will set the clock rate at 25% of 471kHz
-n[k|M]Hz      - the speed of the clock specified in Hz, kHz or MHz (case insensitive)
-                      e.g. 1000hz will set the clock to 1000Hz
-                           471khz will set the clock to 471kHz 
-```
-
-Note: The default clock speed of 471kHz was suggested by Rick Nungester from tests on his actual ET-3400.
-
+NOTE: The labels `REDIS`, `DIGADD`, and `OUTCH` refer to subroutines in the ROM that perform certain functions.
 
 # Development
+
+The code is cross-platofrm and can be compiled and executed on Windows and Linux. Mac OS is probably also possible, but I haven't tested it.
 
 ## Windows
 
