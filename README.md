@@ -250,7 +250,7 @@ It is a wealth of information and it is recommended that you take a look at it t
 | 47-56    |  45-54      | Operation            |
 | 57-66    |  55-64      | Sample Programs      |
 | 67-74    |  65-72      | Sample Programs      |
-| 75-87    |  73-85      | Monitor ROM Listing  |
+| 75-87    |  73-85      | Monitor ROM Listing<sup>1</sup> |
 | 89       |  87         | Memory Map           |
 | 90       |  88         | Keyboard and Display Functioning Addresses |
 | 91-92    |  89-90      | Instruction Set      |
@@ -259,25 +259,14 @@ It is a wealth of information and it is recommended that you take a look at it t
 | 148-149  |             | Block Diagram        |
 | 151-159  |             | Schematic Diagram    |
 
-
-
-**NOTE:** The Monitor ROM listing is incomplete as it omits several sections either for brevity or it seems by accident.
+<sup>1</sup> The Monitor ROM listing in this edition of the manual is incomplete as it is missing several bytes, likely due to a misprint:
 
 ```
-FC09-FC0B - data
 FC46-FC7D - BKSET and DOPMT routines
-FD5A - data
-FD62 - data
 FF2A-FF2F - Start of SPECIAL HANDLERS
-FF76 - FFF8 - data
 ```
 
-and maybe a pointer to the ET-3400 groups.io
-home page and "... complete source code available in the Files section
-of this group".  Or perhaps an even more global statement pointing to
-that home page, regarding the extensive collection of related
-documentation there.
-
+For the complete source code of the Monitor ROM, I recommend visiting https://groups.io/g/ET-3400/files/3.%20ROM%20Info/6.%20ET-3400%20Monitor%20source%20code and looking at ET3400.LST
 
 ## Basic Usage
 
@@ -342,7 +331,11 @@ Addr Instr     Label    Disassembly        Comments
 0024 20 DA              BRA    START       DO AGAIN
 ```
 
-NOTE: The labels `REDIS`, `DIGADD`, and `OUTCH` refer to subroutines in the ROM that perform certain functions.
+NOTE: The labels `REDIS`, `DIGADD`, and `OUTCH` refer to subroutines in the Monitor ROM that perform certain functions.
+
+The sample programs source code are available in Motorola S-record and Intel HEX format here https://groups.io/g/ET-3400/files/9.%20Sample%20Programs/Sample%20Programs%20Hex
+
+These files can be loaded directly into the emulator
 
 # Development
 

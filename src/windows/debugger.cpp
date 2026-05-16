@@ -3,6 +3,7 @@
 #include "goto.h"
 #include "mainwindow.h"
 #include "../util/log.h"
+#include "clear_ram.h"
 
 bool is_call_instruction(uint8_t opcode)
 {
@@ -286,7 +287,6 @@ void DebuggerDialog::set_settings(Settings *settings)
 {
 	this->settings = settings;
 
-
 	disassembly_groupBox->setVisible(settings->showDasmView);
 	memory_groupBox->setVisible(settings->showMemoryView);
 	memory_view->setHeatMapEnabled(settings->showHeatMap);
@@ -551,21 +551,32 @@ void DebuggerDialog::after_load_ram()
 
 void DebuggerDialog::clear_ram()
 {
-	memory_mapped_device *ram = emu_ptr->memory_map->try_get_block_device("RAM");
+	ClearRamDialog clearRamDialog;
 
-	if (ram != nullptr)
+	clearRamDialog.setSettings(clearRamSettings);
+
+	QDialog::DialogCode result = (QDialog::DialogCode)clearRamDialog.exec();
+
+	if (result == QDialog::DialogCode::Accepted)
 	{
-		emu_ptr->stop();
-		uint16_t addr = ram->get_start();
-		while (addr < ram->get_end())
-		{
-			ram->write(addr, 00);
-			addr++;
-		}
-		emu_ptr->reset();
-		emu_ptr->start();
+		clearRamSettings = clearRamDialog.getSettings();
 
-		disassembly_view->rebuild();
+		memory_mapped_device *ram = emu_ptr->memory_map->try_get_block_device("RAM");
+
+		if (ram != nullptr)
+		{
+			emu_ptr->stop();
+			uint16_t addr = clearRamSettings.start;
+			while (addr < clearRamSettings.end)
+			{
+				ram->write(addr, clearRamSettings.value);
+				addr++;
+			}
+			emu_ptr->reset();
+			emu_ptr->start();
+
+			disassembly_view->rebuild();
+		}
 	}
 }
 

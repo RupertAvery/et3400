@@ -27,6 +27,7 @@ set(WINDOWS_SRC
     src/windows/about.cpp 
     src/windows/save.cpp  
     src/windows/load.cpp  
+    src/windows/clear_ram.cpp  
     src/windows/settings.cpp  
     src/windows/debugger.cpp 
     src/windows/file.cpp 

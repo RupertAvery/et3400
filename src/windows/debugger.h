@@ -39,6 +39,7 @@
 #include "../util/settings.h"
 #include "file.h"
 #include "save.h"
+#include "clear_ram.h"
 
 class MainWindow;
 
@@ -124,6 +125,7 @@ private:
 
 	et3400emu *emu_ptr = nullptr;
 	Settings *settings = nullptr;
+	ClearRamSettings clearRamSettings{0x0000, 0x01FF, 0x00};
 
 	MainWindow *parent_window = nullptr;
 
