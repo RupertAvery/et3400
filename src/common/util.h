@@ -3,6 +3,7 @@
 #include <QLineEdit>
 
 int toInt(QLineEdit *edit, bool &ok);
+QString toHex(int value, int width = 4);
 char *load_bin(QString path, size_t &size, bool &success);
 char *load_srec(QString path, size_t &size, bool &success);
 char *load_file(QString path, size_t &size, bool &success);

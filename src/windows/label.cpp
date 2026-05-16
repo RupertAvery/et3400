@@ -168,8 +168,8 @@ void LabelDialog::setLabel(LabelInfo label, LabelDialogMode mode)
 
     data_radio->setChecked(label.type == LabelType::DATA);
     comment_radio->setChecked(label.type == LabelType::COMMENT);
-    start_edit->setText(QString("$%1").arg(label.start, 4, 16, QChar('0')).toUpper());
-    end_edit->setText(QString("$%1").arg(label.end, 4, 16, QChar('0')).toUpper());
+    start_edit->setText(toHex(label.start));
+    end_edit->setText(toHex(label.end));
 }
 
 void LabelDialog::validate()

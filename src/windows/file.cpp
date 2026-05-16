@@ -56,6 +56,9 @@ size_t File::load_memory(QString path, QString device_name, et3400emu *emu_ptr, 
 
 	if (device)
 	{
+		offs_t start = device->get_start();
+		offs_t end = device->get_end();
+
 		if (is_srec(path))
 		{
 			LOG_DEBUG << "Loading SREC file";
@@ -68,10 +71,10 @@ size_t File::load_memory(QString path, QString device_name, et3400emu *emu_ptr, 
 			{
 				for (std::vector<data_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
 				{
-					if (device->get_start() > it->address || device->get_end() < it->address)
+					if (start > it->address || end < it->address)
 					{
-						error = "Failed to load \"" + path + "\". ";
-						error += "Address was out of the target device's range";
+						error = "Failed to load \"" + path + "\".\n";
+						error += "Address was out of the target range (" + toHex(start) + "-" + toHex(end) + ")";
 						success = false;
 						return size;
 					}
@@ -83,6 +86,12 @@ size_t File::load_memory(QString path, QString device_name, et3400emu *emu_ptr, 
 				}
 
 				free_blocks(blocks);
+			}
+			else
+			{
+				error = "Failed to load \"" + path + "\".\n";
+				error += SrecFile::error;
+				return 0;
 			}
 		}
 		else if (is_hex(path))
@@ -97,10 +106,10 @@ size_t File::load_memory(QString path, QString device_name, et3400emu *emu_ptr, 
 			{
 				for (std::vector<data_block>::iterator it = blocks->begin(); it != blocks->end(); ++it)
 				{
-					if (device->get_start() > it->address || device->get_end() < it->address)
+					if (start > it->address || end < it->address)
 					{
-						error = "Failed to load \"" + path + "\". ";
-						error += "Address was out of the target device's range";
+						error = "Failed to load \"" + path + "\".\n";
+						error += "Address was out of the target range (" + toHex(start) + "-" + toHex(end) + ")";
 						success = false;
 						return size;
 					}
@@ -113,8 +122,14 @@ size_t File::load_memory(QString path, QString device_name, et3400emu *emu_ptr, 
 
 				free_blocks(blocks);
 			}
+			else
+			{
+				error = "Failed to load \"" + path + "\".\n";
+				error += HexFile::error;
+				return 0;
+			}
 		}
-		else
+		else if (is_bin(path))
 		{
 			LOG_DEBUG << "Loading BIN file";
 
@@ -124,8 +139,10 @@ size_t File::load_memory(QString path, QString device_name, et3400emu *emu_ptr, 
 			{
 				if (size != device->get_size())
 				{
-					error = "Failed to load \"" + path + "\". ";
-					error += "Expected size: " + QString::number(device->get_size()) + " found: " + size;
+					success = false;
+					error = "Failed to load \"" + path + "\".\n";
+					error += "Expected size: " + QString::number(device->get_size()) + ", found: " + QString::number(size);
+					return size;
 				}
 				else
 				{
@@ -133,6 +150,18 @@ size_t File::load_memory(QString path, QString device_name, et3400emu *emu_ptr, 
 				}
 				free(buffer);
 			}
+			else
+			{
+				error = "Failed to load \"" + path + "\".\n";
+				return 0;
+			}
+		}
+		else
+		{
+			success = false;
+			error = "Failed to load \"" + path + "\".\n";
+			error += "Unsupported file type";
+			return size;
 		}
 
 		if (!success)
@@ -214,7 +243,7 @@ void File::save_ram_dialog(QWidget *parent, et3400emu *emu_ptr, SaveSettings &se
 		// pause emulation to avoid reading changing memory while executing
 		emu_ptr->stop();
 
-		memory_mapped_device *ram = emu_ptr->memory_map->get_block_device(0x0000);
+		memory_mapped_device *ram = emu_ptr->memory_map->try_get_block_device("RAM");
 
 		uint8_t *memory = ram->get_mapped_memory();
 
@@ -223,10 +252,27 @@ void File::save_ram_dialog(QWidget *parent, et3400emu *emu_ptr, SaveSettings &se
 		uint16_t address = settings.start;
 		uint16_t endAddress = std::min(((uint16_t)ram->get_end()), (uint16_t)settings.end);
 
+		const uint16_t monitor_ram_start = 0x00C5;
+		const uint16_t monitor_ram_end = 0x00FF;
+
 		while (address < endAddress)
 		{
+			if (address <= monitor_ram_end)
+			{
+				if (address + BLOCK_SIZE >= monitor_ram_start)
+				{
+					// Save block up to the start of Monitor RAM
+					uint16_t bytecount = std::min((uint16_t)(monitor_ram_start - address), BLOCK_SIZE);
+					blocks->push_back(data_block{bytecount, address, &memory[address]});
+					// Move past end of Monitor RAM
+					address = monitor_ram_end + 1;
+					continue;
+				}
+			}
+
 			uint16_t bytecount = std::min((uint16_t)(endAddress - address + 1), BLOCK_SIZE);
 			blocks->push_back(data_block{bytecount, address, &memory[address]});
+
 			address += bytecount;
 		}
 

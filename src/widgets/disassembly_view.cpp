@@ -1,5 +1,6 @@
 #include "disassembly_view.h"
 #include "../util/log.h"
+#include "../common/util.h"
 
 DisassemblyView::DisassemblyView(QWidget *parent)
 	: QFrame(parent)
@@ -206,7 +207,7 @@ void DisassemblyView::bufferDraw()
 		else
 		{
 			painter.setPen(address_color);
-			painter.drawText(20, y, QString("$%1:").arg(line[ctr].address, 4, 16, QChar('0')).toUpper());
+			painter.drawText(20, y, toHex(line[ctr].address) + ":");
 
 			painter.setPen(opcode_color);
 

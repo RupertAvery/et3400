@@ -59,8 +59,8 @@ void GotoDialog::setLabels(std::vector<Label> *labels)
 
 	for (std::vector<Label>::iterator it = labels->begin(); it != labels->end(); ++it)
 	{
-		QString startAddress = QString("$%1").arg((*it).start, 4, 16, QChar('0')).toUpper();
-		QString endAddress = QString("$%1").arg((*it).end, 4, 16, QChar('0')).toUpper();
+		QString startAddress = toHex((*it).start);
+		QString endAddress = toHex((*it).end);
 
 		QStandardItem *item = new QStandardItem(QString("%1-%2: %3").arg(startAddress).arg(endAddress).arg((*it).comment));
 		item->setData((*it).start, Qt::UserRole);

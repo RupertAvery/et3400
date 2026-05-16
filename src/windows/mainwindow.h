@@ -23,6 +23,7 @@
 #include <QFile>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMessageBox>
 
 class MainWindow : public QMainWindow
 {

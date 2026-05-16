@@ -43,10 +43,12 @@ private:
     //QLabel *text_label;
     QLabel *start_label;
     QLabel *end_label;
+    QLabel *note_label;
     //QLineEdit *text_edit;
     QLineEdit *start_edit;
     QLineEdit *end_edit;
     QLabel *description_label;
+    QLabel *error_label;
     QDialogButtonBox *buttonBox;
 
     void setupUi(QDialog *Dialog);

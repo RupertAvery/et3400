@@ -1,8 +1,11 @@
 #include "srec.h"
+#include "log.h"
 
 /*
- * Functions for reading and writing the Motorola S-record file format 
+ * Functions for reading and writing the Motorola S-record file format
  */
+
+QString SrecFile::error;
 
 bool is_srec(QString filename)
 {
@@ -20,42 +23,88 @@ bool SrecFile::Read(QString path, std::vector<data_block> *blocks)
 
     QTextStream in(&file);
 
+    error = "";
+    int line_num = 0;
+    bool success = true;
+
     while (!in.atEnd())
     {
         QString line = in.readLine();
 
+        LOG_DEBUG << "Reading line " << line_num;
+
         if (line.length() > 0)
         {
-            bool success = false;
-            int bytecount = line.mid(2, 2).toUInt(&success, 16);
-            QString addr;
-            QString data;
-            QString checksum;
             QString type = line.mid(0, 2);
+
+            int bytecount = line.mid(2, 2).toUInt(&success, 16);
+
+            LOG_DEBUG << "bytecount: " << bytecount;
+
+            if (!success)
+            {
+                LOG_DEBUG << "Failed parsing byte count";
+                error += "Invalid byte count at line " + QString::number(line_num);
+                break;
+            }
 
             if (type == "S1")
             {
+                uint16_t address = line.mid(4, 4).toUInt(&success, 16);
+
+                LOG_DEBUG << "address: " << address;
+
+                if (!success)
+                {
+                    LOG_DEBUG << "Failed parsing address";
+                    error += "Invalid address at line " + QString::number(line_num);
+                    break;
+                }
+
                 uint16_t length = bytecount - 3;
-
-                addr = line.mid(4, 4);
-                data = line.mid(8, length * 2);
-
-                uint16_t address = addr.toUInt(&success, 16);
-
+                QString data = line.mid(8, length * 2);
                 uint8_t *buffer = (uint8_t *)malloc(length);
 
                 for (int ptr = 0; ptr < length; ptr++)
                 {
                     buffer[ptr] = data.mid(ptr * 2, 2).toUInt(&success, 16);
+
+                    if (!success)
+                    {
+                        LOG_DEBUG << "Failed parsing data at byte " << ptr;
+                        break;
+                    }
+                }
+
+                if (!success)
+                {
+                    free(buffer);
+                    error += "Invalid data at line " + QString::number(line_num);
+                    break;
                 }
 
                 blocks->push_back(data_block{length, address, buffer});
 
-                checksum = line.mid(bytecount * 2 + 2, 2);
+                int checksumActual = line.mid(bytecount * 2 + 2, 2).toUInt(&success, 16);
 
-                int checksumActual = checksum.toUInt(&success, 16);
+                LOG_DEBUG << "checksum: " << checksumActual;
+
+                if (!success)
+                {
+                    LOG_DEBUG << "Failed parsing checksum";
+                    error += "Invalid checksum at line " + QString::number(line_num);
+                    break;
+                }
             }
         }
+
+        line_num++;
+    }
+
+    if (!success)
+    {
+        LOG_DEBUG << "Error reading S19 file at line " << line_num;
+        return false;
     }
 
     return true;

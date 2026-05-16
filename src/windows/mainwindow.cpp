@@ -395,7 +395,7 @@ void MainWindow::setSpeed(std::string speed)
     {
       speed = speed.substr(0, speed.size() - 2);
     }
-    else 
+    else
     {
       int pct = std::stoi(speed, nullptr, 10);
       emu->set_clock_rate(DEFAULT_CLOCK_RATE * pct / 100);
@@ -429,13 +429,18 @@ void MainWindow::setRAM(std::string file)
   LOG_DEBUG << "Loading RAM from file:" << QString::fromStdString(file);
   if (!std::filesystem::exists(file))
   {
-    LOG_ERROR << "File does not exist:" << file.c_str();
+    QMessageBox::critical(this, "Error loading RAM", "File not found");
     return;
   }
 
   bool success;
 
   File::load_memory(QString::fromStdString(file), "RAM", emu, 0x0000, success);
+
+  if (!success)
+  {
+    QMessageBox::critical(this, "Error loading RAM", File::error);
+  }
 }
 
 void MainWindow::setROM(std::string file)
@@ -443,11 +448,16 @@ void MainWindow::setROM(std::string file)
   LOG_DEBUG << "Loading ROM from file:" << QString::fromStdString(file);
   if (!std::filesystem::exists(file))
   {
-    LOG_ERROR << "File does not exist:" << file.c_str();
+    QMessageBox::critical(this, "Error loading ROM", "File not found");
     return;
   }
 
   bool success;
 
   File::load_memory(QString::fromStdString(file), "Monitor ROM", emu, 0xFC00, success);
+
+  if (!success)
+  {
+    QMessageBox::critical(this, "Error loading ROM", File::error);
+  }
 }

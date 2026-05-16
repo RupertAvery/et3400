@@ -567,7 +567,7 @@ void DebuggerDialog::clear_ram()
 		{
 			emu_ptr->stop();
 			uint16_t addr = clearRamSettings.start;
-			while (addr < clearRamSettings.end)
+			while (addr <= clearRamSettings.end)
 			{
 				ram->write(addr, clearRamSettings.value);
 				addr++;

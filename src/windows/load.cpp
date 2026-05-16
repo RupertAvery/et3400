@@ -117,8 +117,8 @@ void LoadDialog::retranslateUi(QDialog *Dialog)
 void LoadDialog::setSettings(LoadSettings settings)
 {
     text_edit->setText(settings.device_name);
-    start_edit->setText(QString("$%1").arg(settings.start, 4, 16, QChar('0')).toUpper());
-    end_edit->setText(QString("$%1").arg(settings.end, 4, 16, QChar('0')).toUpper());
+    start_edit->setText(toHex(settings.start));
+    end_edit->setText(toHex(settings.end));
     override_start_check->setChecked(!settings.auto_detect_start);
     start_edit->setEnabled(!settings.auto_detect_start);
     end_edit->setEnabled(!settings.auto_detect_start);

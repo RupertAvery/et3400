@@ -74,11 +74,22 @@ void SaveDialog::setupUi(QDialog *Dialog)
 
     gridLayout->addWidget(description_label, 0, 2, 1, 1);
 
+    note_label = new QLabel(this);
+    note_label->setWordWrap(true);
+    gridLayout->addWidget(note_label, 3, 2, 1, 1);
+
+    error_label = new QLabel(this);
+    error_label->setWordWrap(true);
+    error_label->setStyleSheet("color: red;");
+    error_label->hide();
+    gridLayout->addWidget(error_label, 4, 0, 1, 3);
+
     gridLayout->setColumnMinimumWidth(0, 50);
     gridLayout->setRowMinimumHeight(0, 20);
     gridLayout->setRowMinimumHeight(1, 20);
     gridLayout->setRowMinimumHeight(2, 20);
     gridLayout->setRowMinimumHeight(3, 20);
+    gridLayout->setRowMinimumHeight(4, 20);
 
     mainLayout->addLayout(gridLayout);
 
@@ -106,31 +117,43 @@ void SaveDialog::setupUi(QDialog *Dialog)
 void SaveDialog::retranslateUi(QDialog *Dialog)
 {
     Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", nullptr));
-    description_label->setText(QApplication::translate("Dialog", "Select the range of RAM to save", nullptr));
+    description_label->setText(QApplication::translate("Dialog", "Enter the range to save ($0000-$01FF)", nullptr));
     start_label->setText(QApplication::translate("Dialog", "Start", nullptr));
     end_label->setText(QApplication::translate("Dialog", "End", nullptr));
-    //text_label->setText(QApplication::translate("Dialog", "Header", nullptr));
+    note_label->setText(QApplication::translate("Dialog", "Monitor RAM ($00C5-$00FF) will be excluded", nullptr));
+    // text_label->setText(QApplication::translate("Dialog", "Header", nullptr));
 
 } // retranslateUi
 
 void SaveDialog::setSettings(SaveSettings settings)
 {
-    //text_edit->setText(settings.header);
-    start_edit->setText(QString("$%1").arg(settings.start, 4, 16, QChar('0')).toUpper());
-    end_edit->setText(QString("$%1").arg(settings.end, 4, 16, QChar('0')).toUpper());
+    // text_edit->setText(settings.header);
+    start_edit->setText(toHex(settings.start));
+    end_edit->setText(toHex(settings.end));
 }
 
 void SaveDialog::validate()
 {
-    bool ok1;
-    bool ok2;
+    bool ok1, ok2;
 
-    toInt(start_edit, ok1);
-    toInt(end_edit, ok2);
+    int start = toInt(start_edit, ok1);
+    int end   = toInt(end_edit, ok2);
 
-    if (ok1)
+    QStringList errors;
+    if (!ok1) errors << "Invalid start address.";
+    if (!ok2) errors << "Invalid end address.";
+    if (ok1 && ok2 && end <= start) errors << "Start must be less than end.";
+    if (ok2 && end > 0x01FF) errors << "End address exceeds $01FF.";
+
+    if (errors.isEmpty())
     {
+        error_label->hide();
         accept();
+    }
+    else
+    {
+        error_label->setText(errors.join(" "));
+        error_label->show();
     }
 }
 
@@ -138,7 +161,7 @@ SaveSettings SaveDialog::getSettings()
 {
     bool ok;
     return SaveSettings{
-        "", //text_edit->text(),
+        "", // text_edit->text(),
         (offs_t)toInt(start_edit, ok),
         (offs_t)toInt(end_edit, ok),
     };

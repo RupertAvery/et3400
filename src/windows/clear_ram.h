@@ -48,6 +48,7 @@ private:
     QLineEdit *start_edit;
     QLineEdit *end_edit;
     QLabel *description_label;
+    QLabel *error_label;
     QDialogButtonBox *buttonBox;
 
     void setupUi(QDialog *Dialog);

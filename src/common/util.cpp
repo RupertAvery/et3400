@@ -6,6 +6,11 @@
 #include "../util/srec.h"
 #include "../util/log.h"
 
+QString toHex(int value, int width)
+{
+    return QString("$%1").arg(value, width, 16, QChar('0')).toUpper();
+}
+
 int toInt(QLineEdit *edit, bool &ok)
 {
     QString text = edit->text();

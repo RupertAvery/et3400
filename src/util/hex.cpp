@@ -24,9 +24,13 @@ const int address_start = 3;
 const int type_start = 7;
 const int data_start = 9;
 
+QString HexFile::error;
+
 bool HexFile::Read(QString path, std::vector<data_block> *blocks)
 {
     QFile file(path);
+
+    error = "";
 
     if (!file.open(QIODevice::ReadOnly))
     {
@@ -52,6 +56,7 @@ bool HexFile::Read(QString path, std::vector<data_block> *blocks)
             if (line.left(1) != ":")
             {
                 LOG_DEBUG << "Failed parsing start code";
+                error += "Invalid start code at line " + QString::number(line_num);
                 success = false;
                 break;
             }
@@ -63,6 +68,7 @@ bool HexFile::Read(QString path, std::vector<data_block> *blocks)
             if (!success)
             {
                 LOG_DEBUG << "Failed parsing byte count";
+                error += "Invalid byte count at line " + QString::number(line_num);
                 break;
             }
 
@@ -73,6 +79,7 @@ bool HexFile::Read(QString path, std::vector<data_block> *blocks)
             if (!success)
             {
                 LOG_DEBUG << "Failed parsing address";
+                error += "Invalid address at line " + QString::number(line_num);
                 break;
             }
 
@@ -83,6 +90,7 @@ bool HexFile::Read(QString path, std::vector<data_block> *blocks)
             if (!success)
             {
                 LOG_DEBUG << "Failed parsing type";
+                error += "Invalid type at line " + QString::number(line_num);
                 break;
             }
 
@@ -105,7 +113,9 @@ bool HexFile::Read(QString path, std::vector<data_block> *blocks)
 
                 if (!success)
                 {
+                    free(buffer);
                     LOG_DEBUG << "Failed parsing data";
+                    error += "Invalid data at line " + QString::number(line_num);
                     break;
                 }
 
@@ -116,6 +126,7 @@ bool HexFile::Read(QString path, std::vector<data_block> *blocks)
                 if (!success)
                 {
                     LOG_DEBUG << "Failed parsing checksum";
+                    error += "Invalid checksum at line " + QString::number(line_num);
                     break;
                 }
             }
@@ -127,6 +138,7 @@ bool HexFile::Read(QString path, std::vector<data_block> *blocks)
     if (!success)
     {
         LOG_DEBUG << "Error reading HEX file at line " << line_num;
+        return false;
     }
 
     return true;
@@ -140,6 +152,8 @@ bool HexFile::Write(QString path, std::vector<data_block> *blocks)
         // QMessageBox::information(0, "error", file.errorString());
         return false;
     }
+
+    error = "";
 
     QTextStream out(&file);
 

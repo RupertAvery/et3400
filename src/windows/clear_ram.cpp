@@ -70,6 +70,12 @@ void ClearRamDialog::setupUi(QDialog *Dialog)
     description_label->setWordWrap(true);
     gridLayout->addWidget(description_label, 3, 2, 1, 1);
 
+    error_label = new QLabel(this);
+    error_label->setWordWrap(true);
+    error_label->setStyleSheet("color: red;");
+    error_label->hide();
+    gridLayout->addWidget(error_label, 4, 0, 1, 3);
+
     gridLayout->setColumnMinimumWidth(0, 50);
     gridLayout->setRowMinimumHeight(0, 20);
     gridLayout->setRowMinimumHeight(1, 20);
@@ -113,22 +119,34 @@ void ClearRamDialog::retranslateUi(QDialog *Dialog)
 void ClearRamDialog::setSettings(ClearRamSettings settings)
 {
     // text_edit->setText(settings.header);
-    start_edit->setText(QString("$%1").arg(settings.start, 4, 16, QChar('0')).toUpper());
-    end_edit->setText(QString("$%1").arg(settings.end, 4, 16, QChar('0')).toUpper());
-    value_edit->setText(QString("$%1").arg(settings.value, 2, 16, QChar('0')).toUpper());
+    start_edit->setText(toHex(settings.start));
+    end_edit->setText(toHex(settings.end));
+    value_edit->setText(toHex(settings.value, 2));
 }
 
 void ClearRamDialog::validate()
 {
     bool ok1, ok2, ok3;
 
-    toInt(start_edit, ok1);
-    toInt(end_edit, ok2);
+    int start = toInt(start_edit, ok1);
+    int end   = toInt(end_edit, ok2);
     toInt(value_edit, ok3);
 
-    if (ok1 && ok2 && ok3)
+    QStringList errors;
+    if (!ok1) errors << "Invalid start address.";
+    if (!ok2) errors << "Invalid end address.";
+    if (!ok3) errors << "Invalid value.";
+    if (ok1 && ok2 && start >= end) errors << "Start must be less than end.";
+
+    if (errors.isEmpty())
     {
+        error_label->hide();
         accept();
+    }
+    else
+    {
+        error_label->setText(errors.join(" "));
+        error_label->show();
     }
 }
 

@@ -15,6 +15,7 @@ class SrecFile
 public:
     static bool Read(QString file, std::vector<data_block> *blocks);
     static bool Write(QString file, QString header, std::vector<data_block> *blocks, uint16_t startAddress);
+    static QString error;
 
 private:
     static void WriteHeader(QTextStream &out, QString header);
