@@ -35,6 +35,7 @@ public:
     virtual offs_t get_size() { return get_end() - get_start() + 1; };
     virtual void load(offs_t addr, uint8_t *data, size_t size) {}
     std::string name;
+    bool can_disassemble;
 
     memory_mapped_device *next = nullptr;
 };

@@ -12,6 +12,7 @@ memory_device::memory_device(std::string name, offs_t start, size_t size, bool r
     end = start + size - 1;
     memory = (uint8_t *)malloc(size);
     next = NULL;
+    can_disassemble = true;
 };
 
 memory_device::~memory_device()

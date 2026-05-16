@@ -159,7 +159,7 @@ DebuggerDialog::~DebuggerDialog()
 
 void DebuggerDialog::select_memory_location(int index)
 {
-	QVariant v = disassembly_selector->itemData(index);
+	QVariant v = memory_selector->itemData(index);
 	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
 
 	if (device == nullptr)
@@ -226,7 +226,10 @@ void DebuggerDialog::set_emulator(et3400emu *emu)
 		auto devices = emu->memory_map->get_block_devices();
 		for (auto *device : devices)
 		{
-			disassembly_selector->addItem(QString::fromStdString(device->name), QVariant::fromValue((quintptr)device));
+			if (device->can_disassemble)
+			{
+				disassembly_selector->addItem(QString::fromStdString(device->name), QVariant::fromValue((quintptr)device));
+			}
 			memory_selector->addItem(QString::fromStdString(device->name), QVariant::fromValue((quintptr)device));
 		}
 
