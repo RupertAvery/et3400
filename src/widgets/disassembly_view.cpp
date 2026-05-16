@@ -15,7 +15,7 @@ DisassemblyView::DisassemblyView(QWidget *parent)
 	end = 0x100;
 	offset = 0;
 	is_memory_set = false;
-	selected = -1;
+	selected_line = -1;
 	current = -1;
 	breakpoint_icon = QPixmap(":/buttons/BreakpointEnable_16x.png");
 	lines = new std::vector<DisassemblyLine>;
@@ -127,7 +127,7 @@ void DisassemblyView::bufferDraw()
 
 		bool is_comment = line[ctr].type == DisassemblyType::Comment;
 		bool is_data = line[ctr].type == DisassemblyType::Data;
-		bool is_selected = selected > -1 && selected < linesSize && !is_comment && line[ctr].address == line[selected].address;
+		bool is_selected = selected_line > -1 && selected_line < linesSize && !is_comment && line[ctr].address == line[selected_line].address;
 		bool is_current = current > -1 && !is_comment && line[ctr].address == line[current].address;
 		bool has_breakpoint = emu_ptr->has_breakpoint(line[ctr].address) && !is_comment;
 
@@ -312,7 +312,7 @@ void DisassemblyView::keyPressEvent(QKeyEvent *event)
 		adjustSelected(visible_items);
 		break;
 	case Qt::Key_F9:
-		addOrRemoveBreakpoint(selected);
+		addOrRemoveBreakpoint(selected_line);
 		break;
 	default:
 		event->ignore();
@@ -322,20 +322,20 @@ void DisassemblyView::keyPressEvent(QKeyEvent *event)
 
 void DisassemblyView::adjustSelected(int direction)
 {
-	if (selected > visible_items + offset - 1)
+	if (selected_line > visible_items + offset - 1)
 	{
-		selected = visible_items + offset - 1;
+		selected_line = visible_items + offset - 1;
 		return;
 	}
 
-	if (selected < offset)
+	if (selected_line < offset)
 	{
-		selected = offset;
+		selected_line = offset;
 		return;
 	}
 
-	int oldselected = selected;
-	int newSelected = selected + direction;
+	int oldselected = selected_line;
+	int newSelected = selected_line + direction;
 
 	if (newSelected < 0)
 		newSelected = 0;
@@ -368,7 +368,7 @@ void DisassemblyView::adjustSelected(int direction)
 
 	if (success)
 	{
-		selected = newSelected;
+		selected_line = newSelected;
 	}
 	else
 	{
@@ -376,7 +376,7 @@ void DisassemblyView::adjustSelected(int direction)
 		{
 			newSelected += 1;
 		}
-		selected = newSelected;
+		selected_line = newSelected;
 	}
 
 	// if (newSelected < 0)
@@ -385,7 +385,7 @@ void DisassemblyView::adjustSelected(int direction)
 	// if (newSelected > lines->size())
 	//	newSelected = lines->size();
 
-	if (selected > visible_items + offset - 1)
+	if (selected_line > visible_items + offset - 1)
 	{
 		offset += newSelected - oldselected;
 		if (offset > max_vscroll)
@@ -395,7 +395,7 @@ void DisassemblyView::adjustSelected(int direction)
 		onOffsetUpdated(offset);
 	}
 
-	if (selected < offset)
+	if (selected_line < offset)
 	{
 		offset += newSelected - oldselected;
 		if (offset < 0)
@@ -430,7 +430,7 @@ void DisassemblyView::mousePressEvent(QMouseEvent *event)
 		}
 		else
 		{
-			selected = line;
+			selected_line = line;
 		}
 		setFocus();
 	}
@@ -441,11 +441,11 @@ void DisassemblyView::mousePressEvent(QMouseEvent *event)
 		int line = offset + (y / item_height);
 		if (x > 20)
 		{
-			selected = line;
+			selected_line = line;
 		}
 		else
 		{
-			selected = -1;
+			selected_line = -1;
 		}
 		setFocus();
 	}
@@ -490,7 +490,7 @@ void DisassemblyView::clearCurrent()
 
 void DisassemblyView::clearSelected()
 {
-	selected = -1;
+	selected_line = -1;
 }
 
 void DisassemblyView::ensureVisible(offs_t address)
@@ -523,14 +523,14 @@ void DisassemblyView::setSelected(offs_t address)
 	{
 		if (line->address == address)
 		{
-			selected = ctr + 1;
+			selected_line = ctr + 1;
 			break;
 		}
 		ctr++;
 		line++;
 	}
 
-	ensureVisible(selected);
+	ensureVisible(selected_line);
 }
 
 void DisassemblyView::setCurrent(offs_t address)
@@ -551,9 +551,17 @@ void DisassemblyView::setCurrent(offs_t address)
 	ensureVisible(current);
 }
 
+void DisassemblyView::setAutoRefresh(bool value)
+{
+	auto_refresh = value;
+}
+
 void DisassemblyView::refresh()
 {
-	// DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
+	if (auto_refresh)
+	{
+		DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
+	}
 	redraw();
 }
 
@@ -583,7 +591,7 @@ void DisassemblyView::setEmulator(et3400emu *emu)
 void DisassemblyView::clearLabels()
 {
 	emu_ptr->labels->clearRamLabels();
-	refresh();
+	rebuild();
 }
 
 void DisassemblyView::addLabel()
@@ -591,9 +599,9 @@ void DisassemblyView::addLabel()
 	LabelDialog labelDialog;
 
 	offs_t address = 0;
-	if (selected > -1)
+	if (selected_line > -1)
 	{
-		address = lines->at(selected).address;
+		address = lines->at(selected_line).address;
 	}
 
 	labelDialog.setLabel(LabelInfo{QString("New Label"), LabelType::COMMENT, address, address}, LabelDialogMode::Add);
@@ -681,9 +689,9 @@ void DisassemblyView::showContextMenu(const QPoint &pos)
 {
 	// int line_number = offset + (pos.y() / item_height);
 
-	if (selected > -1)
+	if (selected_line > -1)
 	{
-		DisassemblyLine *line = &lines->at(selected);
+		DisassemblyLine *line = &lines->at(selected_line);
 
 		QMenu contextMenu(tr("Context menu"), this);
 		QAction addLabelAction("Add label", this);
@@ -696,7 +704,7 @@ void DisassemblyView::showContextMenu(const QPoint &pos)
 
 		bool hasAction = false;
 
-		if (line->label == NULL)
+		if (line->label == nullptr)
 		{
 			connect(&addLabelAction, &QAction::triggered, this, [this, line]
 					{ addLabel(line); });

@@ -8,6 +8,10 @@
 	button->setShortcut(QKeySequence(seq));              \
 	connect(button, &QToolButton::clicked, this, &DebuggerDialog::delegate)
 
+#define MakeTriggeredActionNS(action, name, delegate) \
+	action = new QAction(name, this);                    \
+	connect(action, &QAction::triggered, this, &DebuggerDialog::delegate)
+
 #define MakeTriggeredAction(action, name, seq, delegate) \
 	action = new QAction(name, this);                    \
 	action->setShortcut(QKeySequence(seq));              \
@@ -19,6 +23,13 @@
 	action->setChecked(true);                          \
 	action->setShortcut(QKeySequence(seq));            \
 	connect(action, &QAction::toggled, this, &DebuggerDialog::delegate)
+
+#define MakeToggledActionNS(action, name, delegate) \
+	action = new QAction(name, this);                  \
+	action->setCheckable(true);                        \
+	action->setChecked(true);                          \
+	connect(action, &QAction::toggled, this, &DebuggerDialog::delegate)
+
 
 // #include "memory_location.h"
 #include "../emu/et3400.h"
@@ -90,6 +101,9 @@ private:
 	QAction *toggle_disassembly_action;
 	QAction *toggle_status_action;
 	QAction *toggle_heat_map_action;
+	QAction *refresh_disassembly_action;
+	QAction *toggle_autorefresh_disassembly_action;
+	QAction *clear_ram_action;
 
 	QToolButton *labels_selector;
 	QAction *clear_labels_action;
@@ -136,11 +150,15 @@ private:
 	void select_memory_location(int index);
 	void select_disassembly_location(int index);
 
+	void clear_ram();
+	void diassembly_refresh();
+
 	int count_open_panels();
 	void toggle_memory_panel(bool checked);
 	void toggle_disassembly_panel(bool checked);
 	void toggle_status_panel(bool checked);
 	void toggle_heat_map(bool checked);
+	void toggle_auto_refresh_disassembly_panel(bool checked);
 
 	void pauseAndUpdateDisassembler();
 	void stepAndUpdateDisassembler();

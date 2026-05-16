@@ -152,6 +152,18 @@ void DebuggerDialog::toggle_disassembly_panel(bool checked)
 	save_settings(settings);
 }
 
+void DebuggerDialog::toggle_auto_refresh_disassembly_panel(bool checked)
+{
+	// if (count_open_panels() == 0)
+	// {
+	// 	toggle_disassembly_action->setChecked(true);
+	// 	return;
+	// }
+	disassembly_view->setAutoRefresh(checked);
+	settings->autoRefreshDasm = checked;
+	save_settings(settings);
+}
+
 void DebuggerDialog::toggle_status_panel(bool checked)
 {
 	// if (count_open_panels() == 0)
@@ -274,11 +286,13 @@ void DebuggerDialog::set_settings(Settings *settings)
 {
 	this->settings = settings;
 
+
 	disassembly_groupBox->setVisible(settings->showDasmView);
 	memory_groupBox->setVisible(settings->showMemoryView);
 	memory_view->setHeatMapEnabled(settings->showHeatMap);
 
 	toggle_disassembly_action->setChecked(settings->showDasmView);
+	toggle_autorefresh_disassembly_action->setChecked(settings->autoRefreshDasm);
 	toggle_memory_action->setChecked(settings->showMemoryView);
 	toggle_heat_map_action->setChecked(settings->showHeatMap);
 
@@ -533,6 +547,31 @@ void DebuggerDialog::after_load_ram()
 	{
 		disassembly_scrollbar->setValue(0);
 	}
+}
+
+void DebuggerDialog::clear_ram()
+{
+	memory_mapped_device *ram = emu_ptr->memory_map->try_get_block_device("RAM");
+
+	if (ram != nullptr)
+	{
+		emu_ptr->stop();
+		uint16_t addr = ram->get_start();
+		while (addr < ram->get_end())
+		{
+			ram->write(addr, 00);
+			addr++;
+		}
+		emu_ptr->reset();
+		emu_ptr->start();
+
+		disassembly_view->rebuild();
+	}
+}
+
+void DebuggerDialog::diassembly_refresh()
+{
+	disassembly_view->rebuild();
 }
 
 void DebuggerDialog::clear_labels()

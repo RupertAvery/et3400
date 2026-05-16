@@ -22,7 +22,7 @@ struct DisassemblyLine
     QString opcodes;
     QString instruction;
     QString operand;
-    Label *label;
+    Label *label = nullptr;
     int bytes;
 };
 

@@ -50,6 +50,7 @@ public:
 	void clearLabels();
 	void addLabel();
 	void ensureVisible(offs_t address);
+	void setAutoRefresh(bool value);
 
 signals:
 	void onScroll(int steps);
@@ -90,9 +91,10 @@ private:
 	int visible_items;
 	int item_height = 20;
 	int max_vscroll;
-	int selected;
+	int selected_line;
 	int current;
 	int hover_row = -1;
+	bool auto_refresh = false;
 
 	DisassemblyLine findLine(offs_t address);
 	void addOrRemoveBreakpoint(int line_number);

@@ -7,7 +7,7 @@
 void DebuggerDialog::setupUI()
 {
     QToolBar *toolbar = new QToolBar(this);
-    //toolbar->setStyleSheet("QLabel { font-size:9pt; }");
+    // toolbar->setStyleSheet("QLabel { font-size:9pt; }");
 
     // QLabel *memory_label = new QLabel("Memory");
     // memory_label->setStyleSheet("margin: 0px 5px 0px 5px;");
@@ -29,7 +29,7 @@ void DebuggerDialog::setupUI()
     MakeTriggeredAction(goto_label_action, "Goto Label", Qt::CTRL + Qt::Key_G, goto_label);
 
     QMenu *labels_selector_menu = new QMenu(labels_selector);
-    //labels_selector_menu->setStyleSheet("QLabel { font-size:9pt; }");
+    // labels_selector_menu->setStyleSheet("QLabel { font-size:9pt; }");
     labels_selector_menu->addAction(add_label_action);
     labels_selector_menu->addAction(goto_label_action);
     labels_selector_menu->addSeparator();
@@ -49,14 +49,24 @@ void DebuggerDialog::setupUI()
     QMenu *panel_selector_menu = new QMenu(panel_selector);
 
     MakeToggledAction(toggle_disassembly_action, "Disassembly", Qt::CTRL + Qt::Key_D, toggle_disassembly_panel);
+    MakeToggledActionNS(toggle_autorefresh_disassembly_action, "Auto Refresh Disassembly", toggle_auto_refresh_disassembly_panel);
+
+    MakeTriggeredAction(refresh_disassembly_action, "Refresh", Qt::CTRL + Qt::Key_R, diassembly_refresh);
     MakeToggledAction(toggle_memory_action, "Memory", Qt::CTRL + Qt::Key_M, toggle_memory_panel);
     MakeToggledAction(toggle_heat_map_action, "Heat Map", Qt::CTRL + Qt::Key_H, toggle_heat_map);
     // MakeAction(toggle_status_action, "Status", Qt::CTRL + Qt::Key_3, toggle_status_panel);
 
+    MakeTriggeredActionNS(clear_ram_action, "Clear RAM", clear_ram);
+
     panel_selector_menu->addAction(toggle_disassembly_action);
+    panel_selector_menu->addAction(refresh_disassembly_action);
+    panel_selector_menu->addAction(toggle_autorefresh_disassembly_action);
     panel_selector_menu->addSeparator();
     panel_selector_menu->addAction(toggle_memory_action);
     panel_selector_menu->addAction(toggle_heat_map_action);
+    panel_selector_menu->addSeparator();
+    panel_selector_menu->addAction(clear_ram_action);
+
     // panel_selector_menu->addAction(toggle_status_action);
     panel_selector->setMenu(panel_selector_menu);
 
@@ -128,7 +138,6 @@ void DebuggerDialog::setupUI()
     status_view = new StatusView(this);
 
     memory_selector = new QComboBox(toolbar);
-
 
     QWidget *inner_memory = new QWidget(memory_groupBox);
     QHBoxLayout *memory_groupBox_layout = new QHBoxLayout(inner_memory);
@@ -207,7 +216,6 @@ void DebuggerDialog::setupUI()
 
     // setFixedSize(QSize(985, 721));
     setWindowTitle("Debugger");
-    
 }
 
 #endif // DEBUGGER_UI_H

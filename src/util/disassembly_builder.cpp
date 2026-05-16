@@ -31,7 +31,7 @@ bool DisassemblyBuilder::try_disassemble(std::vector<DisassemblyLine> *lines, ui
 		opcodes = opcodes.arg("  ");
 	}
 
-	lines->push_back(DisassemblyLine{address, DisassemblyType::Assembly, opcodes, QString(result.instruction), result.operand, label});
+	lines->push_back(DisassemblyLine{address, DisassemblyType::Assembly, opcodes, QString(result.instruction), result.operand, nullptr});
 	ptr += result.byteLength;
 	address += result.byteLength;
 
@@ -146,7 +146,7 @@ void DisassemblyBuilder::build(std::vector<DisassemblyLine> *lines, offs_t start
 			}
 			else
 			{
-				disassemble(lines, memory, ptr, address, NULL);
+				disassemble(lines, memory, ptr, address, nullptr);
 			}
 
 			// offs_t data_end = label->start - 1;
