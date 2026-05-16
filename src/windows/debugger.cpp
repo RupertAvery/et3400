@@ -91,8 +91,14 @@ void DebuggerDialog::step_over(bool checked)
 
 void DebuggerDialog::refresh()
 {
-	disassembly_view->refresh();
-	memory_view->redraw();
+	if (settings->showDasmView)
+	{
+		disassembly_view->rebuild();
+	}
+	if (settings->showMemoryView)
+	{
+		memory_view->redraw();
+	}
 }
 
 void DebuggerDialog::reset(bool checked)
@@ -115,14 +121,20 @@ void DebuggerDialog::toggle_memory_panel(bool checked)
 	// 	toggle_memory_action->setChecked(true);
 	// 	return;
 	// }
+	LOG_DEBUG << "toggle memory";
 	memory_groupBox->setVisible(checked);
 	settings->showMemoryView = checked;
-	// save_settings(settings);
+	resize(sizeHint().width(), height());
+	save_settings(settings);
 }
 
 void DebuggerDialog::toggle_heat_map(bool checked)
 {
 	memory_view->setHeatMapEnabled(checked);
+	settings->showHeatMap = checked;
+
+	LOG_DEBUG << "toggle heat";
+	save_settings(settings);
 }
 
 void DebuggerDialog::toggle_disassembly_panel(bool checked)
@@ -132,7 +144,12 @@ void DebuggerDialog::toggle_disassembly_panel(bool checked)
 	// 	toggle_disassembly_action->setChecked(true);
 	// 	return;
 	// }
-	// disassembly_groupBox->setVisible(checked);
+	disassembly_groupBox->setVisible(checked);
+	settings->showDasmView = checked;
+	resize(sizeHint().width(), height());
+
+	LOG_DEBUG << "toggle dasm";
+	save_settings(settings);
 }
 
 void DebuggerDialog::toggle_status_panel(bool checked)
@@ -142,7 +159,7 @@ void DebuggerDialog::toggle_status_panel(bool checked)
 	// 	toggle_status_action->setChecked(true);
 	// 	return;
 	// }
-	// status_groupBox->setVisible(checked);
+	status_groupBox->setVisible(checked);
 }
 
 DebuggerDialog::~DebuggerDialog()
@@ -256,8 +273,16 @@ void DebuggerDialog::set_emulator(et3400emu *emu)
 void DebuggerDialog::set_settings(Settings *settings)
 {
 	this->settings = settings;
+
+	disassembly_groupBox->setVisible(settings->showDasmView);
 	memory_groupBox->setVisible(settings->showMemoryView);
+	memory_view->setHeatMapEnabled(settings->showHeatMap);
+
+	toggle_disassembly_action->setChecked(settings->showDasmView);
 	toggle_memory_action->setChecked(settings->showMemoryView);
+	toggle_heat_map_action->setChecked(settings->showHeatMap);
+
+	resize(sizeHint().width(), height());
 }
 
 void DebuggerDialog::set_parent_window(MainWindow *parent)
@@ -437,7 +462,7 @@ void DebuggerDialog::load_breakpoints()
 
 	emu_ptr->stop();
 	emu_ptr->breakpoints->loadBreakpoints(fileName, success);
-	disassembly_view->refresh();
+	disassembly_view->rebuild();
 	emu_ptr->start();
 }
 
@@ -464,7 +489,7 @@ void DebuggerDialog::load_labels()
 
 	emu_ptr->stop();
 	emu_ptr->labels->loadLabels(fileName, success);
-	disassembly_view->refresh();
+	disassembly_view->rebuild();
 	emu_ptr->start();
 }
 

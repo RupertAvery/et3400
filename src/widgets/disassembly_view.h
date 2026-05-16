@@ -46,6 +46,7 @@ public:
 	void clearSelected();
 
 	void refresh();
+	void rebuild();
 	void clearLabels();
 	void addLabel();
 	void ensureVisible(offs_t address);

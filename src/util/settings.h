@@ -4,7 +4,11 @@
 struct Settings
 {
     bool showTips;
+    bool showHeatMap;
+    bool showDasmView;
     bool showMemoryView;
+    bool autoRefreshDasm;
+    bool autoRefreshMemory;
     int clockRate;
 };
 

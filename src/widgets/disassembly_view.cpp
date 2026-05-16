@@ -21,7 +21,7 @@ DisassemblyView::DisassemblyView(QWidget *parent)
 	lines = new std::vector<DisassemblyLine>;
 
 	m_paintTimer = new QTimer(this);
-	m_paintTimer->start(100); 
+	m_paintTimer->start(100);
 	connect(this->m_paintTimer, &QTimer::timeout, this, &DisassemblyView::refresh);
 
 	setContextMenuPolicy(Qt::CustomContextMenu);
@@ -465,6 +465,12 @@ void DisassemblyView::leaveEvent(QEvent *event)
 	QFrame::leaveEvent(event);
 }
 
+void DisassemblyView::rebuild()
+{
+	DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
+	this->update();
+}
+
 void DisassemblyView::redraw()
 {
 	// DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
@@ -547,7 +553,7 @@ void DisassemblyView::setCurrent(offs_t address)
 
 void DisassemblyView::refresh()
 {
-	DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
+	// DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
 	redraw();
 }
 
@@ -684,11 +690,18 @@ void DisassemblyView::showContextMenu(const QPoint &pos)
 		QAction editLabelAction("Edit label", this);
 		QAction removeLabelAction("Remove label", this);
 
+		QAction addBreakpointAction("Add breakpoint", this);
+		QAction removeBreakpointAction("Remove breakpoint", this);
+		QAction disableBreakpointAction("Disable breakpoint", this);
+
+		bool hasAction = false;
+
 		if (line->label == NULL)
 		{
 			connect(&addLabelAction, &QAction::triggered, this, [this, line]
 					{ addLabel(line); });
 			contextMenu.addAction(&addLabelAction);
+			hasAction = true;
 		}
 		else
 		{
@@ -698,6 +711,25 @@ void DisassemblyView::showContextMenu(const QPoint &pos)
 			connect(&removeLabelAction, &QAction::triggered, this, [this, line]
 					{ removeLabel(line); });
 			contextMenu.addAction(&removeLabelAction);
+			hasAction = true;
+		}
+
+		if (hasAction)
+		{
+			contextMenu.addSeparator();
+		}
+
+		if (emu_ptr->breakpoints->hasBreakpoint(line->address))
+		{
+			connect(&removeBreakpointAction, &QAction::triggered, this, [this, line]
+					{ emu_ptr->breakpoints->removeBreakpoint(line->address); });
+			contextMenu.addAction(&removeBreakpointAction);
+		}
+		else
+		{
+			connect(&addBreakpointAction, &QAction::triggered, this, [this, line]
+					{ emu_ptr->breakpoints->addBreakpoint(line->address); });
+			contextMenu.addAction(&addBreakpointAction);
 		}
 
 		contextMenu.exec(mapToGlobal(pos));
