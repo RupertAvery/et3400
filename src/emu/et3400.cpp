@@ -17,30 +17,19 @@ et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
     device->check_breakpoint = [this](uint32_t address)
     { return check_breakpoint(address); };
 
-    // DebugConsoleAdapter *consoleAdapter = new DebugConsoleAdapter;
-    // mc6820 = new MC6820(consoleAdapter);
-
     running = false;
     cycles = 0;
     last_pc = 0xFFFF;
     total_cycles = 0;
 
-    // ram = new memory_device(0x0000, 0x0400, false);
-    ram = new memory_device("RAM", 0x0000, 0x0400, false);
-    // memory_device* bank2 = new memory_device(0x0400, 0x0400, false);
-    // memory_device* bank3 = new memory_device(0x0800, 0x0400, false);
-    // memory_device* bank4 = new memory_device(0x0C00, 0x0400, false);
+    ram = new memory_device("RAM", 0x0000, 0x0200, false);
 
     this->keypad = keypad_dev;
     this->display = display_dev;
 
     memory_map->map(ram);
-    // memory_map->map(bank2);
-    // memory_map->map(bank3);
-    // memory_map->map(bank4);
     memory_map->map(keypad);
     memory_map->map(display);
-    //memory_map->map(mc6820);
 }
 
 et3400emu::~et3400emu()
