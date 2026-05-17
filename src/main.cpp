@@ -1,9 +1,11 @@
 #include "windows/mainwindow.h"
 #include "util/log.h"
 #include <QApplication>
+
 #include <QTimer>
 #include <iostream>
 #include "common/default.h"
+#include "common/util.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -54,7 +56,8 @@ static void nudgeConsolePrompt()
 
 static void printHelp(const char *argv0)
 {
-    std::cout << "Heathkit ET-3400 Emulator by David Khristepher Santos\n"
+    std::cout << "Heathkit ET-3400 Emulator v" << getVersion().toStdString() << std::endl;
+    std::cout << "by David Khristepher Santos" << "\n"
               << std::endl;
     std::cout << "Usage: " << argv0 << " [options] [file]\n"
               << std::endl;
@@ -116,8 +119,7 @@ int main(int argc, char *argv[])
         "QRadioButton { font-size: 10pt; }"
         "QMenuBar     { font-size: 10pt; }"
         "QMenu        { font-size: 10pt; }"
-        "QLabel       { font-size: 10pt; }"
-    );
+        "QLabel       { font-size: 10pt; }");
 
     std::vector<std::string> args(argv + 1, argv + argc);
     std::string addr, speed, label, path;

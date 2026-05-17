@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
-project(et3400 VERSION 0.1.0)
+project(et3400 VERSION 0.6.1)
 
 
 set(CMAKE_CXX_STANDARD 17)
@@ -77,15 +77,25 @@ set(SOURCES
     src/resources/resources.rc
     )
 
-add_executable(et3400 
+configure_file(src/version.h.in ${CMAKE_BINARY_DIR}/version.h)
+
+add_executable(et3400
     ${SOURCES} 
     ${PROJECT_RESOURCES}
     )
+
+add_custom_command(TARGET et3400 POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/README.md
+        $<TARGET_FILE_DIR:et3400>/README.md
+)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
   set_property(TARGET et3400 PROPERTY WIN32_EXECUTABLE true)
 endif()
 
+
+target_include_directories(et3400 PRIVATE ${CMAKE_BINARY_DIR})
 
 target_link_libraries(et3400
     PRIVATE

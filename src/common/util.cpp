@@ -5,6 +5,16 @@
 #include <algorithm>
 #include "../util/srec.h"
 #include "../util/log.h"
+#include "version.h"
+
+QString getVersion()
+{
+    if (VERSION_PATCH > 0)
+    {
+        return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
+    }
+    return QString("%1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR);
+}
 
 QString toHex(int value, int width)
 {

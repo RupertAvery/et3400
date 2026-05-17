@@ -15,4 +15,5 @@ struct CpuStatus {
 
 class et3400emu;
 
+
 #endif // COMMON_DEFS_H

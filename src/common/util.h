@@ -1,7 +1,9 @@
 #ifndef COMMON_UTIL_H
 #define COMMON_UTIL_H
 #include <QLineEdit>
+#include <QString>
 
+QString getVersion();
 int toInt(QLineEdit *edit, bool &ok);
 QString toHex(int value, int width = 4);
 char *load_bin(QString path, size_t &size, bool &success);
