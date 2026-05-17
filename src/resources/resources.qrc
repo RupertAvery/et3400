@@ -50,7 +50,9 @@
         <file>buttons/Remove_16x.png</file>
         <file>buttons/Restart_16x.png</file>
         <file>buttons/Run_16x.png</file>
+        <file>buttons/StepOverArrow_16x.png</file>
         <file>buttons/StepIntoArrow_16x.png</file>
+        <file>buttons/StepOutArrow_16x.png</file>
         <file>buttons/Stop_16x.png</file>
         <file>rom/monitor.bin</file>
         <file>rom/monitor.map</file>

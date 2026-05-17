@@ -1,8 +1,9 @@
 #ifndef DISASSEMBLER_H
 #define DISASSEMBLER_H
 #include <stdint.h>
-#include <stdio.h> 
-#include <stdlib.h> 
+#include <stdio.h>
+#include <stdlib.h>
+#include "../common/common_defs.h"
 
 struct Disassembly
 {
@@ -25,10 +26,10 @@ class Disassembler
 {
 
     ///* some macros to keep things short */
-    //#define OP      oprom[0]
-    //#define ARG1    opram[1]
-    //#define ARG2    opram[2]
-    //#define ARGW    (opram[1]<<8) + opram[2]
+    // #define OP      oprom[0]
+    // #define ARG1    opram[1]
+    // #define ARG2    opram[2]
+    // #define ARGW    (opram[1]<<8) + opram[2]
     static const int DASMFLAG_SUPPORTED = 0x04;
     static const int DASMFLAG_STEP_OVER = 0x08;
     static const int DASMFLAG_STEP_OUT = 0x10;
@@ -195,11 +196,14 @@ class Disassembler
     //     };
 
     static int SIGNED(int b);
-    static bool IsSubroutine(int opcode);
-    static bool IsReturn(int opcode);
 
 public:
-    static DasmResult disassemble(uint8_t *memory, int address);
+    static bool IsSubroutine(uint8_t opcode);
+    static int *GetTableEntry(uint8_t instr);
+    static bool IsReturn(uint8_t opcode);
+    static int get_instruction_length(uint8_t opcode);
+
+    static DasmResult disassemble(uint8_t *memory, offs_t address);
     //     static int Disassemble(int[] memory, int pc, ref string buf);
     //     static void SelfTest();
 
@@ -408,4 +412,4 @@ public:
     //     bool _enableUndocumentedOpcodes;
 };
 
-#endif //DISASSEMBLER_H
+#endif // DISASSEMBLER_H

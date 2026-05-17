@@ -331,17 +331,49 @@ int Disassembler::SIGNED(int b)
     return ((int)((b & 0x80) == 0x80 ? b | 0xffffff00 : b));
 }
 
-bool Disassembler::IsSubroutine(int opcode)
+bool Disassembler::IsSubroutine(uint8_t opcode)
 {
     return opcode == bsr || opcode == jsr;
 }
 
-bool Disassembler::IsReturn(int opcode)
+bool Disassembler::IsReturn(uint8_t opcode)
 {
     return opcode == rti || opcode == rts;
 }
 
-DasmResult Disassembler::disassemble(uint8_t *memory, int address)
+int Disassembler::get_instruction_length(uint8_t args)
+{
+    switch (args)
+    {
+    case rel: /* relative */
+        return 2;
+    case imb: /* immediate (byte) */
+        return 2;
+    case imw: /* immediate (word) */
+        return 3;
+    case idx: /* indexed + byte offset */
+        return 2;
+    case imx: /* immediate, indexed + byte offset */
+        return 3;
+    case dir: /* direct address */
+        return 2;
+    case imd: /* immediate, direct address */
+        return 3;
+    case ext: /* extended address */
+        return 3;
+    case sx1: /* byte from address (s + 1) */
+        return 1;
+    default:
+        return 1;
+    }
+}
+
+int *Disassembler::GetTableEntry(uint8_t code)
+{
+    return table[code];
+}
+
+DasmResult Disassembler::disassemble(uint8_t *memory, offs_t address)
 {
     static char *instruction = (char *)malloc(8);
     static char *operand = (char *)malloc(8);

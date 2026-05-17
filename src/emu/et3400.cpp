@@ -209,8 +209,13 @@ void et3400emu::worker()
 
 bool et3400emu::check_breakpoint(uint32_t address)
 {
-    if (breakpoints->hasBreakpoint(address) && last_pc != address)
+    Breakpoint breakpoint;
+    if (breakpoints->tryGetBreakpoint(address, breakpoint) && last_pc != address)
     {
+        if (breakpoint.is_hidden)
+        {
+            breakpoints->removeBreakpoint(address);
+        }
         this->running = false;
         on_breakpoint();
         last_pc = address;

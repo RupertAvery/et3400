@@ -130,7 +130,10 @@ void DisassemblyView::bufferDraw()
 		bool is_data = line[ctr].type == DisassemblyType::Data;
 		bool is_selected = selected_line > -1 && selected_line < linesSize && !is_comment && line[ctr].address == line[selected_line].address;
 		bool is_current = current > -1 && !is_comment && line[ctr].address == line[current].address;
-		bool has_breakpoint = emu_ptr->has_breakpoint(line[ctr].address) && !is_comment;
+
+		Breakpoint breakpoint;
+
+		bool has_breakpoint = emu_ptr->breakpoints->tryGetBreakpoint(line[ctr].address, breakpoint)  && !breakpoint.is_hidden && !is_comment;
 
 		painter.save();
 

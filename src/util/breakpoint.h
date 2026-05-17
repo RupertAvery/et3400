@@ -14,6 +14,7 @@ struct Breakpoint
     QString description;
     QString condition;
     bool is_enabled;
+    bool is_hidden;
 };
 
 class BreakpointReader

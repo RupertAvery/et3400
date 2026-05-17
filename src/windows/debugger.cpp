@@ -4,30 +4,7 @@
 #include "mainwindow.h"
 #include "../util/log.h"
 #include "clear_ram.h"
-
-bool is_call_instruction(uint8_t opcode)
-{
-	// This is a simplified version. In a real implementation, you would need to handle all call instructions.
-	return opcode == 0x20; // JSR (Jump to Subroutine) in 6502
-}
-
-int get_instruction_length(uint8_t opcode)
-{
-	// This is a simplified version. In a real implementation, you would need to handle all opcodes and their addressing modes.
-	switch (opcode)
-	{
-	case 0x00: // NOP
-		return 1;
-	case 0x01: // LDA (indirect,X)
-	case 0x05: // ORA (zero page)
-	case 0x09: // ORA (immediate)
-		return 2;
-	case 0x4C: // JMP (absolute)
-		return 3;
-	default:
-		return 1; // Default to 1 byte for unknown opcodes
-	}
-}
+#include "../common/util.h"
 
 DebuggerDialog::DebuggerDialog() : DebuggerDialog(nullptr)
 {
@@ -74,17 +51,29 @@ void DebuggerDialog::step_over(bool checked)
 	{
 		offs_t pc = emu_ptr->get_status().pc;
 		uint8_t opcode = emu_ptr->read_byte(pc);
-		int instruction_length = get_instruction_length(opcode);
+
+		int *table_entry = Disassembler::GetTableEntry(opcode);
+
+		int instruction_length = Disassembler::get_instruction_length(table_entry[1]);
 		offs_t next_instruction = pc + instruction_length;
 
-		stepAndUpdateDisassembler();
-
-		if (is_call_instruction(opcode))
+		if (Disassembler::IsSubroutine(table_entry[0]))
 		{
-			while (emu_ptr->get_status().pc != next_instruction)
-			{
-				stepAndUpdateDisassembler();
-			}
+			// Hack? Step into next instruction so that we move past the breakpoint, 
+			// otherwise we end up on the same instruction for one pass
+			emu_ptr->step();
+			emu_ptr->breakpoints->addBreakpoint(next_instruction, true);
+			emu_ptr->start();
+			disassembly_view->clearCurrent();
+			disassembly_view->clearSelected();
+			update_button_state();
+			// forces a redraw - should we just call rebuild?
+			disassembly_scrollbar->setValue(disassembly_view->offset);
+		}
+		else
+		{
+			stepAndUpdateDisassembler();
+			// forces a redraw - should we just call rebuild?
 			disassembly_scrollbar->setValue(disassembly_view->offset);
 		}
 	}

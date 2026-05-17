@@ -89,6 +89,7 @@ private:
 	QToolButton *stop_button;
 	QToolButton *step_into_button;
 	QToolButton *step_over_button;
+	QToolButton *step_out_button;
 	QToolButton *reset_button;
 
 	// QSlider* slider;
