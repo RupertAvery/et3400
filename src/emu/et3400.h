@@ -30,9 +30,7 @@ public:
 	void resume();
 
 	void load_rom(std::string string, offs_t address, uint8_t *buffer, size_t size);
-	//void loadROM(offs_t address, uint8_t *buffer, size_t size);
 	void load_ram(offs_t address, uint8_t *buffer, size_t size);
-	void load_labels(QString path);
 
 	// uint8_t *get_memory();
 	bool get_running();

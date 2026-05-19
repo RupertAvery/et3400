@@ -26,6 +26,7 @@ void LabelManager::addLabels(std::vector<Label> *labels)
 		addLabel(*current);
 		current++;
 	}
+	
 	_isDirty = true;
 }
 
@@ -90,19 +91,8 @@ void LabelManager::removeLabel(Label *label)
 	_isDirty = true;
 }
 
-void LabelManager::loadLabels(QString path, bool &success)
-{
-	std::vector<Label> *labels = LabelReader::Read(path, success);
-	if (success)
-	{
-		addLabels(labels);
-	}
-	delete labels;
 
-	_isDirty = true;
-}
-
-void LabelManager::saveLabels(QString path, uint32_t start, uint32_t end, bool &success)
+std::vector<Label> LabelManager::getLabels(uint32_t start, uint32_t end)
 {
 	std::vector<Label> filteredLabels;
 	std::vector<Label>::iterator current = _labels->begin();
@@ -117,9 +107,9 @@ void LabelManager::saveLabels(QString path, uint32_t start, uint32_t end, bool &
 		current++;
 	}
 
-	LabelReader::Write(path, &filteredLabels, success);
-
 	_isDirty = false;
+
+	return filteredLabels;
 }
 
 bool LabelManager::getIsDirty()

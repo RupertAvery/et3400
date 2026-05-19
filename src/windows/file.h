@@ -14,9 +14,17 @@ class File
 {
 public:
     static void load_rom_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &settings);
+
     static void load_ram_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &settings);
     static void save_ram_dialog(QWidget *parent, et3400emu *emu_ptr, SaveSettings &settings);
 
+    static void load_labels_dialog(QWidget *parent, et3400emu *emu_ptr);
+    static void save_labels_dialog(QWidget *parent, et3400emu *emu_ptr);
+
+    static void load_breakpoint_dialog(QWidget *parent, et3400emu *emu_ptr);
+    static void save_breakpoint_dialog(QWidget *parent, et3400emu *emu_ptr);
+
+    static void load_labels(QString fileName, et3400emu *emu_ptr, bool &success);
     static size_t load_memory(QString path, QString device_name, et3400emu *emu_ptr, uint16_t address, bool &success);
 
     static QString error;

@@ -183,6 +183,8 @@ private:
 	void save_breakpoints();
 	void load_labels();
 	void save_labels();
+
+	void reset_disassembly_view();
 };
 
 #endif // DEBUGGER_H

@@ -59,7 +59,7 @@ void DebuggerDialog::step_over(bool checked)
 
 		if (Disassembler::IsSubroutine(table_entry[0]))
 		{
-			// Hack? Step into next instruction so that we move past the breakpoint, 
+			// Hack? Step into next instruction so that we move past the breakpoint,
 			// otherwise we end up on the same instruction for one pass
 			emu_ptr->step();
 			emu_ptr->breakpoints->addBreakpoint(next_instruction, true);
@@ -456,56 +456,33 @@ void DebuggerDialog::save_ram()
 
 void DebuggerDialog::load_breakpoints()
 {
-	bool success;
-	QString fileName = QFileDialog::getOpenFileName(this,
-													"Load Breakpoints", "", "Breakpoint Files (*.brk)");
-
-	if (fileName == nullptr)
-		return;
-
-	emu_ptr->stop();
-	emu_ptr->breakpoints->loadBreakpoints(fileName, success);
+	File::load_breakpoint_dialog(this, emu_ptr);
 	disassembly_view->rebuild();
-	emu_ptr->start();
 }
 
 void DebuggerDialog::save_breakpoints()
 {
-	bool success;
-	QString fileName = QFileDialog::getSaveFileName(this,
-													"Save Breakpoints", "", "Breakpoint Files (*.brk)");
-
-	if (fileName == nullptr)
-		return;
-
-	emu_ptr->breakpoints->saveBreakpoints(fileName, success);
+	File::save_breakpoint_dialog(this, emu_ptr);
 }
 
 void DebuggerDialog::load_labels()
 {
-	bool success;
-	QString fileName = QFileDialog::getOpenFileName(this,
-													"Load Labels", "", "Label Files (*.map, *.lbl)");
+	File::load_labels_dialog(this, emu_ptr);
+	reset_disassembly_view();
+}
 
-	if (fileName == nullptr)
-		return;
-
-	emu_ptr->stop();
-	emu_ptr->labels->loadLabels(fileName, success);
+void DebuggerDialog::reset_disassembly_view()
+{
 	disassembly_view->rebuild();
-	emu_ptr->start();
+	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
+	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
+	disassembly_view->set_range(device->get_start(), device->get_end(), device->get_mapped_memory());
+	disassembly_scrollbar->setValue(0);
 }
 
 void DebuggerDialog::save_labels()
 {
-	bool success;
-	QString fileName = QFileDialog::getSaveFileName(this,
-													"Save Labels", "", "Label Files (*.lbl)");
-
-	if (fileName == nullptr)
-		return;
-
-	emu_ptr->labels->saveLabels(fileName, 0x0000, 0x07FF, success);
+	File::save_labels_dialog(this, emu_ptr);
 }
 
 void DebuggerDialog::after_load_rom()
@@ -577,11 +554,13 @@ void DebuggerDialog::diassembly_refresh()
 void DebuggerDialog::clear_labels()
 {
 	disassembly_view->clearLabels();
+	reset_disassembly_view();
 }
 
 void DebuggerDialog::add_label()
 {
 	disassembly_view->addLabel();
+	reset_disassembly_view();
 }
 
 void DebuggerDialog::goto_label()

@@ -7,7 +7,7 @@
 
 bool is_hex(QString filename)
 {
-    return filename.endsWith(".hex", Qt::CaseInsensitive);
+    return filename.endsWith(".hex", Qt::CaseInsensitive) || filename.endsWith(".ihx", Qt::CaseInsensitive);
 }
 
 /*

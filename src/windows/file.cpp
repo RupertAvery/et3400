@@ -9,6 +9,84 @@
 
 QString File::error;
 
+QString AllROMExtensions = "All supported files (*.s19 *.obj *.hex *.ihx *.bin)";
+QString AllRAMExtensions = "All supported files (*.s19 *.obj *.hex *.ihx)";
+QString MotorolaSrecExtensions = "Motorola S-record files (*.s19 *.obj)";
+QString IntelHexExtensions = "Intel HEX files (*.hex *.ihx)";
+QString BinExtensions = "BIN files (*.bin)";
+QString LabelFileExtensions = "Label Files (*.lbl)";
+QString BreakpointFileExtensions = "Breakpoint Files (*.brk)";
+QString AllFiles = "All files (*)";
+
+void File::load_labels_dialog(QWidget *parent, et3400emu *emu_ptr)
+{
+
+	QString fileName = QFileDialog::getOpenFileName(parent, "Load Labels", "", LabelFileExtensions + ";;" + AllFiles);
+
+	if (fileName == nullptr)
+		return;
+
+	bool success;
+
+	// emu_ptr->stop();
+	load_labels(fileName, emu_ptr, success);
+	// emu_ptr->start();
+}
+
+void File::load_labels(QString fileName, et3400emu *emu_ptr, bool &success)
+{
+	LOG_DEBUG << "Loading labels from file:" << fileName;
+	std::vector<Label> *labels = LabelReader::Read(fileName, success);
+
+	if (success)
+	{
+		emu_ptr->labels->addLabels(labels);
+
+		delete labels;
+	}
+}
+
+void File::save_labels_dialog(QWidget *parent, et3400emu *emu_ptr)
+{
+	bool success;
+	QString fileName = QFileDialog::getSaveFileName(parent, "Save Labels", "", LabelFileExtensions + ";;" + AllFiles);
+
+	if (fileName == nullptr)
+		return;
+
+	std::vector<Label> filteredLabels = emu_ptr->labels->getLabels(0x0000, 0x07FF);
+
+	LabelReader::Write(fileName, &filteredLabels, success);
+}
+
+void File::load_breakpoint_dialog(QWidget *parent, et3400emu *emu_ptr)
+{
+	bool success;
+	QString fileName = QFileDialog::getOpenFileName(parent,
+													"Load Breakpoints", "",
+													BreakpointFileExtensions + ";;" + AllFiles);
+
+	if (fileName == nullptr)
+		return;
+
+	emu_ptr->stop();
+	emu_ptr->breakpoints->loadBreakpoints(fileName, success);
+	emu_ptr->start();
+}
+
+void File::save_breakpoint_dialog(QWidget *parent, et3400emu *emu_ptr)
+{
+	bool success;
+	QString fileName = QFileDialog::getSaveFileName(parent,
+													"Save Breakpoints", "",
+													BreakpointFileExtensions + ";;" + AllFiles);
+
+	if (fileName == nullptr)
+		return;
+
+	emu_ptr->breakpoints->saveBreakpoints(fileName, success);
+}
+
 void File::load_rom_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &settings)
 {
 	// LoadDialog loadDialog;
@@ -21,8 +99,9 @@ void File::load_rom_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &se
 	// {
 	//	settings = loadDialog.getSettings();
 
-	QString fileName = QFileDialog::getOpenFileName(parent,
-													"Load File to ROM", "", "BIN Files (*.bin);;Motorola S-record files (*.s19 *.obj);;Intel HEX files (*.hex);;All files (*)");
+	QString extensions = AllROMExtensions + ";;" + MotorolaSrecExtensions + ";;" + IntelHexExtensions + ";;" + BinExtensions + ";;" + AllFiles;
+
+	QString fileName = QFileDialog::getOpenFileName(parent, "Load File to ROM", "", extensions);
 	if (fileName == nullptr)
 		return;
 
@@ -44,6 +123,7 @@ void File::load_rom_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &se
 	emu_ptr->start();
 	//}
 }
+
 /*
 Loads a file into the specified location
 */
@@ -189,9 +269,10 @@ void File::load_ram_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &se
 	// if (result == QDialog::DialogCode::Accepted)
 	// {
 	//	settings = loadDialog.getSettings();
+	QString extensions = AllRAMExtensions + ";;" + MotorolaSrecExtensions + ";;" + IntelHexExtensions + ";;" + AllFiles;
 
 	QString fileName = QFileDialog::getOpenFileName(parent,
-													"Load File to RAM", "", "Motorola S-record files (*.s19 *.obj);;Intel HEX files (*.hex);;All files (*)");
+													"Load File to RAM", "", extensions);
 	if (fileName == nullptr)
 		return;
 
@@ -232,8 +313,9 @@ void File::save_ram_dialog(QWidget *parent, et3400emu *emu_ptr, SaveSettings &se
 	{
 		settings = saveDialog.getSettings();
 
-		QString fileName = QFileDialog::getSaveFileName(parent,
-														"Save RAM Contents", "", "Motorola S-record files (*.s19 *.obj);;Intel HEX files (*.hex);;All files (*)");
+		QString extensions = AllRAMExtensions + ";;" + MotorolaSrecExtensions + ";;" + IntelHexExtensions + ";;" + AllFiles;
+
+		QString fileName = QFileDialog::getSaveFileName(parent, "Save RAM Contents", "", extensions);
 
 		if (fileName == nullptr)
 			return;
@@ -283,7 +365,7 @@ void File::save_ram_dialog(QWidget *parent, et3400emu *emu_ptr, SaveSettings &se
 		}
 		else if (is_hex(fileName))
 		{
-			// save S19 blocks
+			// save Hex blocks
 			HexFile::Write(fileName, blocks);
 		}
 		else

@@ -3,6 +3,7 @@
 #include <chrono>
 #include <thread>
 #include "../common/default.h"
+#include "../windows/file.h"
 
 et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
 {
@@ -66,11 +67,6 @@ void et3400emu::load_ram(offs_t address, uint8_t *buffer, size_t size)
     ram->load(address, buffer, size);
 }
 
-void et3400emu::load_labels(QString path)
-{
-    bool success;
-    labels->loadLabels(path, success);
-}
 
 bool et3400emu::get_running()
 {

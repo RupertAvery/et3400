@@ -322,7 +322,8 @@ void MainWindow::init_emu()
   // File::load_memory(":/rom/fantomii.bin", "Fantom II", emu, FANTOMII_ADDR);
   // File::load_memory(":/rom/tinybasic.bin", "Tiny BASIC", emu, TINYBASIC_ADDR);
 
-  emu->load_labels(":/rom/monitor.map");
+  File::load_labels(":/rom/monitor.map", emu, success);
+  // emu->load_labels(":/rom/monitor.map");
   // emu->load_labels(":/rom/fantomii.map");
 }
 
@@ -421,7 +422,9 @@ void MainWindow::setLabel(std::string labelFile)
     return;
   }
 
-  emu->load_labels(QString::fromStdString(labelFile));
+  bool success;
+
+  File::load_labels(QString::fromStdString(labelFile), emu, success);
 }
 
 void MainWindow::setRAM(std::string file)
