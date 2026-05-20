@@ -250,16 +250,16 @@ QWidget *DebuggerDialog::create_labels_tab()
     QHBoxLayout *btn_layout = new QHBoxLayout();
     QPushButton *add_btn = new QPushButton("Add", tab);
     edit_label_button = new QPushButton("Edit", tab);
-    delete_label_button = new QPushButton("Delete", tab);
+    remove_label_button = new QPushButton("Remove", tab);
     goto_label_button = new QPushButton("Goto", tab);
     QPushButton *clear_ram_labels_btn = new QPushButton("Clear RAM Labels", tab);
     edit_label_button->setEnabled(false);
-    delete_label_button->setEnabled(false);
+    remove_label_button->setEnabled(false);
     goto_label_button->setEnabled(false);
 
     btn_layout->addWidget(add_btn);
     btn_layout->addWidget(edit_label_button);
-    btn_layout->addWidget(delete_label_button);
+    btn_layout->addWidget(remove_label_button);
     btn_layout->addWidget(goto_label_button);
     btn_layout->addStretch();
     btn_layout->addWidget(clear_ram_labels_btn);
@@ -279,7 +279,7 @@ QWidget *DebuggerDialog::create_labels_tab()
 
     connect(add_btn, &QPushButton::clicked, this, &DebuggerDialog::add_label_from_table);
     connect(edit_label_button, &QPushButton::clicked, this, &DebuggerDialog::edit_label_from_table);
-    connect(delete_label_button, &QPushButton::clicked, this, &DebuggerDialog::delete_label_from_table);
+    connect(remove_label_button, &QPushButton::clicked, this, &DebuggerDialog::delete_label_from_table);
     connect(goto_label_button, &QPushButton::clicked, this, &DebuggerDialog::goto_label_from_table);
     connect(clear_ram_labels_btn, &QPushButton::clicked, this, &DebuggerDialog::clear_labels);
     connect(labels_table, &QTableWidget::itemSelectionChanged, this, &DebuggerDialog::labels_table_selection_changed);
@@ -290,7 +290,49 @@ QWidget *DebuggerDialog::create_labels_tab()
 
 QWidget *DebuggerDialog::create_breakpoints_tab()
 {
-    return new QWidget(this);
+    QWidget *tab = new QWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout(tab);
+
+    QHBoxLayout *btn_layout = new QHBoxLayout();
+    QPushButton *add_btn = new QPushButton("Add", tab);
+    remove_breakpoint_button = new QPushButton("Remove", tab);
+    remove_breakpoint_button->setEnabled(false);
+
+    btn_layout->addWidget(add_btn);
+    btn_layout->addWidget(remove_breakpoint_button);
+    btn_layout->addStretch();
+
+    breakpoints_table = new QTableWidget(tab);
+    breakpoints_table->setColumnCount(4);
+    breakpoints_table->setHorizontalHeaderLabels({"", "Address", "Type", "Description"});
+    breakpoints_table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    breakpoints_table->setSelectionMode(QAbstractItemView::SingleSelection);
+    breakpoints_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    breakpoints_table->horizontalHeader()->setStretchLastSection(true);
+    breakpoints_table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
+    breakpoints_table->setColumnWidth(0, 24);
+    breakpoints_table->verticalHeader()->setVisible(false);
+
+    layout->addLayout(btn_layout);
+    layout->addWidget(breakpoints_table);
+    tab->setLayout(layout);
+
+    connect(add_btn, &QPushButton::clicked, this, &DebuggerDialog::add_breakpoint_from_table);
+    connect(remove_breakpoint_button, &QPushButton::clicked, this, &DebuggerDialog::remove_breakpoint_from_table);
+    connect(breakpoints_table, &QTableWidget::itemSelectionChanged, this, &DebuggerDialog::breakpoints_table_selection_changed);
+    connect(breakpoints_table, &QTableWidget::itemChanged, this, &DebuggerDialog::breakpoint_item_changed);
+    connect(breakpoints_table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
+        int row = breakpoints_table->currentRow();
+        if (row < 0) return;
+        offs_t address = (offs_t)breakpoints_table->item(row, 0)->data(Qt::UserRole).toUInt();
+        memory_mapped_device *device = emu_ptr->get_block_device(address);
+        if (!device) return;
+        selectByAddress(device->get_start());
+        disassembly_view->setSelected(address);
+        disassembly_scrollbar->setValue(disassembly_view->offset);
+    });
+
+    return tab;
 }
 
 QWidget *DebuggerDialog::create_tab_panel()

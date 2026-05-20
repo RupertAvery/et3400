@@ -67,6 +67,7 @@ class MainWindow;
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QPushButton>
+#include <QInputDialog>
 
 class DebuggerDialog : public QDialog
 {
@@ -182,6 +183,12 @@ private:
 	void labels_table_selection_changed();
 	void populate_labels_table();
 
+	void add_breakpoint_from_table();
+	void remove_breakpoint_from_table();
+	void breakpoints_table_selection_changed();
+	void breakpoint_item_changed(QTableWidgetItem *item);
+	void populate_breakpoints_table();
+
 	void load_rom();
 	void load_ram();
 	void save_ram();
@@ -198,8 +205,11 @@ private:
 
 	QTableWidget *labels_table = nullptr;
 	QPushButton *edit_label_button = nullptr;
-	QPushButton *delete_label_button = nullptr;
+	QPushButton *remove_label_button = nullptr;
 	QPushButton *goto_label_button = nullptr;
+
+	QTableWidget *breakpoints_table = nullptr;
+	QPushButton *remove_breakpoint_button = nullptr;
 
 	QScrollBar *memory_scrollbar = nullptr;
 	QScrollBar *disassembly_scrollbar = nullptr;

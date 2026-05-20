@@ -24,6 +24,8 @@ public:
     void check_read(offs_t address, uint8_t data);
     void check_write(offs_t address, uint8_t data);
     bool tryGetBreakpoint(offs_t address, Breakpoint &breakpoint);
+    std::vector<Breakpoint> getBreakpoints();
+    void setEnabled(offs_t address, bool enabled);
 
 private:
     std::unordered_map<offs_t, Breakpoint> breakpoints;

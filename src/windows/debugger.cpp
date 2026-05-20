@@ -444,16 +444,97 @@ void DebuggerDialog::resizeEvent(QResizeEvent *event)
 void DebuggerDialog::add_breakpoint(offs_t address)
 {
 	emu_ptr->add_breakpoint(address);
+	populate_breakpoints_table();
 }
 
 void DebuggerDialog::remove_breakpoint(offs_t address)
 {
 	emu_ptr->remove_breakpoint(address);
+	populate_breakpoints_table();
 }
 
 void DebuggerDialog::add_or_remove_breakpoint(offs_t address)
 {
 	emu_ptr->add_or_remove_breakpoint(address);
+	populate_breakpoints_table();
+}
+
+void DebuggerDialog::populate_breakpoints_table()
+{
+	if (!breakpoints_table || !emu_ptr)
+		return;
+
+	breakpoints_table->blockSignals(true);
+	breakpoints_table->setRowCount(0);
+
+	auto bps = emu_ptr->breakpoints->getBreakpoints();
+	for (const auto &bp : bps)
+	{
+		int row = breakpoints_table->rowCount();
+		breakpoints_table->insertRow(row);
+
+		auto *check_item = new QTableWidgetItem();
+		check_item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+		check_item->setCheckState(bp.is_enabled ? Qt::Checked : Qt::Unchecked);
+		check_item->setData(Qt::UserRole, bp.address);
+		breakpoints_table->setItem(row, 0, check_item);
+
+		breakpoints_table->setItem(row, 1, new QTableWidgetItem(toHex(bp.address)));
+
+		QString type_str;
+		switch (bp.type)
+		{
+		case 0: type_str = "Execute"; break;
+		case 1: type_str = "Read";    break;
+		case 2: type_str = "Write";   break;
+		default: type_str = QString::number(bp.type); break;
+		}
+		breakpoints_table->setItem(row, 2, new QTableWidgetItem(type_str));
+		breakpoints_table->setItem(row, 3, new QTableWidgetItem(bp.description));
+	}
+
+	breakpoints_table->blockSignals(false);
+}
+
+void DebuggerDialog::breakpoints_table_selection_changed()
+{
+	bool has_selection = !breakpoints_table->selectedItems().isEmpty();
+	remove_breakpoint_button->setEnabled(has_selection);
+}
+
+void DebuggerDialog::breakpoint_item_changed(QTableWidgetItem *item)
+{
+	if (item->column() != 0)
+		return;
+	offs_t address = (offs_t)item->data(Qt::UserRole).toUInt();
+	emu_ptr->breakpoints->setEnabled(address, item->checkState() == Qt::Checked);
+}
+
+void DebuggerDialog::add_breakpoint_from_table()
+{
+	bool ok;
+	QString text = QInputDialog::getText(this, "Add Breakpoint", "Address (hex):", QLineEdit::Normal, "", &ok);
+	if (!ok || text.trimmed().isEmpty())
+		return;
+
+	offs_t address = (offs_t)text.toUInt(&ok, 16);
+	if (!ok)
+		return;
+
+	emu_ptr->add_breakpoint(address);
+	populate_breakpoints_table();
+}
+
+void DebuggerDialog::remove_breakpoint_from_table()
+{
+	int row = breakpoints_table->currentRow();
+	if (row < 0)
+		return;
+
+	offs_t address = (offs_t)breakpoints_table->item(row, 0)->data(Qt::UserRole).toUInt();
+	emu_ptr->remove_breakpoint(address);
+	populate_breakpoints_table();
+	disassembly_view->rebuild();
 }
 
 void DebuggerDialog::load_rom()
@@ -622,7 +703,7 @@ void DebuggerDialog::labels_table_selection_changed()
 {
 	bool has_selection = !labels_table->selectedItems().isEmpty();
 	edit_label_button->setEnabled(has_selection);
-	delete_label_button->setEnabled(has_selection);
+	remove_label_button->setEnabled(has_selection);
 	goto_label_button->setEnabled(has_selection);
 }
 

@@ -1,4 +1,27 @@
 #include "breakpoint_manager.h"
+#include <algorithm>
+
+std::vector<Breakpoint> BreakpointManager::getBreakpoints()
+{
+    std::lock_guard<std::mutex> guard(_lock);
+    std::vector<Breakpoint> result;
+    result.reserve(breakpoints.size());
+    for (const auto &pair : breakpoints)
+        if (!pair.second.is_hidden)
+            result.push_back(pair.second);
+    std::sort(result.begin(), result.end(), [](const Breakpoint &a, const Breakpoint &b) {
+        return a.address < b.address;
+    });
+    return result;
+}
+
+void BreakpointManager::setEnabled(offs_t address, bool enabled)
+{
+    std::lock_guard<std::mutex> guard(_lock);
+    auto it = breakpoints.find(address);
+    if (it != breakpoints.end())
+        it->second.is_enabled = enabled;
+}
 
 bool BreakpointManager::tryGetBreakpoint(offs_t address, Breakpoint &breakpoint)
 {
