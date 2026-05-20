@@ -41,19 +41,20 @@
         <file>buttons/key E_on.bmp</file>
         <file>buttons/key F_on.bmp</file>
         <file>buttons/Reset_on.bmp</file>
-        <file>buttons/Add_16x.png</file>
-        <file>buttons/BreakpointDisable_16x.png</file>
-        <file>buttons/BreakpointEnable_16x.png</file>
+        <file>buttons/Add.png</file>
+        <file>buttons/BreakpointDisabled.png</file>
+        <file>buttons/BreakpointEnabled.png</file>
+        <file>buttons/BreakpointAvailable.png</file>
         <file>buttons/ClearCollection_16x.png</file>
         <file>buttons/GoToDefinition_16x.png</file>
         <file>buttons/GoToSourceCode_16x.png</file>
-        <file>buttons/Remove_16x.png</file>
-        <file>buttons/Restart_16x.png</file>
-        <file>buttons/Run_16x.png</file>
-        <file>buttons/StepOverArrow_16x.png</file>
-        <file>buttons/StepIntoArrow_16x.png</file>
-        <file>buttons/StepOutArrow_16x.png</file>
-        <file>buttons/Stop_16x.png</file>
+        <file>buttons/Remove.png</file>
+        <file>buttons/Restart.png</file>
+        <file>buttons/Run.png</file>
+        <file>buttons/StepOver.png</file>
+        <file>buttons/StepInto.png</file>
+        <file>buttons/StepOut.png</file>
+        <file>buttons/Stop.png</file>
         <file>rom/monitor.bin</file>
         <file>rom/monitor.map</file>
         <file>rom/fantomii.bin</file>

@@ -18,7 +18,9 @@ DisassemblyView::DisassemblyView(QWidget *parent)
 	is_memory_set = false;
 	selected_line = -1;
 	current = -1;
-	breakpoint_icon = QPixmap(":/buttons/BreakpointEnable_16x.png");
+	breakpoint_enabled_icon = QPixmap(":/buttons/BreakpointEnabled.png");
+	breakpoint_disabled_icon = QPixmap(":/buttons/BreakpointDisabled.png");
+	breakpoint_available_icon = QPixmap(":/buttons/BreakpointAvailable.png");
 	lines = new std::vector<DisassemblyLine>;
 
 	m_paintTimer = new QTimer(this);
@@ -133,38 +135,46 @@ void DisassemblyView::bufferDraw()
 
 		Breakpoint breakpoint;
 
-		bool has_breakpoint = emu_ptr->breakpoints->tryGetBreakpoint(line[ctr].address, breakpoint)  && !breakpoint.is_hidden && !is_comment;
+		bool has_breakpoint = emu_ptr->breakpoints->tryGetBreakpoint(line[ctr].address, breakpoint) && !breakpoint.is_hidden && !is_comment;
 
 		painter.save();
 
 		if (has_breakpoint)
 		{
-			painter.drawPixmap(2, y - 13, 16, 16, breakpoint_icon);
+			if (breakpoint.is_enabled)
+				painter.drawPixmap(2, y - 13, 16, 16, breakpoint_enabled_icon);
+			else
+				painter.drawPixmap(2, y - 13, 16, 16, breakpoint_disabled_icon);
 		}
 		else if (ctr == hover_row && !is_comment)
 		{
-			painter.save();
-			painter.setPen(QPen(Qt::red, 1.5));
-			painter.setBrush(Qt::NoBrush);
-			painter.drawEllipse(3, y - 12, 13, 13);
-			painter.restore();
+			painter.drawPixmap(2, y - 13, 16, 16, breakpoint_available_icon);
+			// painter.save();
+			// painter.setPen(QPen(Qt::red, 1.5));
+			// painter.setBrush(Qt::NoBrush);
+			// painter.drawEllipse(3, y - 12, 13, 13);
+			// painter.restore();
 		}
+
+		const int yOffset = 13;
+		const int xOffset = 20;
+		const int breakpoint_width = 22;
 
 		if (is_current && is_selected)
 		{
-			painter.fillRect(20, y - 14, width() - 22, item_height - 2, current_selected_brush);
+			painter.fillRect(xOffset, y - yOffset, width() - breakpoint_width, item_height - 2, current_selected_brush);
 		}
 		else if (is_current)
 		{
-			painter.fillRect(20, y - 14, width() - 22, item_height - 2, current_brush);
+			painter.fillRect(xOffset, y - yOffset, width() - breakpoint_width, item_height - 2, current_brush);
 		}
 		else if (is_selected)
 		{
-			painter.fillRect(20, y - 14, width() - 22, item_height - 2, selected_brush);
+			painter.fillRect(xOffset, y - yOffset, width() - breakpoint_width, item_height - 2, selected_brush);
 		}
 		else if (has_breakpoint)
 		{
-			painter.fillRect(20, y - 14, width() - 22, item_height - 2, breakpoint_brush);
+			painter.fillRect(xOffset, y - yOffset, width() - breakpoint_width, item_height - 2, breakpoint_brush);
 		}
 
 		painter.restore();

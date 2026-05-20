@@ -77,7 +77,7 @@ The emulator supports the following formats:
 Format | Extensions
 -------|-----------
 [Motorola S-record](https://en.wikipedia.org/wiki/Motorola_S-record) | `.S19` `.OBJ` 
-[Intel HEX](https://en.wikipedia.org/wiki/Intel_HEX) | `.HEX` 
+[Intel HEX](https://en.wikipedia.org/wiki/Intel_HEX) | `.HEX` `.IHX`
 
 
 ## Saving Program RAM
@@ -99,7 +99,7 @@ The following formats are supported:
 Format | Extensions
 -------|-----------
 [Motorola S-record](https://en.wikipedia.org/wiki/Motorola_S-record) <sup>1</sup> | `.S19` `.OBJ` 
-[Intel HEX](https://en.wikipedia.org/wiki/Intel_HEX) <sup>1</sup> | `.HEX` 
+[Intel HEX](https://en.wikipedia.org/wiki/Intel_HEX) <sup>1</sup> | `.HEX` `.IHX`
 Raw Binary <sup>2</sup> | `.BIN` 
 
 <sup>1</sup> For the S-Record and HEX format, you must ensure that the start address is at `$FC00` and the reset vector is set accordingly. 
@@ -152,7 +152,9 @@ The following buttons can be found in the toolbar
 
 * **Start** - Resumes emulation
 * **Stop** - Pauses emulation
-* **Step in** - Steps into next instruction 
+* **Step Over** - Executes the next instruction. If it is a `JSR` or `BSR`, runs the entire subroutine and breaks on return.
+* **Step Into** - Executes the next instruction, entering any subroutine call.
+* **Step Out** - Runs until before the current subroutine returns (`RTS`), then breaks.
 * **Escape** - Reset emulator
 
 The following keyboard shortcuts are also available:
@@ -160,7 +162,9 @@ The following keyboard shortcuts are also available:
 * **F5** - Resumes emulation
 * **F4** - Pauses emulation
 * **F9** - Toggle Breakpoint on the currently highlighted line
-* **F10** - Steps into next instruction
+* **F10** - Step Over
+* **F11** - Step Into
+* **Shift+F11** - Step Out 
 * **ESC** - Reset emulator
 
 <img width="987" height="753" alt="debugger" src="https://github.com/user-attachments/assets/9c0e19d1-5436-4fec-85eb-26ff87c84b39" />

@@ -76,7 +76,9 @@ private:
 	QScrollBar* scrollbar;
 	QAction* action;
 	QPixmap* buffer;
-	QPixmap breakpoint_icon;
+	QPixmap breakpoint_enabled_icon;
+	QPixmap breakpoint_disabled_icon;
+	QPixmap breakpoint_available_icon;
 	QTimer* m_paintTimer;
 
 	et3400emu* emu_ptr = nullptr;

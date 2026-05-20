@@ -43,6 +43,7 @@ public:
 	void handle_breakpoint();
 	void set_pc(uint16_t pc);
 	byte read_byte(offs_t address);
+	void set_step_out();
 
 	memory_mapped_device *get_block_device(offs_t address);
 
@@ -59,18 +60,22 @@ public:
 	MemoryMapManager *memory_map;
 	BreakpointManager *breakpoints;
 	LabelManager *labels;
+	
 
 private:
-	MC6820 *mc6820;
-	m6800_cpu_device *device;
+	MC6820 *mc6820 = nullptr;
+	m6800_cpu_device *device = nullptr;
 	std::thread thread;
-	int cycles;
-	int clock_rate;
-	bool running;
-	uint32_t last_pc;
+	int cycles = 0;
+	int clock_rate = 0;
+	bool is_running = false;
+	bool is_step_out = false;
+
+	uint32_t last_pc = 0;
 	void worker();
 	void render_frame();
 	bool check_breakpoint(uint32_t address);
+	bool debugger_instruction_hook(uint32_t address);
 };
 
 #endif // ET3400EMU_H

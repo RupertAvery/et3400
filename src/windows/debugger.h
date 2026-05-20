@@ -138,6 +138,7 @@ private:
 	void stop(bool checked);
 	void step_into(bool checked);
 	void step_over(bool checked);
+	void step_out(bool checked);
 	void reset(bool checked);
 
 	void setupUI();

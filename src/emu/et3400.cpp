@@ -4,6 +4,7 @@
 #include <thread>
 #include "../common/default.h"
 #include "../windows/file.h"
+#include <QString>
 
 et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
 {
@@ -15,10 +16,13 @@ et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
     memory_map->breakpoints = breakpoints;
 
     device = new m6800_cpu_device(memory_map);
-    device->check_breakpoint = [this](uint32_t address)
-    { return check_breakpoint(address); };
 
-    running = false;
+    device->debugger_instruction_hook = [this](uint32_t address)
+    {
+        return this->debugger_instruction_hook(address);
+    };
+
+    is_running = false;
     cycles = 0;
     last_pc = 0xFFFF;
     total_cycles = 0;
@@ -67,10 +71,9 @@ void et3400emu::load_ram(offs_t address, uint8_t *buffer, size_t size)
     ram->load(address, buffer, size);
 }
 
-
 bool et3400emu::get_running()
 {
-    return running;
+    return is_running;
 }
 
 CpuStatus et3400emu::get_status()
@@ -80,22 +83,22 @@ CpuStatus et3400emu::get_status()
 
 void et3400emu::stop()
 {
-    if (running)
+    if (is_running)
     {
-        running = false;
+        is_running = false;
         thread.join();
     }
 }
 
 void et3400emu::halt()
 {
-    running = false;
+    is_running = false;
     thread.join();
 }
 
 void et3400emu::step()
 {
-    if (!running)
+    if (!is_running)
     {
         if (device->reset_line == 0)
         {
@@ -110,9 +113,9 @@ void et3400emu::step()
 
 void et3400emu::resume()
 {
-    if (!running)
+    if (!is_running)
     {
-        running = true;
+        is_running = true;
         thread = std::thread(&et3400emu::worker, this);
     }
 }
@@ -130,7 +133,7 @@ void et3400emu::init()
 
 void et3400emu::start()
 {
-    running = true;
+    is_running = true;
     thread = std::thread(&et3400emu::worker, this);
 }
 
@@ -186,7 +189,7 @@ void et3400emu::worker()
     LOG_INFO << "Reset Line: " << device->reset_line;
     LOG_INFO << "PC: " << device->m_pc.d;
 
-    while (this->running)
+    while (this->is_running)
     {
         cycles_per_frame = (int)(base_cycles * (float)clock_rate / (float)base_rate);
         if (cycles_per_frame <= 10)
@@ -203,6 +206,34 @@ void et3400emu::worker()
     }
 }
 
+void et3400emu::set_step_out()
+{
+    is_step_out = true;
+}
+
+bool et3400emu::debugger_instruction_hook(uint32_t address)
+{
+    // check if debugger is active
+    if(check_breakpoint(address))
+        return true;
+
+    if (is_step_out)
+    {
+        int *table_entry = Disassembler::GetTableEntry(device->read_byte(address));
+
+        if (Disassembler::IsReturn(table_entry[0]))
+        {
+            is_step_out = false;
+            this->is_running = false;
+            on_breakpoint();
+            last_pc = address;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool et3400emu::check_breakpoint(uint32_t address)
 {
     Breakpoint breakpoint;
@@ -212,7 +243,7 @@ bool et3400emu::check_breakpoint(uint32_t address)
         {
             breakpoints->removeBreakpoint(address);
         }
-        this->running = false;
+        this->is_running = false;
         on_breakpoint();
         last_pc = address;
         return true;

@@ -79,6 +79,21 @@ void DebuggerDialog::step_over(bool checked)
 	}
 }
 
+void DebuggerDialog::step_out(bool checked)
+{
+	if (!emu_ptr->get_running())
+	{
+		emu_ptr->set_step_out();
+
+		emu_ptr->start();
+		disassembly_view->clearCurrent();
+		disassembly_view->clearSelected();
+		update_button_state();
+		// forces a redraw - should we just call rebuild?
+		disassembly_scrollbar->setValue(disassembly_view->offset);
+	}
+}
+
 void DebuggerDialog::refresh()
 {
 	if (settings->showDasmView)
@@ -306,7 +321,9 @@ void DebuggerDialog::update_button_state()
 	start_button->setEnabled(!running);
 	stop_button->setEnabled(running);
 	step_into_button->setEnabled(!running);
-	// reset_button->setEnabled(!running);
+	step_over_button->setEnabled(!running);
+	step_out_button->setEnabled(!running);
+	reset_button->setEnabled(running);
 }
 
 void DebuggerDialog::memory_slider_moved(int value)

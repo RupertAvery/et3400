@@ -36,12 +36,12 @@ void DebuggerDialog::setupUI()
     labels_selector_menu->addAction(clear_labels_action);
     labels_selector->setMenu(labels_selector_menu);
 
-    MakeButton(start_button, "Start (F5)", ":/buttons/Run_16x.png", Qt::Key_F5, start);
-    MakeButton(stop_button, "Stop (F4)", ":/buttons/Stop_16x.png", Qt::Key_F4, stop);
-    MakeButton(step_over_button, "Step over (F10)", ":/buttons/StepOverArrow_16x.png", Qt::Key_F10, step_over);
-    MakeButton(step_into_button, "Step into (F11)", ":/buttons/StepIntoArrow_16x.png", Qt::Key_F11, step_into);
-    //MakeButton(step_out_button, "Step Out (F11)", ":/buttons/StepOutArrow_16x.png", Qt::Key_F12, step_into);
-    MakeButton(reset_button, "Reset (ESC)", ":/buttons/Restart_16x.png", Qt::Key_Escape, reset);
+    MakeButton(start_button, "Start (F5)", ":/buttons/Run.png", Qt::Key_F5, start);
+    MakeButton(stop_button, "Stop (F4)", ":/buttons/Stop.png", Qt::Key_F4, stop);
+    MakeButton(step_over_button, "Step Over (F10)", ":/buttons/StepOver.png", Qt::Key_F10, step_over);
+    MakeButton(step_into_button, "Step Into (F11)", ":/buttons/StepInto.png", Qt::Key_F11, step_into);
+    MakeButton(step_out_button, "Step Out (Shift+F11)", ":/buttons/StepOut.png", Qt::SHIFT + Qt::Key_F11, step_out);
+    MakeButton(reset_button, "Reset (ESC)", ":/buttons/Restart.png", Qt::Key_Escape, reset);
 
     panel_selector = new QToolButton(toolbar);
     panel_selector->setToolButtonStyle(Qt::ToolButtonTextOnly);
@@ -121,6 +121,7 @@ void DebuggerDialog::setupUI()
     toolbar->addWidget(stop_button);
     toolbar->addWidget(step_over_button);
     toolbar->addWidget(step_into_button);
+    toolbar->addWidget(step_out_button);
     toolbar->addWidget(reset_button);
     toolbar->addSeparator();
     toolbar->addWidget(panel_selector);

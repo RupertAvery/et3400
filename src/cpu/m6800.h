@@ -59,7 +59,7 @@ public:
 	void execute_step();
 	void execute_set_input(int inputnum, int state);
 	void pre_execute_run();
-	std::function<bool (uint32_t)> check_breakpoint;
+	std::function<bool (uint32_t)> debugger_instruction_hook;
 	CpuStatus get_status();
 	// device_memory_interface overrides
 	//virtual space_config_vector memory_space_config() const override;
