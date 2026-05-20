@@ -36,7 +36,7 @@ void DebuggerDialog::setupUI()
     labels_selector_menu->addAction(clear_labels_action);
     labels_selector->setMenu(labels_selector_menu);
 
-    MakeButton(start_button, "Start (F5)", ":/buttons/Run.png", Qt::Key_F5, start);
+    MakeButton(start_button, "Run (F5)", ":/buttons/Run.png", Qt::Key_F5, start);
     MakeButton(stop_button, "Stop (F4)", ":/buttons/Stop.png", Qt::Key_F4, stop);
     MakeButton(step_over_button, "Step Over (F10)", ":/buttons/StepOver.png", Qt::Key_F10, step_over);
     MakeButton(step_into_button, "Step Into (F11)", ":/buttons/StepInto.png", Qt::Key_F11, step_into);

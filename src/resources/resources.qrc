@@ -45,9 +45,6 @@
         <file>buttons/BreakpointDisabled.png</file>
         <file>buttons/BreakpointEnabled.png</file>
         <file>buttons/BreakpointAvailable.png</file>
-        <file>buttons/ClearCollection_16x.png</file>
-        <file>buttons/GoToDefinition_16x.png</file>
-        <file>buttons/GoToSourceCode_16x.png</file>
         <file>buttons/Remove.png</file>
         <file>buttons/Restart.png</file>
         <file>buttons/Run.png</file>
