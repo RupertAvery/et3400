@@ -150,12 +150,12 @@ The debugger lets you pause, step through instructions, and inspect CPU state, d
 
 The following buttons can be found in the toolbar
 
-* **Start** - Resumes emulation
-* **Stop** - Pauses emulation
-* **Step Over** - Executes the next instruction. If it is a `JSR` or `BSR`, runs the entire subroutine and breaks on return.
-* **Step Into** - Executes the next instruction, entering any subroutine call.
-* **Step Out** - Runs until before the current subroutine returns (`RTS`), then breaks.
-* **Escape** - Reset emulator
+* <img src="./src/resources/buttons/Run.png">  &nbsp;**Run** - Resumes emulation
+* <img src="./src/resources/buttons/Stop.png"> &nbsp;**Stop** - Pauses emulation
+* <img src="./src/resources/buttons/StepOver.png"> &nbsp;**Step Over** - Executes the next instruction. If it is a `JSR` or `BSR`, runs the entire subroutine and breaks on return.
+* <img src="./src/resources/buttons/StepInto.png"> &nbsp;**Step Into** - Executes the next instruction, entering any subroutine call.
+* <img src="./src/resources/buttons/StepOut.png"> &nbsp;**Step Out** - Runs until before the current subroutine returns (`RTS`), then breaks.
+* <img src="./src/resources/buttons/Restart.png"> &nbsp;**Reset** - Reset emulator
 
 The following keyboard shortcuts are also available:
 

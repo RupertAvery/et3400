@@ -1,15 +1,15 @@
 #ifndef DEBUGGER_H
 #define DEBUGGER_H
 
-#define MakeButton(button, toolTip, icon, seq, delegate) \
-	button = new QToolButton(toolbar);                   \
-	button->setToolTip(toolTip);                         \
-	button->setIcon(QIcon(icon));                        \
-	button->setShortcut(QKeySequence(seq));              \
+#define MakeButton(toolbar, button, toolTip, icon, seq, delegate) \
+	button = new QToolButton();                                   \
+	button->setToolTip(toolTip);                                  \
+	button->setIcon(QIcon(icon));                                 \
+	button->setShortcut(QKeySequence(seq));                       \
 	connect(button, &QToolButton::clicked, this, &DebuggerDialog::delegate)
 
 #define MakeTriggeredActionNS(action, name, delegate) \
-	action = new QAction(name, this);                    \
+	action = new QAction(name, this);                 \
 	connect(action, &QAction::triggered, this, &DebuggerDialog::delegate)
 
 #define MakeTriggeredAction(action, name, seq, delegate) \
@@ -25,11 +25,10 @@
 	connect(action, &QAction::toggled, this, &DebuggerDialog::delegate)
 
 #define MakeToggledActionNS(action, name, delegate) \
-	action = new QAction(name, this);                  \
-	action->setCheckable(true);                        \
-	action->setChecked(true);                          \
+	action = new QAction(name, this);               \
+	action->setCheckable(true);                     \
+	action->setChecked(true);                       \
 	connect(action, &QAction::toggled, this, &DebuggerDialog::delegate)
-
 
 // #include "memory_location.h"
 #include "../emu/et3400.h"
@@ -98,7 +97,7 @@ private:
 	QComboBox *memory_selector;
 	QComboBox *disassembly_selector;
 
-	QToolButton *panel_selector;
+	QToolButton *view_button;
 	QAction *toggle_memory_action;
 	QAction *toggle_disassembly_action;
 	QAction *toggle_status_action;
@@ -107,16 +106,10 @@ private:
 	QAction *toggle_autorefresh_disassembly_action;
 	QAction *clear_ram_action;
 
-	QToolButton *labels_selector;
+	QToolButton *labels_button;
 	QAction *clear_labels_action;
 	QAction *add_label_action;
 	QAction *goto_label_action;
-
-	QScrollBar *memory_scrollbar;
-	QGroupBox *memory_groupBox;
-	QGroupBox *disassembly_groupBox;
-	QScrollBar *disassembly_scrollbar;
-	QGroupBox *status_groupBox;
 
 	QAction *breakpoint_handler_action;
 
@@ -186,6 +179,28 @@ private:
 	void save_labels();
 
 	void reset_disassembly_view();
+
+	QGroupBox *memory_groupBox = nullptr;
+	QGroupBox *disassembly_groupBox = nullptr;
+	QGroupBox *status_groupBox = nullptr;
+
+	QScrollBar *memory_scrollbar = nullptr;
+	QScrollBar *disassembly_scrollbar = nullptr;
+
+	QToolBar *create_menu_toolbar();
+	QToolBar *create_shortcuts_toolbar();
+
+	QToolButton *create_file_menu(QToolBar *toolbar);
+	QToolButton *create_view_menu(QToolBar *toolbar);
+	QToolButton *create_labels_menu(QToolBar *toolbar);
+
+	QGroupBox *create_status_group();
+	QGroupBox *create_disassembly_group();
+	QGroupBox *create_memory_group();
+	QWidget *create_tab_panel();
+
+	QWidget *create_labels_tab();
+	QWidget *create_breakpoints_tab();
 };
 
 #endif // DEBUGGER_H

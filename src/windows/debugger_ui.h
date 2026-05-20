@@ -4,9 +4,14 @@
 #include "debugger.h"
 #include "label.h"
 
-void DebuggerDialog::setupUI()
+QToolBar *DebuggerDialog::create_menu_toolbar()
 {
     QToolBar *toolbar = new QToolBar(this);
+
+    QToolButton *file_button = create_file_menu(toolbar);
+    QToolButton *labels_button = create_labels_menu(toolbar);
+    QToolButton *view_button = create_view_menu(toolbar);
+
     // toolbar->setStyleSheet("QLabel { font-size:9pt; }");
 
     // QLabel *memory_label = new QLabel("Memory");
@@ -14,63 +19,36 @@ void DebuggerDialog::setupUI()
 
     // QLabel *disassembly_label = new QLabel("Disassembly");
     // disassembly_label->setStyleSheet("margin: 0px 5px 0px 5px;");
+    toolbar->addWidget(file_button);
+    toolbar->addWidget(view_button);
+    toolbar->addWidget(labels_button);
 
-    labels_selector = new QToolButton(toolbar);
-    labels_selector->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    labels_selector->setText("Labels   ");
-    labels_selector->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
+    return toolbar;
+}
 
-    clear_labels_action = new QAction("Clear Labels (RAM)", this);
-    connect(clear_labels_action, &QAction::triggered, this, &DebuggerDialog::clear_labels);
+QToolBar *DebuggerDialog::create_shortcuts_toolbar()
+{
+    QToolBar *shortcut_toolbar = new QToolBar(this);
 
-    add_label_action = new QAction("Add Label", this);
-    connect(add_label_action, &QAction::triggered, this, &DebuggerDialog::add_label);
+    MakeButton(shortcut_toolbar, start_button, "Run (F5)", ":/buttons/Run.png", Qt::Key_F5, start);
+    MakeButton(shortcut_toolbar, stop_button, "Stop (F4)", ":/buttons/Stop.png", Qt::Key_F4, stop);
+    MakeButton(shortcut_toolbar, step_over_button, "Step Over (F10)", ":/buttons/StepOver.png", Qt::Key_F10, step_over);
+    MakeButton(shortcut_toolbar, step_into_button, "Step Into (F11)", ":/buttons/StepInto.png", Qt::Key_F11, step_into);
+    MakeButton(shortcut_toolbar, step_out_button, "Step Out (Shift+F11)", ":/buttons/StepOut.png", Qt::SHIFT + Qt::Key_F11, step_out);
+    MakeButton(shortcut_toolbar, reset_button, "Reset (ESC)", ":/buttons/Restart.png", Qt::Key_Escape, reset);
 
-    MakeTriggeredAction(goto_label_action, "Goto Label", Qt::CTRL + Qt::Key_G, goto_label);
+    shortcut_toolbar->addWidget(start_button);
+    shortcut_toolbar->addWidget(stop_button);
+    shortcut_toolbar->addWidget(step_over_button);
+    shortcut_toolbar->addWidget(step_into_button);
+    shortcut_toolbar->addWidget(step_out_button);
+    shortcut_toolbar->addWidget(reset_button);
 
-    QMenu *labels_selector_menu = new QMenu(labels_selector);
-    // labels_selector_menu->setStyleSheet("QLabel { font-size:9pt; }");
-    labels_selector_menu->addAction(add_label_action);
-    labels_selector_menu->addAction(goto_label_action);
-    labels_selector_menu->addSeparator();
-    labels_selector_menu->addAction(clear_labels_action);
-    labels_selector->setMenu(labels_selector_menu);
+    return shortcut_toolbar;
+}
 
-    MakeButton(start_button, "Run (F5)", ":/buttons/Run.png", Qt::Key_F5, start);
-    MakeButton(stop_button, "Stop (F4)", ":/buttons/Stop.png", Qt::Key_F4, stop);
-    MakeButton(step_over_button, "Step Over (F10)", ":/buttons/StepOver.png", Qt::Key_F10, step_over);
-    MakeButton(step_into_button, "Step Into (F11)", ":/buttons/StepInto.png", Qt::Key_F11, step_into);
-    MakeButton(step_out_button, "Step Out (Shift+F11)", ":/buttons/StepOut.png", Qt::SHIFT + Qt::Key_F11, step_out);
-    MakeButton(reset_button, "Reset (ESC)", ":/buttons/Restart.png", Qt::Key_Escape, reset);
-
-    panel_selector = new QToolButton(toolbar);
-    panel_selector->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    panel_selector->setText("View   ");
-    panel_selector->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
-
-    QMenu *panel_selector_menu = new QMenu(panel_selector);
-
-    MakeToggledAction(toggle_disassembly_action, "Disassembly", Qt::CTRL + Qt::Key_D, toggle_disassembly_panel);
-    MakeToggledActionNS(toggle_autorefresh_disassembly_action, "Auto Refresh Disassembly", toggle_auto_refresh_disassembly_panel);
-
-    MakeTriggeredAction(refresh_disassembly_action, "Refresh", Qt::CTRL + Qt::Key_R, diassembly_refresh);
-    MakeToggledAction(toggle_memory_action, "Memory", Qt::CTRL + Qt::Key_M, toggle_memory_panel);
-    MakeToggledAction(toggle_heat_map_action, "Heat Map", Qt::CTRL + Qt::Key_H, toggle_heat_map);
-    // MakeAction(toggle_status_action, "Status", Qt::CTRL + Qt::Key_3, toggle_status_panel);
-
-    MakeTriggeredActionNS(clear_ram_action, "Clear RAM", clear_ram);
-
-    panel_selector_menu->addAction(toggle_disassembly_action);
-    panel_selector_menu->addAction(refresh_disassembly_action);
-    panel_selector_menu->addAction(toggle_autorefresh_disassembly_action);
-    panel_selector_menu->addSeparator();
-    panel_selector_menu->addAction(toggle_memory_action);
-    panel_selector_menu->addAction(toggle_heat_map_action);
-    panel_selector_menu->addSeparator();
-    panel_selector_menu->addAction(clear_ram_action);
-
-    // panel_selector_menu->addAction(toggle_status_action);
-    panel_selector->setMenu(panel_selector_menu);
+QToolButton *DebuggerDialog::create_file_menu(QToolBar *toolbar)
+{
 
     QAction *openRam_action = new QAction("&Load RAM", this);
     openRam_action->setShortcut(Qt::CTRL + Qt::Key_O);
@@ -115,50 +93,95 @@ void DebuggerDialog::setupUI()
     connect(openMap_action, &QAction::triggered, this, &DebuggerDialog::load_labels);
     connect(saveMap_action, &QAction::triggered, this, &DebuggerDialog::save_labels);
 
-    toolbar->addWidget(file_button);
-    toolbar->addSeparator();
-    toolbar->addWidget(start_button);
-    toolbar->addWidget(stop_button);
-    toolbar->addWidget(step_over_button);
-    toolbar->addWidget(step_into_button);
-    toolbar->addWidget(step_out_button);
-    toolbar->addWidget(reset_button);
-    toolbar->addSeparator();
-    toolbar->addWidget(panel_selector);
-    toolbar->addWidget(labels_selector);
+    return file_button;
+}
 
-    memory_groupBox = new QGroupBox("Memory", this);
-    memory_groupBox->setMinimumWidth(360);
+QToolButton *DebuggerDialog::create_labels_menu(QToolBar *toolbar)
+{
+    QToolButton *labels_button = new QToolButton(toolbar);
+    labels_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    labels_button->setText("Labels   ");
+    labels_button->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
 
-    disassembly_groupBox = new QGroupBox("Disassembly", this);
-    disassembly_groupBox->setMinimumWidth(400);
-    status_groupBox = new QGroupBox("Status", this);
+    clear_labels_action = new QAction("Clear Labels (RAM)", this);
+    connect(clear_labels_action, &QAction::triggered, this, &DebuggerDialog::clear_labels);
 
-    memory_scrollbar = new QScrollBar(Qt::Orientation::Vertical);
+    add_label_action = new QAction("Add Label", this);
+    connect(add_label_action, &QAction::triggered, this, &DebuggerDialog::add_label);
+
+    MakeTriggeredAction(goto_label_action, "Goto Label", Qt::CTRL + Qt::Key_G, goto_label);
+
+    QMenu *labels_menu = new QMenu(labels_button);
+    // labels_selector_menu->setStyleSheet("QLabel { font-size:9pt; }");
+    labels_menu->addAction(add_label_action);
+    labels_menu->addAction(goto_label_action);
+    labels_menu->addSeparator();
+    labels_menu->addAction(clear_labels_action);
+    labels_button->setMenu(labels_menu);
+
+    return labels_button;
+}
+
+QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
+{
+    QToolButton *view_button = new QToolButton(toolbar);
+    view_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    view_button->setText("View   ");
+    view_button->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
+
+    QMenu *view_menu = new QMenu(view_button);
+
+    MakeToggledAction(toggle_disassembly_action, "Disassembly", Qt::CTRL + Qt::Key_D, toggle_disassembly_panel);
+    MakeToggledActionNS(toggle_autorefresh_disassembly_action, "Auto Refresh Disassembly", toggle_auto_refresh_disassembly_panel);
+
+    MakeTriggeredAction(refresh_disassembly_action, "Refresh", Qt::CTRL + Qt::Key_R, diassembly_refresh);
+    MakeToggledAction(toggle_memory_action, "Memory", Qt::CTRL + Qt::Key_M, toggle_memory_panel);
+    MakeToggledAction(toggle_heat_map_action, "Heat Map", Qt::CTRL + Qt::Key_H, toggle_heat_map);
+
+    MakeTriggeredActionNS(clear_ram_action, "Clear RAM", clear_ram);
+
+    view_menu->addAction(toggle_disassembly_action);
+    view_menu->addAction(refresh_disassembly_action);
+    view_menu->addAction(toggle_autorefresh_disassembly_action);
+    view_menu->addSeparator();
+    view_menu->addAction(toggle_memory_action);
+    view_menu->addAction(toggle_heat_map_action);
+    view_menu->addSeparator();
+    view_menu->addAction(clear_ram_action);
+
+    view_button->setMenu(view_menu);
+
+    return view_button;
+}
+
+QGroupBox *DebuggerDialog::create_status_group()
+{
+    QGroupBox *status_groupBox = new QGroupBox("Status", this);
+
+    QHBoxLayout *status_groupBox_layout = new QHBoxLayout(this);
+
+    status_view = new StatusView(this);
+    status_groupBox_layout->addWidget(status_view);
+
+    status_groupBox_layout->setMargin(10);
+    status_groupBox->setLayout(status_groupBox_layout);
+    status_groupBox->setFixedWidth(200);
+
+    return status_groupBox;
+}
+
+QGroupBox *DebuggerDialog::create_disassembly_group()
+{
     disassembly_scrollbar = new QScrollBar(Qt::Orientation::Vertical);
 
-    memory_view = new MemoryView(this);
+    QGroupBox *disassembly_groupBox = new QGroupBox("Disassembly", this);
+    disassembly_groupBox->setMinimumWidth(400);
     disassembly_view = new DisassemblyView(this);
-    status_view = new StatusView(this);
-
-    memory_selector = new QComboBox(toolbar);
-
-    QWidget *inner_memory = new QWidget(memory_groupBox);
-    QHBoxLayout *memory_groupBox_layout = new QHBoxLayout(inner_memory);
-    memory_groupBox_layout->addWidget(memory_view);
-    memory_groupBox_layout->addWidget(memory_scrollbar);
-    memory_groupBox_layout->setMargin(0);
-    inner_memory->setLayout(memory_groupBox_layout);
-
-    QVBoxLayout *memory_groupBox_layout_v = new QVBoxLayout(this);
-    memory_groupBox_layout_v->addWidget(memory_selector);
-    memory_groupBox_layout_v->addWidget(inner_memory);
-    memory_groupBox->setLayout(memory_groupBox_layout_v);
-
-    disassembly_selector = new QComboBox(toolbar);
+    disassembly_selector = new QComboBox(disassembly_groupBox);
 
     QWidget *inner_disassembly = new QWidget(disassembly_groupBox);
     QHBoxLayout *disassembly_groupBox_layout = new QHBoxLayout(this);
+
     disassembly_groupBox_layout->addWidget(disassembly_view);
     disassembly_groupBox_layout->addWidget(disassembly_scrollbar);
     disassembly_groupBox_layout->setMargin(0);
@@ -169,49 +192,114 @@ void DebuggerDialog::setupUI()
     disassembly_groupBox_layout_v->addWidget(inner_disassembly);
     disassembly_groupBox->setLayout(disassembly_groupBox_layout_v);
 
-    QHBoxLayout *status_groupBox_layout = new QHBoxLayout(this);
-    status_groupBox_layout->addWidget(status_view);
-    status_groupBox_layout->setMargin(10);
-    status_groupBox->setLayout(status_groupBox_layout);
-    status_groupBox->setFixedWidth(200);
+    connect(disassembly_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_disassembly_location);
+
+    connect(disassembly_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::disassembly_slider_moved);
+    connect(disassembly_scrollbar, &QScrollBar::valueChanged, this, &DebuggerDialog::disassembly_slider_moved);
+
+    connect(disassembly_view, &DisassemblyView::onScroll, this, &DebuggerDialog::adjustDisassemblyScrollbar);
+    connect(disassembly_view, &DisassemblyView::onSize, this, &DebuggerDialog::update_disassembly_scrollbar_max);
+    connect(disassembly_view, &DisassemblyView::onOffsetUpdated, this, &DebuggerDialog::setDisassemblyScrollbar);
+    connect(disassembly_view, &DisassemblyView::onAddBreakpoint, this, &DebuggerDialog::add_breakpoint);
+    connect(disassembly_view, &DisassemblyView::onRemoveBreakpoint, this, &DebuggerDialog::remove_breakpoint);
+    connect(disassembly_view, &DisassemblyView::onAddorRemoveBreakpoint, this, &DebuggerDialog::add_or_remove_breakpoint);
+
+    return disassembly_groupBox;
+}
+
+QGroupBox *DebuggerDialog::create_memory_group()
+{
+    memory_scrollbar = new QScrollBar(Qt::Orientation::Vertical);
+
+    QGroupBox *memory_groupBox = new QGroupBox("Memory", this);
+    memory_groupBox->setMinimumWidth(360);
+
+    memory_view = new MemoryView(memory_groupBox);
+
+    memory_selector = new QComboBox(memory_groupBox);
+
+    QWidget *inner_memory = new QWidget(memory_groupBox);
+
+    QHBoxLayout *memory_groupBox_layout = new QHBoxLayout(inner_memory);
+    memory_groupBox_layout->addWidget(memory_view);
+    memory_groupBox_layout->addWidget(memory_scrollbar);
+    memory_groupBox_layout->setMargin(0);
+    inner_memory->setLayout(memory_groupBox_layout);
+
+    QVBoxLayout *memory_groupBox_layout_v = new QVBoxLayout(memory_groupBox);
+    memory_groupBox_layout_v->addWidget(memory_selector);
+    memory_groupBox_layout_v->addWidget(inner_memory);
+    memory_groupBox->setLayout(memory_groupBox_layout_v);
+
+    connect(memory_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_memory_location);
+
+    connect(memory_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::memory_slider_moved);
+    connect(memory_scrollbar, &QScrollBar::valueChanged, this, &DebuggerDialog::memory_slider_moved);
+
+    connect(memory_view, &MemoryView::on_scroll, this, &DebuggerDialog::update_memory_scrollbar);
+    connect(memory_view, &MemoryView::on_size, this, &DebuggerDialog::update_memory_scrollbar_max);
+
+    return memory_groupBox;
+}
+
+QWidget *DebuggerDialog::create_labels_tab()
+{
+
+    return new QWidget(this);
+}
+
+QWidget *DebuggerDialog::create_breakpoints_tab()
+{
+    return new QWidget(this);
+}
+
+QWidget *DebuggerDialog::create_tab_panel()
+{
+    QWidget *panel = new QWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    panel->setLayout(layout);
+
+    QTabWidget *tab_widget = new QTabWidget(panel);
+    layout->addWidget(tab_widget);
+
+    tab_widget->addTab(create_labels_tab(), "Labels");
+    tab_widget->addTab(create_breakpoints_tab(), "Breakpoints");
+
+    return panel;
+}
+
+void DebuggerDialog::setupUI()
+{
+    QToolBar *toolbar = create_menu_toolbar();
+    QToolBar *shortcut_toolbar = create_shortcuts_toolbar();
+
+    status_groupBox = create_status_group();
+    disassembly_groupBox = create_disassembly_group();
+    memory_groupBox = create_memory_group();
 
     QWidget *panels = new QWidget(this);
     QHBoxLayout *panels_layout = new QHBoxLayout(this);
+
     panels_layout->addWidget(status_groupBox);
     panels_layout->addWidget(disassembly_groupBox);
     panels_layout->addWidget(memory_groupBox);
     panels_layout->setMargin(10);
     panels->setLayout(panels_layout);
 
+    QWidget *tabs = create_tab_panel();
+
+
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(toolbar);
+    mainLayout->addWidget(shortcut_toolbar);
     mainLayout->addWidget(panels);
+    mainLayout->addWidget(tabs);
     mainLayout->setMargin(0);
     mainLayout->setSpacing(0);
 
     setLayout(mainLayout);
 
     setSizeGripEnabled(true);
-
-    connect(memory_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::memory_slider_moved);
-    connect(disassembly_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::disassembly_slider_moved);
-    connect(memory_scrollbar, &QScrollBar::valueChanged, this, &DebuggerDialog::memory_slider_moved);
-    connect(disassembly_scrollbar, &QScrollBar::valueChanged, this, &DebuggerDialog::disassembly_slider_moved);
-
-    connect(memory_view, &MemoryView::on_scroll, this, &DebuggerDialog::update_memory_scrollbar);
-    connect(disassembly_view, &DisassemblyView::onScroll, this, &DebuggerDialog::adjustDisassemblyScrollbar);
-
-    connect(memory_view, &MemoryView::on_size, this, &DebuggerDialog::update_memory_scrollbar_max);
-    connect(disassembly_view, &DisassemblyView::onSize, this, &DebuggerDialog::update_disassembly_scrollbar_max);
-
-    connect(disassembly_view, &DisassemblyView::onOffsetUpdated, this, &DebuggerDialog::setDisassemblyScrollbar);
-
-    connect(memory_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_memory_location);
-    connect(disassembly_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_disassembly_location);
-
-    connect(disassembly_view, &DisassemblyView::onAddBreakpoint, this, &DebuggerDialog::add_breakpoint);
-    connect(disassembly_view, &DisassemblyView::onRemoveBreakpoint, this, &DebuggerDialog::remove_breakpoint);
-    connect(disassembly_view, &DisassemblyView::onAddorRemoveBreakpoint, this, &DebuggerDialog::add_or_remove_breakpoint);
 
     breakpoint_handler_action = new QAction;
     connect(breakpoint_handler_action, &QAction::triggered, this, &DebuggerDialog::breakpoint_handler);
