@@ -345,6 +345,8 @@ void DebuggerDialog::setupUI()
     splitter->addWidget(tabs);
     splitter->setStretchFactor(0, 3);
     splitter->setStretchFactor(1, 1);
+    splitter->setCollapsible(0, false);
+    splitter->setCollapsible(1, false);
     splitter->setHandleWidth(4);
     splitter->setStyleSheet(
         "QSplitter::handle { background: #c8c8c8; }"
