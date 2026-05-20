@@ -51,6 +51,7 @@ class MainWindow;
 #include <QWidget>
 #include <QSlider>
 #include <QGridLayout>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QGroupBox>
@@ -61,6 +62,11 @@ class MainWindow;
 #include <QMenu>
 #include <QToolButton>
 #include <QSizeGrip>
+#include <QSplitter>
+#include <QTabWidget>
+#include <QTableWidget>
+#include <QHeaderView>
+#include <QPushButton>
 
 class DebuggerDialog : public QDialog
 {
@@ -169,6 +175,12 @@ private:
 	void clear_labels();
 	void add_label();
 	void goto_label();
+	void add_label_from_table();
+	void edit_label_from_table();
+	void delete_label_from_table();
+	void goto_label_from_table();
+	void labels_table_selection_changed();
+	void populate_labels_table();
 
 	void load_rom();
 	void load_ram();
@@ -183,6 +195,11 @@ private:
 	QGroupBox *memory_groupBox = nullptr;
 	QGroupBox *disassembly_groupBox = nullptr;
 	QGroupBox *status_groupBox = nullptr;
+
+	QTableWidget *labels_table = nullptr;
+	QPushButton *edit_label_button = nullptr;
+	QPushButton *delete_label_button = nullptr;
+	QPushButton *goto_label_button = nullptr;
 
 	QScrollBar *memory_scrollbar = nullptr;
 	QScrollBar *disassembly_scrollbar = nullptr;

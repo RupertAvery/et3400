@@ -1,6 +1,7 @@
 #include "debugger.h"
 #include "debugger_ui.h"
 #include "goto.h"
+#include "label.h"
 #include "mainwindow.h"
 #include "../util/log.h"
 #include "clear_ram.h"
@@ -213,6 +214,7 @@ void DebuggerDialog::select_disassembly_location(int index)
 
 	disassembly_view->set_range(device->get_start(), device->get_end(), device->get_mapped_memory());
 	disassembly_scrollbar->setValue(0);
+	populate_labels_table();
 }
 
 void DebuggerDialog::update_memory_scrollbar(int value)
@@ -486,6 +488,7 @@ void DebuggerDialog::load_labels()
 {
 	File::load_labels_dialog(this, emu_ptr);
 	reset_disassembly_view();
+	populate_labels_table();
 }
 
 void DebuggerDialog::reset_disassembly_view()
@@ -572,11 +575,132 @@ void DebuggerDialog::clear_labels()
 {
 	disassembly_view->clearLabels();
 	reset_disassembly_view();
+	populate_labels_table();
 }
 
 void DebuggerDialog::add_label()
 {
 	disassembly_view->addLabel();
+	reset_disassembly_view();
+	populate_labels_table();
+}
+
+void DebuggerDialog::populate_labels_table()
+{
+	if (!labels_table || !emu_ptr)
+		return;
+
+	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
+	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
+
+	labels_table->setRowCount(0);
+	auto *all_labels = emu_ptr->labels->getLabels();
+	for (int i = 0; i < (int)all_labels->size(); i++)
+	{
+		const Label &label = all_labels->at(i);
+		if (device && (label.start < (uint32_t)device->get_start() || label.start > (uint32_t)device->get_end()))
+			continue;
+		int row = labels_table->rowCount();
+		labels_table->insertRow(row);
+		auto *start_item = new QTableWidgetItem(toHex(label.start));
+		start_item->setData(Qt::UserRole, i);
+		labels_table->setItem(row, 0, start_item);
+		labels_table->setItem(row, 1, new QTableWidgetItem(toHex(label.end)));
+		QString type_str;
+		switch (label.type)
+		{
+		case LabelType::COMMENT:  type_str = "Comment";  break;
+		case LabelType::DATA:     type_str = "Data";     break;
+		case LabelType::ASSEMBLY: type_str = "Assembly"; break;
+		}
+		labels_table->setItem(row, 2, new QTableWidgetItem(type_str));
+		labels_table->setItem(row, 3, new QTableWidgetItem(label.comment));
+	}
+}
+
+void DebuggerDialog::labels_table_selection_changed()
+{
+	bool has_selection = !labels_table->selectedItems().isEmpty();
+	edit_label_button->setEnabled(has_selection);
+	delete_label_button->setEnabled(has_selection);
+	goto_label_button->setEnabled(has_selection);
+}
+
+void DebuggerDialog::goto_label_from_table()
+{
+	int row = labels_table->currentRow();
+	if (row < 0)
+		return;
+
+	int idx = labels_table->item(row, 0)->data(Qt::UserRole).toInt();
+	auto *labels = emu_ptr->labels->getLabels();
+	if (idx >= (int)labels->size())
+		return;
+
+	offs_t address = labels->at(idx).start;
+	memory_mapped_device *device = emu_ptr->get_block_device(address);
+	if (!device)
+		return;
+
+	selectByAddress(device->get_start());
+	disassembly_view->setSelected(address);
+	disassembly_scrollbar->setValue(disassembly_view->offset);
+}
+
+void DebuggerDialog::add_label_from_table()
+{
+	LabelDialog labelDialog;
+	labelDialog.setLabel(LabelInfo{"", LabelType::COMMENT, 0, 0}, LabelDialogMode::Add);
+
+	if (labelDialog.exec() == QDialog::Accepted)
+	{
+		LabelInfo info = labelDialog.getLabel();
+		emu_ptr->labels->addLabel(Label{info.start, info.end, info.type, info.text});
+		populate_labels_table();
+		reset_disassembly_view();
+	}
+}
+
+void DebuggerDialog::edit_label_from_table()
+{
+	int row = labels_table->currentRow();
+	if (row < 0)
+		return;
+
+	int idx = labels_table->item(row, 0)->data(Qt::UserRole).toInt();
+	auto *labels = emu_ptr->labels->getLabels();
+	if (idx >= (int)labels->size())
+		return;
+
+	Label &label = labels->at(idx);
+	LabelDialog labelDialog;
+	labelDialog.setLabel(LabelInfo{label.comment, label.type, label.start, label.end}, LabelDialogMode::Edit);
+
+	if (labelDialog.exec() == QDialog::Accepted)
+	{
+		LabelInfo info = labelDialog.getLabel();
+		label.comment = info.text;
+		label.type = info.type;
+		label.start = info.start;
+		label.end = info.end;
+		populate_labels_table();
+		reset_disassembly_view();
+	}
+}
+
+void DebuggerDialog::delete_label_from_table()
+{
+	int row = labels_table->currentRow();
+	if (row < 0)
+		return;
+
+	int idx = labels_table->item(row, 0)->data(Qt::UserRole).toInt();
+	auto *labels = emu_ptr->labels->getLabels();
+	if (idx >= (int)labels->size())
+		return;
+
+	emu_ptr->labels->removeLabel(&labels->at(idx));
+	populate_labels_table();
 	reset_disassembly_view();
 }
 

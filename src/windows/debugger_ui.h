@@ -244,8 +244,48 @@ QGroupBox *DebuggerDialog::create_memory_group()
 
 QWidget *DebuggerDialog::create_labels_tab()
 {
+    QWidget *tab = new QWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout(tab);
 
-    return new QWidget(this);
+    QHBoxLayout *btn_layout = new QHBoxLayout();
+    QPushButton *add_btn = new QPushButton("Add", tab);
+    edit_label_button = new QPushButton("Edit", tab);
+    delete_label_button = new QPushButton("Delete", tab);
+    goto_label_button = new QPushButton("Goto", tab);
+    QPushButton *clear_ram_labels_btn = new QPushButton("Clear RAM Labels", tab);
+    edit_label_button->setEnabled(false);
+    delete_label_button->setEnabled(false);
+    goto_label_button->setEnabled(false);
+
+    btn_layout->addWidget(add_btn);
+    btn_layout->addWidget(edit_label_button);
+    btn_layout->addWidget(delete_label_button);
+    btn_layout->addWidget(goto_label_button);
+    btn_layout->addStretch();
+    btn_layout->addWidget(clear_ram_labels_btn);
+
+    labels_table = new QTableWidget(tab);
+    labels_table->setColumnCount(4);
+    labels_table->setHorizontalHeaderLabels({"Start", "End", "Type", "Text"});
+    labels_table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    labels_table->setSelectionMode(QAbstractItemView::SingleSelection);
+    labels_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    labels_table->horizontalHeader()->setStretchLastSection(true);
+    labels_table->verticalHeader()->setVisible(false);
+
+    layout->addLayout(btn_layout);
+    layout->addWidget(labels_table);
+    tab->setLayout(layout);
+
+    connect(add_btn, &QPushButton::clicked, this, &DebuggerDialog::add_label_from_table);
+    connect(edit_label_button, &QPushButton::clicked, this, &DebuggerDialog::edit_label_from_table);
+    connect(delete_label_button, &QPushButton::clicked, this, &DebuggerDialog::delete_label_from_table);
+    connect(goto_label_button, &QPushButton::clicked, this, &DebuggerDialog::goto_label_from_table);
+    connect(clear_ram_labels_btn, &QPushButton::clicked, this, &DebuggerDialog::clear_labels);
+    connect(labels_table, &QTableWidget::itemSelectionChanged, this, &DebuggerDialog::labels_table_selection_changed);
+    connect(labels_table, &QTableWidget::cellDoubleClicked, this, [this](int, int) { goto_label_from_table(); });
+
+    return tab;
 }
 
 QWidget *DebuggerDialog::create_breakpoints_tab()
@@ -260,6 +300,7 @@ QWidget *DebuggerDialog::create_tab_panel()
     panel->setLayout(layout);
 
     QTabWidget *tab_widget = new QTabWidget(panel);
+    tab_widget->setStyleSheet("QTabWidget, QTabBar::tab { font-size: 10pt; }");
     layout->addWidget(tab_widget);
 
     tab_widget->addTab(create_labels_tab(), "Labels");
@@ -288,12 +329,22 @@ void DebuggerDialog::setupUI()
 
     QWidget *tabs = create_tab_panel();
 
+    QSplitter *splitter = new QSplitter(Qt::Vertical, this);
+    splitter->addWidget(panels);
+    splitter->addWidget(tabs);
+    splitter->setStretchFactor(0, 3);
+    splitter->setStretchFactor(1, 1);
+    splitter->setHandleWidth(4);
+    splitter->setStyleSheet(
+        "QSplitter::handle { background: #c8c8c8; }"
+        "QSplitter::handle:hover { background: #888888; }"
+    );
+    splitter->handle(1)->setAttribute(Qt::WA_Hover, true);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(toolbar);
     mainLayout->addWidget(shortcut_toolbar);
-    mainLayout->addWidget(panels);
-    mainLayout->addWidget(tabs);
+    mainLayout->addWidget(splitter);
     mainLayout->setMargin(0);
     mainLayout->setSpacing(0);
 

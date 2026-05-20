@@ -119,7 +119,10 @@ int main(int argc, char *argv[])
         "QRadioButton { font-size: 10pt; }"
         "QMenuBar     { font-size: 10pt; }"
         "QMenu        { font-size: 10pt; }"
+        "QTabWidget, QTabBar::tab { font-size: 10pt; }"
         "QLabel       { font-size: 10pt; }");
+
+        
 
     std::vector<std::string> args(argv + 1, argv + argc);
     std::string addr, speed, label, path;
