@@ -26,6 +26,8 @@ public:
     bool tryGetBreakpoint(offs_t address, Breakpoint &breakpoint);
     std::vector<Breakpoint> getBreakpoints();
     void setEnabled(offs_t address, bool enabled);
+    void enableBreakpoint(offs_t address);
+    void disableBreakpoint(offs_t address);
 
 private:
     std::unordered_map<offs_t, Breakpoint> breakpoints;

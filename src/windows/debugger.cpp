@@ -13,7 +13,7 @@ DebuggerDialog::DebuggerDialog() : DebuggerDialog(nullptr)
 	emu_set = false;
 }
 
-DebuggerDialog::DebuggerDialog(QWidget *parent) : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
+DebuggerDialog::DebuggerDialog(QWidget *parent) : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint | Qt::WindowMaximizeButtonHint)
 {
 }
 
@@ -215,6 +215,17 @@ void DebuggerDialog::select_disassembly_location(int index)
 	disassembly_view->set_range(device->get_start(), device->get_end(), device->get_mapped_memory());
 	disassembly_scrollbar->setValue(0);
 	populate_labels_table();
+	update_clear_ram_labels_state();
+}
+
+void DebuggerDialog::update_clear_ram_labels_state()
+{
+	if (!tab_clear_ram_labels_action)
+		return;
+	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
+	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
+	bool is_ram = device && QString::fromStdString(device->name).toLower().contains("ram");
+	tab_clear_ram_labels_action->setEnabled(is_ram);
 }
 
 void DebuggerDialog::update_memory_scrollbar(int value)
@@ -490,7 +501,6 @@ void DebuggerDialog::populate_breakpoints_table()
 		default: type_str = QString::number(bp.type); break;
 		}
 		breakpoints_table->setItem(row, 2, new QTableWidgetItem(type_str));
-		breakpoints_table->setItem(row, 3, new QTableWidgetItem(bp.description));
 	}
 
 	breakpoints_table->blockSignals(false);
@@ -499,7 +509,7 @@ void DebuggerDialog::populate_breakpoints_table()
 void DebuggerDialog::breakpoints_table_selection_changed()
 {
 	bool has_selection = !breakpoints_table->selectedItems().isEmpty();
-	remove_breakpoint_button->setEnabled(has_selection);
+	tab_remove_breakpoint_action->setEnabled(has_selection);
 }
 
 void DebuggerDialog::breakpoint_item_changed(QTableWidgetItem *item)
@@ -659,12 +669,6 @@ void DebuggerDialog::clear_labels()
 	populate_labels_table();
 }
 
-void DebuggerDialog::add_label()
-{
-	disassembly_view->addLabel();
-	reset_disassembly_view();
-	populate_labels_table();
-}
 
 void DebuggerDialog::populate_labels_table()
 {
@@ -702,9 +706,8 @@ void DebuggerDialog::populate_labels_table()
 void DebuggerDialog::labels_table_selection_changed()
 {
 	bool has_selection = !labels_table->selectedItems().isEmpty();
-	edit_label_button->setEnabled(has_selection);
-	remove_label_button->setEnabled(has_selection);
-	goto_label_button->setEnabled(has_selection);
+	tab_edit_label_action->setEnabled(has_selection);
+	tab_remove_label_action->setEnabled(has_selection);
 }
 
 void DebuggerDialog::goto_label_from_table()

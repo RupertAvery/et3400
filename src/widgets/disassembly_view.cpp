@@ -715,6 +715,7 @@ void DisassemblyView::showContextMenu(const QPoint &pos)
 		QAction addBreakpointAction("Add breakpoint", this);
 		QAction removeBreakpointAction("Remove breakpoint", this);
 		QAction disableBreakpointAction("Disable breakpoint", this);
+		QAction enableBreakpointAction("Enable breakpoint", this);
 
 		bool hasAction = false;
 
@@ -741,8 +742,23 @@ void DisassemblyView::showContextMenu(const QPoint &pos)
 			contextMenu.addSeparator();
 		}
 
-		if (emu_ptr->breakpoints->hasBreakpoint(line->address))
+		Breakpoint breakpoint;
+
+		if (emu_ptr->breakpoints->tryGetBreakpoint(line->address, breakpoint))
 		{
+			if (breakpoint.is_enabled)
+			{
+				connect(&disableBreakpointAction, &QAction::triggered, this, [this, line]
+						{ emu_ptr->breakpoints->disableBreakpoint(line->address); redraw(); emit onBreakpointChanged(); });
+				contextMenu.addAction(&disableBreakpointAction);
+			}
+			else
+			{
+				connect(&enableBreakpointAction, &QAction::triggered, this, [this, line]
+						{ emu_ptr->breakpoints->enableBreakpoint(line->address); redraw(); emit onBreakpointChanged(); });
+				contextMenu.addAction(&enableBreakpointAction);
+			}
+
 			connect(&removeBreakpointAction, &QAction::triggered, this, [this, line]
 					{ emu_ptr->breakpoints->removeBreakpoint(line->address); });
 			contextMenu.addAction(&removeBreakpointAction);

@@ -237,7 +237,7 @@ bool et3400emu::debugger_instruction_hook(uint32_t address)
 bool et3400emu::check_breakpoint(uint32_t address)
 {
     Breakpoint breakpoint;
-    if (breakpoints->tryGetBreakpoint(address, breakpoint) && last_pc != address)
+    if (breakpoints->tryGetBreakpoint(address, breakpoint) && last_pc != address && breakpoint.is_enabled)
     {
         if (breakpoint.is_hidden)
         {

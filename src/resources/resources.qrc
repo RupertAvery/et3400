@@ -42,9 +42,12 @@
         <file>buttons/key F_on.bmp</file>
         <file>buttons/Reset_on.bmp</file>
         <file>buttons/Add.png</file>
+        <file>buttons/Close.png</file>
+        <file>buttons/Edit.png</file>
         <file>buttons/BreakpointDisabled.png</file>
         <file>buttons/BreakpointEnabled.png</file>
         <file>buttons/BreakpointAvailable.png</file>
+        <file>buttons/GotoRow.png</file>
         <file>buttons/Remove.png</file>
         <file>buttons/Restart.png</file>
         <file>buttons/Run.png</file>
@@ -52,6 +55,7 @@
         <file>buttons/StepInto.png</file>
         <file>buttons/StepOut.png</file>
         <file>buttons/Stop.png</file>
+        <file>buttons/Trash.png</file>
         <file>rom/monitor.bin</file>
         <file>rom/monitor.map</file>
         <file>rom/fantomii.bin</file>

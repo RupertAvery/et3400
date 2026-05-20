@@ -23,6 +23,16 @@ void BreakpointManager::setEnabled(offs_t address, bool enabled)
         it->second.is_enabled = enabled;
 }
 
+void BreakpointManager::enableBreakpoint(offs_t address)
+{
+    setEnabled(address, true);
+}
+
+void BreakpointManager::disableBreakpoint(offs_t address)
+{
+    setEnabled(address, false);
+}
+
 bool BreakpointManager::tryGetBreakpoint(offs_t address, Breakpoint &breakpoint)
 {
     std::lock_guard<std::mutex> guard(_lock);

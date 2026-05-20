@@ -9,19 +9,10 @@ QToolBar *DebuggerDialog::create_menu_toolbar()
     QToolBar *toolbar = new QToolBar(this);
 
     QToolButton *file_button = create_file_menu(toolbar);
-    QToolButton *labels_button = create_labels_menu(toolbar);
     QToolButton *view_button = create_view_menu(toolbar);
 
-    // toolbar->setStyleSheet("QLabel { font-size:9pt; }");
-
-    // QLabel *memory_label = new QLabel("Memory");
-    // memory_label->setStyleSheet("margin: 0px 5px 0px 5px;");
-
-    // QLabel *disassembly_label = new QLabel("Disassembly");
-    // disassembly_label->setStyleSheet("margin: 0px 5px 0px 5px;");
     toolbar->addWidget(file_button);
     toolbar->addWidget(view_button);
-    toolbar->addWidget(labels_button);
 
     return toolbar;
 }
@@ -30,12 +21,12 @@ QToolBar *DebuggerDialog::create_shortcuts_toolbar()
 {
     QToolBar *shortcut_toolbar = new QToolBar(this);
 
-    MakeButton(shortcut_toolbar, start_button, "Run (F5)", ":/buttons/Run.png", Qt::Key_F5, start);
-    MakeButton(shortcut_toolbar, stop_button, "Stop (F4)", ":/buttons/Stop.png", Qt::Key_F4, stop);
-    MakeButton(shortcut_toolbar, step_over_button, "Step Over (F10)", ":/buttons/StepOver.png", Qt::Key_F10, step_over);
-    MakeButton(shortcut_toolbar, step_into_button, "Step Into (F11)", ":/buttons/StepInto.png", Qt::Key_F11, step_into);
-    MakeButton(shortcut_toolbar, step_out_button, "Step Out (Shift+F11)", ":/buttons/StepOut.png", Qt::SHIFT + Qt::Key_F11, step_out);
-    MakeButton(shortcut_toolbar, reset_button, "Reset (ESC)", ":/buttons/Restart.png", Qt::Key_Escape, reset);
+    MakeToolButton(shortcut_toolbar, start_button, "Run (F5)", ":/buttons/Run.png", Qt::Key_F5, start);
+    MakeToolButton(shortcut_toolbar, stop_button, "Stop (F4)", ":/buttons/Stop.png", Qt::Key_F4, stop);
+    MakeToolButton(shortcut_toolbar, step_over_button, "Step Over (F10)", ":/buttons/StepOver.png", Qt::Key_F10, step_over);
+    MakeToolButton(shortcut_toolbar, step_into_button, "Step Into (F11)", ":/buttons/StepInto.png", Qt::Key_F11, step_into);
+    MakeToolButton(shortcut_toolbar, step_out_button, "Step Out (Shift+F11)", ":/buttons/StepOut.png", Qt::SHIFT + Qt::Key_F11, step_out);
+    MakeToolButton(shortcut_toolbar, reset_button, "Reset (ESC)", ":/buttons/Restart.png", Qt::Key_Escape, reset);
 
     shortcut_toolbar->addWidget(start_button);
     shortcut_toolbar->addWidget(stop_button);
@@ -96,31 +87,6 @@ QToolButton *DebuggerDialog::create_file_menu(QToolBar *toolbar)
     return file_button;
 }
 
-QToolButton *DebuggerDialog::create_labels_menu(QToolBar *toolbar)
-{
-    QToolButton *labels_button = new QToolButton(toolbar);
-    labels_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    labels_button->setText("Labels   ");
-    labels_button->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
-
-    clear_labels_action = new QAction("Clear Labels (RAM)", this);
-    connect(clear_labels_action, &QAction::triggered, this, &DebuggerDialog::clear_labels);
-
-    add_label_action = new QAction("Add Label", this);
-    connect(add_label_action, &QAction::triggered, this, &DebuggerDialog::add_label);
-
-    MakeTriggeredAction(goto_label_action, "Goto Label", Qt::CTRL + Qt::Key_G, goto_label);
-
-    QMenu *labels_menu = new QMenu(labels_button);
-    // labels_selector_menu->setStyleSheet("QLabel { font-size:9pt; }");
-    labels_menu->addAction(add_label_action);
-    labels_menu->addAction(goto_label_action);
-    labels_menu->addSeparator();
-    labels_menu->addAction(clear_labels_action);
-    labels_button->setMenu(labels_menu);
-
-    return labels_button;
-}
 
 QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
 {
@@ -203,6 +169,7 @@ QGroupBox *DebuggerDialog::create_disassembly_group()
     connect(disassembly_view, &DisassemblyView::onAddBreakpoint, this, &DebuggerDialog::add_breakpoint);
     connect(disassembly_view, &DisassemblyView::onRemoveBreakpoint, this, &DebuggerDialog::remove_breakpoint);
     connect(disassembly_view, &DisassemblyView::onAddorRemoveBreakpoint, this, &DebuggerDialog::add_or_remove_breakpoint);
+    connect(disassembly_view, &DisassemblyView::onBreakpointChanged, this, &DebuggerDialog::populate_breakpoints_table);
 
     return disassembly_groupBox;
 }
@@ -246,23 +213,25 @@ QWidget *DebuggerDialog::create_labels_tab()
 {
     QWidget *tab = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(tab);
+    layout->setSpacing(0);
+    layout->setMargin(0);
 
-    QHBoxLayout *btn_layout = new QHBoxLayout();
-    QPushButton *add_btn = new QPushButton("Add", tab);
-    edit_label_button = new QPushButton("Edit", tab);
-    remove_label_button = new QPushButton("Remove", tab);
-    goto_label_button = new QPushButton("Goto", tab);
-    QPushButton *clear_ram_labels_btn = new QPushButton("Clear RAM Labels", tab);
-    edit_label_button->setEnabled(false);
-    remove_label_button->setEnabled(false);
-    goto_label_button->setEnabled(false);
+    QToolBar *toolbar = new QToolBar(tab);
+    toolbar->setMovable(false);
 
-    btn_layout->addWidget(add_btn);
-    btn_layout->addWidget(edit_label_button);
-    btn_layout->addWidget(remove_label_button);
-    btn_layout->addWidget(goto_label_button);
-    btn_layout->addStretch();
-    btn_layout->addWidget(clear_ram_labels_btn);
+    QAction *add_action = toolbar->addAction(QIcon(":/buttons/Add.png"), "Add");
+    tab_edit_label_action = toolbar->addAction(QIcon(":/buttons/Edit.png"), "Edit");
+    tab_remove_label_action = toolbar->addAction(QIcon(":/buttons/Remove.png"), "Remove");
+    tab_goto_label_action = toolbar->addAction(QIcon(":/buttons/GotoRow.png"), "Goto");
+    tab_edit_label_action->setEnabled(false);
+    tab_remove_label_action->setEnabled(false);
+
+    QWidget *spacer = new QWidget();
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    toolbar->addWidget(spacer);
+
+    tab_clear_ram_labels_action = toolbar->addAction(QIcon(":/buttons/Trash.png"), "Clear RAM Labels");
+    tab_clear_ram_labels_action->setEnabled(false);
 
     labels_table = new QTableWidget(tab);
     labels_table->setColumnCount(4);
@@ -273,15 +242,15 @@ QWidget *DebuggerDialog::create_labels_tab()
     labels_table->horizontalHeader()->setStretchLastSection(true);
     labels_table->verticalHeader()->setVisible(false);
 
-    layout->addLayout(btn_layout);
+    layout->addWidget(toolbar);
     layout->addWidget(labels_table);
     tab->setLayout(layout);
 
-    connect(add_btn, &QPushButton::clicked, this, &DebuggerDialog::add_label_from_table);
-    connect(edit_label_button, &QPushButton::clicked, this, &DebuggerDialog::edit_label_from_table);
-    connect(remove_label_button, &QPushButton::clicked, this, &DebuggerDialog::delete_label_from_table);
-    connect(goto_label_button, &QPushButton::clicked, this, &DebuggerDialog::goto_label_from_table);
-    connect(clear_ram_labels_btn, &QPushButton::clicked, this, &DebuggerDialog::clear_labels);
+    connect(add_action, &QAction::triggered, this, &DebuggerDialog::add_label_from_table);
+    connect(tab_edit_label_action, &QAction::triggered, this, &DebuggerDialog::edit_label_from_table);
+    connect(tab_remove_label_action, &QAction::triggered, this, &DebuggerDialog::delete_label_from_table);
+    connect(tab_goto_label_action, &QAction::triggered, this, &DebuggerDialog::goto_label);
+    connect(tab_clear_ram_labels_action, &QAction::triggered, this, &DebuggerDialog::clear_labels);
     connect(labels_table, &QTableWidget::itemSelectionChanged, this, &DebuggerDialog::labels_table_selection_changed);
     connect(labels_table, &QTableWidget::cellDoubleClicked, this, [this](int, int) { goto_label_from_table(); });
 
@@ -292,19 +261,19 @@ QWidget *DebuggerDialog::create_breakpoints_tab()
 {
     QWidget *tab = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(tab);
+    layout->setSpacing(0);
+    layout->setMargin(0);
 
-    QHBoxLayout *btn_layout = new QHBoxLayout();
-    QPushButton *add_btn = new QPushButton("Add", tab);
-    remove_breakpoint_button = new QPushButton("Remove", tab);
-    remove_breakpoint_button->setEnabled(false);
+    QToolBar *toolbar = new QToolBar(tab);
+    toolbar->setMovable(false);
 
-    btn_layout->addWidget(add_btn);
-    btn_layout->addWidget(remove_breakpoint_button);
-    btn_layout->addStretch();
+    QAction *add_action = toolbar->addAction(QIcon(":/buttons/Add.png"), "Add");
+    tab_remove_breakpoint_action = toolbar->addAction(QIcon(":/buttons/Remove.png"), "Remove");
+    tab_remove_breakpoint_action->setEnabled(false);
 
     breakpoints_table = new QTableWidget(tab);
-    breakpoints_table->setColumnCount(4);
-    breakpoints_table->setHorizontalHeaderLabels({"", "Address", "Type", "Description"});
+    breakpoints_table->setColumnCount(3);
+    breakpoints_table->setHorizontalHeaderLabels({"", "Address", "Type"});
     breakpoints_table->setSelectionBehavior(QAbstractItemView::SelectRows);
     breakpoints_table->setSelectionMode(QAbstractItemView::SingleSelection);
     breakpoints_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -313,12 +282,12 @@ QWidget *DebuggerDialog::create_breakpoints_tab()
     breakpoints_table->setColumnWidth(0, 24);
     breakpoints_table->verticalHeader()->setVisible(false);
 
-    layout->addLayout(btn_layout);
+    layout->addWidget(toolbar);
     layout->addWidget(breakpoints_table);
     tab->setLayout(layout);
 
-    connect(add_btn, &QPushButton::clicked, this, &DebuggerDialog::add_breakpoint_from_table);
-    connect(remove_breakpoint_button, &QPushButton::clicked, this, &DebuggerDialog::remove_breakpoint_from_table);
+    connect(add_action, &QAction::triggered, this, &DebuggerDialog::add_breakpoint_from_table);
+    connect(tab_remove_breakpoint_action, &QAction::triggered, this, &DebuggerDialog::remove_breakpoint_from_table);
     connect(breakpoints_table, &QTableWidget::itemSelectionChanged, this, &DebuggerDialog::breakpoints_table_selection_changed);
     connect(breakpoints_table, &QTableWidget::itemChanged, this, &DebuggerDialog::breakpoint_item_changed);
     connect(breakpoints_table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {

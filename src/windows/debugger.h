@@ -1,7 +1,7 @@
 #ifndef DEBUGGER_H
 #define DEBUGGER_H
 
-#define MakeButton(toolbar, button, toolTip, icon, seq, delegate) \
+#define MakeToolButton(toolbar, button, toolTip, icon, seq, delegate) \
 	button = new QToolButton();                                   \
 	button->setToolTip(toolTip);                                  \
 	button->setIcon(QIcon(icon));                                 \
@@ -113,11 +113,6 @@ private:
 	QAction *toggle_autorefresh_disassembly_action;
 	QAction *clear_ram_action;
 
-	QToolButton *labels_button;
-	QAction *clear_labels_action;
-	QAction *add_label_action;
-	QAction *goto_label_action;
-
 	QAction *breakpoint_handler_action;
 
 	MemoryView *memory_view = nullptr;
@@ -174,7 +169,6 @@ private:
 	void breakpoint_handler(bool checked);
 
 	void clear_labels();
-	void add_label();
 	void goto_label();
 	void add_label_from_table();
 	void edit_label_from_table();
@@ -188,6 +182,7 @@ private:
 	void breakpoints_table_selection_changed();
 	void breakpoint_item_changed(QTableWidgetItem *item);
 	void populate_breakpoints_table();
+	void update_clear_ram_labels_state();
 
 	void load_rom();
 	void load_ram();
@@ -204,12 +199,13 @@ private:
 	QGroupBox *status_groupBox = nullptr;
 
 	QTableWidget *labels_table = nullptr;
-	QPushButton *edit_label_button = nullptr;
-	QPushButton *remove_label_button = nullptr;
-	QPushButton *goto_label_button = nullptr;
+	QAction *tab_edit_label_action = nullptr;
+	QAction *tab_remove_label_action = nullptr;
+	QAction *tab_goto_label_action = nullptr;
+	QAction *tab_clear_ram_labels_action = nullptr;
 
 	QTableWidget *breakpoints_table = nullptr;
-	QPushButton *remove_breakpoint_button = nullptr;
+	QAction *tab_remove_breakpoint_action = nullptr;
 
 	QScrollBar *memory_scrollbar = nullptr;
 	QScrollBar *disassembly_scrollbar = nullptr;
@@ -219,7 +215,6 @@ private:
 
 	QToolButton *create_file_menu(QToolBar *toolbar);
 	QToolButton *create_view_menu(QToolBar *toolbar);
-	QToolButton *create_labels_menu(QToolBar *toolbar);
 
 	QGroupBox *create_status_group();
 	QGroupBox *create_disassembly_group();
