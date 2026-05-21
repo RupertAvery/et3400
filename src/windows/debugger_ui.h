@@ -147,6 +147,12 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     MakeToggledAction(toggle_memory_action, "Memory", Qt::CTRL + Qt::Key_M, toggle_memory_panel);
     MakeToggledAction(toggle_heat_map_action, "Heat Map", Qt::CTRL + Qt::Key_H, toggle_heat_map);
 
+    QAction *goto_label_action = new QAction("Goto Address/Label\tCtrl+G", this);
+    goto_label_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_G));
+    connect(goto_label_action, &QAction::triggered, this, &DebuggerDialog::goto_label);
+
+    view_menu->addAction(goto_label_action);
+    view_menu->addSeparator();
     view_menu->addAction(toggle_disassembly_action);
     view_menu->addAction(refresh_disassembly_action);
     view_menu->addAction(toggle_autorefresh_disassembly_action);
@@ -280,7 +286,6 @@ QWidget *DebuggerDialog::create_labels_tab()
     QAction *add_action = toolbar->addAction(QIcon(":/buttons/Add.png"), "Add");
     tab_edit_label_action = toolbar->addAction(QIcon(":/buttons/Edit.png"), "Edit");
     tab_remove_label_action = toolbar->addAction(QIcon(":/buttons/Remove.png"), "Remove");
-    tab_goto_label_action = toolbar->addAction(QIcon(":/buttons/GotoRow.png"), "Goto");
     tab_edit_label_action->setEnabled(false);
     tab_remove_label_action->setEnabled(false);
 
@@ -292,6 +297,9 @@ QWidget *DebuggerDialog::create_labels_tab()
     QAction *load_default_labels_action = toolbar->addAction(QIcon(":/buttons/Restart.png"), "Load Defaults");
     toolbar->addSeparator();
     tab_clear_ram_labels_action = toolbar->addAction(QIcon(":/buttons/Trash.png"), "Clear Labels");
+
+    toolbar->addSeparator();
+    tab_goto_label_action = toolbar->addAction(QIcon(":/buttons/GotoRow.png"), "Goto");
 
     labels_table = new QTableWidget(tab);
     labels_table->setColumnCount(4);
@@ -316,6 +324,16 @@ QWidget *DebuggerDialog::create_labels_tab()
     connect(tab_clear_ram_labels_action, &QAction::triggered, this, &DebuggerDialog::clear_labels);
     connect(labels_table, &QTableWidget::itemSelectionChanged, this, &DebuggerDialog::labels_table_selection_changed);
     connect(labels_table, &QTableWidget::cellDoubleClicked, this, [this](int, int) { goto_label_from_table(); });
+
+    labels_table->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(labels_table, &QTableWidget::customContextMenuRequested, this, [this](const QPoint &pos) {
+        if (labels_table->selectedItems().isEmpty())
+            return;
+        QMenu menu(this);
+        menu.addAction(tab_edit_label_action);
+        menu.addAction(tab_remove_label_action);
+        menu.exec(labels_table->viewport()->mapToGlobal(pos));
+    });
 
     return tab;
 }
@@ -372,6 +390,15 @@ QWidget *DebuggerDialog::create_breakpoints_tab()
         selectByAddress(device->get_start());
         disassembly_view->setSelected(address);
         disassembly_scrollbar->setValue(disassembly_view->offset);
+    });
+
+    breakpoints_table->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(breakpoints_table, &QTableWidget::customContextMenuRequested, this, [this](const QPoint &pos) {
+        if (breakpoints_table->selectedItems().isEmpty())
+            return;
+        QMenu menu(this);
+        menu.addAction(tab_remove_breakpoint_action);
+        menu.exec(breakpoints_table->viewport()->mapToGlobal(pos));
     });
 
     return tab;

@@ -7,7 +7,7 @@ GotoDialog::GotoDialog() : QDialog(0, Qt::WindowTitleHint | Qt::WindowSystemMenu
 	_selectedAddress = -1;
 
 	setFixedSize(QSize(350, 250));
-	setWindowTitle("Goto Address");
+	setWindowTitle("Goto Address/Label");
 }
 
 void GotoDialog::setupUi(QDialog *Dialog)

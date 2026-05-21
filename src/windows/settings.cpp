@@ -8,9 +8,10 @@ SettingsDialog::SettingsDialog()
 SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
     // setFixedSize(QSize(350, 250));
-    setWindowTitle("Settings");
 
     setupUi(this);
+
+    setWindowTitle("Settings");
 
     connect(radioButton_Hz, &QRadioButton::clicked, this, &SettingsDialog::setHz);
     connect(radioButton_kHz, &QRadioButton::clicked, this, &SettingsDialog::setkHz);

@@ -75,10 +75,9 @@ private:
     void setupUi(QDialog *Dialog)
     {
         if (Dialog->objectName().isEmpty())
-            Dialog->setObjectName(QStringLiteral("Dialog"));
+            Dialog->setObjectName(QStringLiteral("Settings"));
 
-            Dialog->resize(408, 280);
-
+        Dialog->resize(408, 280);
 
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));

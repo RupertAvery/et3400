@@ -612,7 +612,12 @@ void DebuggerDialog::reset_disassembly_view()
 
 void DebuggerDialog::save_labels()
 {
-	File::save_labels_dialog(this, emu_ptr);
+	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
+	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
+	if (device)
+		File::save_labels_dialog(this, emu_ptr, device->get_start(), device->get_end());
+	else
+		File::save_labels_dialog(this, emu_ptr);
 }
 
 void DebuggerDialog::after_load_rom()
@@ -862,6 +867,11 @@ void DebuggerDialog::load_default_labels()
 	else if (name.contains("monitor"))
 		mapPath = ":/rom/monitor.map";
 	else
+		return;
+
+	auto reply = QMessageBox::question(this, "Load Default Labels",
+		QString("Clear existing labels and load defaults for %1?").arg(QString::fromStdString(device->name)));
+	if (reply != QMessageBox::Yes)
 		return;
 
 	emu_ptr->labels->clearLabels(device->get_start(), device->get_end());
