@@ -59,6 +59,19 @@ void File::save_labels_dialog(QWidget *parent, et3400emu *emu_ptr)
 	LabelReader::Write(fileName, &filteredLabels, success);
 }
 
+void File::save_labels_dialog(QWidget *parent, et3400emu *emu_ptr, uint32_t start, uint32_t end)
+{
+	bool success;
+	QString fileName = QFileDialog::getSaveFileName(parent, "Save Labels", "", LabelFileExtensions + ";;" + AllFiles);
+
+	if (fileName == nullptr)
+		return;
+
+	std::vector<Label> filteredLabels = emu_ptr->labels->getLabels(start, end);
+
+	LabelReader::Write(fileName, &filteredLabels, success);
+}
+
 void File::load_breakpoint_dialog(QWidget *parent, et3400emu *emu_ptr)
 {
 	bool success;

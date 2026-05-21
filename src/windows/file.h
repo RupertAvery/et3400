@@ -20,6 +20,7 @@ public:
 
     static void load_labels_dialog(QWidget *parent, et3400emu *emu_ptr);
     static void save_labels_dialog(QWidget *parent, et3400emu *emu_ptr);
+    static void save_labels_dialog(QWidget *parent, et3400emu *emu_ptr, uint32_t start, uint32_t end);
 
     static void load_breakpoint_dialog(QWidget *parent, et3400emu *emu_ptr);
     static void save_breakpoint_dialog(QWidget *parent, et3400emu *emu_ptr);

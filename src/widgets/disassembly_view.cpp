@@ -604,7 +604,7 @@ void DisassemblyView::setEmulator(et3400emu *emu)
 
 void DisassemblyView::clearLabels()
 {
-	emu_ptr->labels->clearRamLabels();
+	emu_ptr->labels->clearLabels();
 	rebuild();
 }
 

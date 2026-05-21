@@ -291,8 +291,7 @@ QWidget *DebuggerDialog::create_labels_tab()
     toolbar->addSeparator();
     QAction *load_default_labels_action = toolbar->addAction(QIcon(":/buttons/Restart.png"), "Load Defaults");
     toolbar->addSeparator();
-    tab_clear_ram_labels_action = toolbar->addAction(QIcon(":/buttons/Trash.png"), "Clear RAM Labels");
-    tab_clear_ram_labels_action->setEnabled(false);
+    tab_clear_ram_labels_action = toolbar->addAction(QIcon(":/buttons/Trash.png"), "Clear Labels");
 
     labels_table = new QTableWidget(tab);
     labels_table->setColumnCount(4);

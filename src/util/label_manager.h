@@ -15,6 +15,8 @@ public:
     void removeLabel(Label *label);
     std::vector<Label> getLabels(uint32_t start, uint32_t end);
     void clearRamLabels();
+    void clearLabels();
+    void clearLabels(uint32_t start, uint32_t end);
     bool getIsDirty();
 
 private:

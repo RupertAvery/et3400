@@ -59,6 +59,25 @@ void LabelManager::addLabel(Label label)
 	_isDirty = true;
 }
 
+void LabelManager::clearLabels()
+{
+	_labels->clear();
+	_isDirty = true;
+}
+
+void LabelManager::clearLabels(uint32_t start, uint32_t end)
+{
+	auto it = _labels->begin();
+	while (it != _labels->end())
+	{
+		if (it->start >= start && it->start <= end)
+			it = _labels->erase(it);
+		else
+			++it;
+	}
+	_isDirty = true;
+}
+
 void LabelManager::clearRamLabels()
 {
 	std::vector<Label>::iterator current = _labels->begin();

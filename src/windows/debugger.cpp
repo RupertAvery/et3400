@@ -221,12 +221,8 @@ void DebuggerDialog::select_disassembly_location(int index)
 
 void DebuggerDialog::update_clear_ram_labels_state()
 {
-	if (!tab_clear_ram_labels_action)
-		return;
-	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
-	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
-	bool is_ram = device && QString::fromStdString(device->name).toLower().contains("ram");
-	tab_clear_ram_labels_action->setEnabled(is_ram);
+	if (tab_clear_ram_labels_action)
+		tab_clear_ram_labels_action->setEnabled(true);
 }
 
 void DebuggerDialog::update_memory_scrollbar(int value)
@@ -687,10 +683,17 @@ void DebuggerDialog::diassembly_refresh()
 
 void DebuggerDialog::clear_labels()
 {
-	auto reply = QMessageBox::question(this, "Clear Labels", "Clear all RAM labels?");
+	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
+	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
+	if (!device)
+		return;
+
+	auto reply = QMessageBox::question(this, "Clear Labels",
+		QString("Clear all labels for %1?").arg(QString::fromStdString(device->name)));
 	if (reply != QMessageBox::Yes)
 		return;
-	disassembly_view->clearLabels();
+
+	emu_ptr->labels->clearLabels(device->get_start(), device->get_end());
 	reset_disassembly_view();
 	populate_labels_table();
 }
@@ -846,9 +849,24 @@ void DebuggerDialog::load_default_labels()
 {
 	if (!emu_ptr)
 		return;
-	disassembly_view->clearLabels();
+
+	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
+	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
+	if (!device)
+		return;
+
+	QString name = QString::fromStdString(device->name).toLower();
+	QString mapPath;
+	if (name.contains("ram"))
+		mapPath = ":/ram/default.map";
+	else if (name.contains("monitor"))
+		mapPath = ":/rom/monitor.map";
+	else
+		return;
+
+	emu_ptr->labels->clearLabels(device->get_start(), device->get_end());
 	bool success;
-	File::load_labels(":/ram/default.map", emu_ptr, success);
+	File::load_labels(mapPath, emu_ptr, success);
 	reset_disassembly_view();
 	populate_labels_table();
 }
