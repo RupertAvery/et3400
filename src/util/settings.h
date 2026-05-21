@@ -9,6 +9,7 @@ struct Settings
     bool showMemoryView;
     bool autoRefreshDasm;
     bool autoRefreshMemory;
+    bool loadDefaultLabels;
     int clockRate;
 };
 

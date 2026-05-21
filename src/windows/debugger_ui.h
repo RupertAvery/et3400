@@ -11,10 +11,12 @@ QToolBar *DebuggerDialog::create_menu_toolbar()
     QToolButton *file_button = create_file_menu(toolbar);
     QToolButton *debug_button = create_debug_menu(toolbar);
     QToolButton *view_button = create_view_menu(toolbar);
+    QToolButton *settings_button = create_settings_menu(toolbar);
 
     toolbar->addWidget(file_button);
     toolbar->addWidget(debug_button);
     toolbar->addWidget(view_button);
+    toolbar->addWidget(settings_button);
 
     return toolbar;
 }
@@ -157,6 +159,25 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     return view_button;
 }
 
+
+QToolButton *DebuggerDialog::create_settings_menu(QToolBar *toolbar)
+{
+    QToolButton *settings_button = new QToolButton(toolbar);
+    settings_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    settings_button->setText("Settings   ");
+    settings_button->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
+
+    QMenu *settings_menu = new QMenu(settings_button);
+
+    MakeToggledActionNS(toggle_load_default_labels_action, "Load Default Labels (RAM)", toggle_load_default_labels);
+    settings_menu->addAction(toggle_load_default_labels_action);
+
+    settings_button->setMenu(settings_menu);
+
+    return settings_button;
+}
+
+
 QGroupBox *DebuggerDialog::create_status_group()
 {
     QGroupBox *status_groupBox = new QGroupBox("Status", this);
@@ -268,6 +289,8 @@ QWidget *DebuggerDialog::create_labels_tab()
     QAction *load_labels_action = toolbar->addAction(QIcon(":/buttons/OpenFile.png"), "Load Labels");
     QAction *save_labels_action = toolbar->addAction(QIcon(":/buttons/Save.png"), "Save Labels");
     toolbar->addSeparator();
+    QAction *load_default_labels_action = toolbar->addAction(QIcon(":/buttons/Restart.png"), "Load Defaults");
+    toolbar->addSeparator();
     tab_clear_ram_labels_action = toolbar->addAction(QIcon(":/buttons/Trash.png"), "Clear RAM Labels");
     tab_clear_ram_labels_action->setEnabled(false);
 
@@ -290,6 +313,7 @@ QWidget *DebuggerDialog::create_labels_tab()
     connect(tab_goto_label_action, &QAction::triggered, this, &DebuggerDialog::goto_label);
     connect(load_labels_action, &QAction::triggered, this, &DebuggerDialog::load_labels);
     connect(save_labels_action, &QAction::triggered, this, &DebuggerDialog::save_labels);
+    connect(load_default_labels_action, &QAction::triggered, this, &DebuggerDialog::load_default_labels);
     connect(tab_clear_ram_labels_action, &QAction::triggered, this, &DebuggerDialog::clear_labels);
     connect(labels_table, &QTableWidget::itemSelectionChanged, this, &DebuggerDialog::labels_table_selection_changed);
     connect(labels_table, &QTableWidget::cellDoubleClicked, this, [this](int, int) { goto_label_from_table(); });

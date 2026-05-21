@@ -313,6 +313,8 @@ void DebuggerDialog::set_settings(Settings *settings)
 	toggle_autorefresh_disassembly_action->setChecked(settings->autoRefreshDasm);
 	toggle_memory_action->setChecked(settings->showMemoryView);
 	toggle_heat_map_action->setChecked(settings->showHeatMap);
+	if (toggle_load_default_labels_action)
+		toggle_load_default_labels_action->setChecked(settings->loadDefaultLabels);
 
 	resize(sizeHint().width(), height());
 }
@@ -830,4 +832,23 @@ void DebuggerDialog::goto_label()
 		disassembly_view->setSelected(address);
 		disassembly_scrollbar->setValue(disassembly_view->offset);
 	}
+}
+
+void DebuggerDialog::toggle_load_default_labels(bool checked)
+{
+	if (!settings)
+		return;
+	settings->loadDefaultLabels = checked;
+	save_settings(settings);
+}
+
+void DebuggerDialog::load_default_labels()
+{
+	if (!emu_ptr)
+		return;
+	disassembly_view->clearLabels();
+	bool success;
+	File::load_labels(":/ram/default.map", emu_ptr, success);
+	reset_disassembly_view();
+	populate_labels_table();
 }

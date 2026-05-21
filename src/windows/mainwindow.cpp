@@ -325,6 +325,9 @@ void MainWindow::init_emu()
   File::load_labels(":/rom/monitor.map", emu, success);
   // emu->load_labels(":/rom/monitor.map");
   // emu->load_labels(":/rom/fantomii.map");
+
+  if (settings.loadDefaultLabels)
+    File::load_labels(":/ram/default.map", emu, success);
 }
 
 void MainWindow::execute_emu()

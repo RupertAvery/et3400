@@ -13,7 +13,7 @@ QString getSettingsPath(bool &success)
 
 Settings load_settings()
 {
-    Settings settings{false, false, true, true, false, true, 471000};
+    Settings settings{false, false, true, true, false, true, true, 471000};
 
     bool success;
     QString settingsFile = getSettingsPath(success);
@@ -53,6 +53,10 @@ Settings load_settings()
                 else if (list1.at(0) == "ShowHeatMap")
                 {
                     settings.showHeatMap = list1.at(1) == "true";
+                }
+                else if (list1.at(0) == "LoadDefaultLabels")
+                {
+                    settings.loadDefaultLabels = list1.at(1) == "true";
                 }
                 else if (list1.at(0) == "ClockRate")
                 {
@@ -101,6 +105,7 @@ void save_settings(Settings *settings)
         out << "ShowDisassemblerView=" << (settings->showDasmView ? "true" : "false") << "\r\n";
         out << "ShowMemoryView=" << (settings->showMemoryView ? "true" : "false") << "\r\n";
         out << "ShowHeatMap=" << (settings->showHeatMap ? "true" : "false") << "\r\n";
+        out << "LoadDefaultLabels=" << (settings->loadDefaultLabels ? "true" : "false") << "\r\n";
         out << "ClockRate=" << settings->clockRate;
 
         out.flush();

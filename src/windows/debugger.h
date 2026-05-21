@@ -111,6 +111,7 @@ private:
 	QAction *toggle_heat_map_action;
 	QAction *refresh_disassembly_action;
 	QAction *toggle_autorefresh_disassembly_action;
+	QAction *toggle_load_default_labels_action = nullptr;
 	QAction *clear_ram_action;
 
 	QAction *breakpoint_handler_action;
@@ -165,6 +166,8 @@ private:
 	void toggle_status_panel(bool checked);
 	void toggle_heat_map(bool checked);
 	void toggle_auto_refresh_disassembly_panel(bool checked);
+	void toggle_load_default_labels(bool checked);
+	void load_default_labels();
 
 	void pauseAndUpdateDisassembler();
 	void stepAndUpdateDisassembler();
@@ -224,6 +227,7 @@ private:
 	QToolButton *create_file_menu(QToolBar *toolbar);
 	QToolButton *create_debug_menu(QToolBar *toolbar);
 	QToolButton *create_view_menu(QToolBar *toolbar);
+	QToolButton *create_settings_menu(QToolBar *toolbar);
 
 	QGroupBox *create_status_group();
 	QGroupBox *create_disassembly_group();
