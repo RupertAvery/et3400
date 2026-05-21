@@ -71,9 +71,13 @@ void DisassemblyBuilder::build(std::vector<DisassemblyLine> *lines, offs_t start
 	{
 		if (hasLabels && address > label->start)
 		{
-			while (address > label->start)
+			while (label != labels->end() && address > label->start)
 			{
 				label++;
+			}
+			if (label == labels->end())
+			{
+				hasLabels = false;
 			}
 		}
 
