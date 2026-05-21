@@ -86,7 +86,7 @@ QToolButton *DebuggerDialog::create_file_menu(QToolBar *toolbar)
     connect(saveBrk_action, &QAction::triggered, this, &DebuggerDialog::save_breakpoints);
 
     connect(openMap_action, &QAction::triggered, this, &DebuggerDialog::load_labels);
-    connect(saveMap_action, &QAction::triggered, this, &DebuggerDialog::save_labels);
+    connect(saveMap_action, &QAction::triggered, this, &DebuggerDialog::save_ram_labels);
 
     return file_button;
 }

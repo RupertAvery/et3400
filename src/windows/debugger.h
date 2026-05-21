@@ -202,6 +202,7 @@ private:
 	void save_breakpoints();
 	void load_labels();
 	void save_labels();
+	void save_ram_labels();
 
 	void reset_disassembly_view();
 

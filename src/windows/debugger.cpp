@@ -610,6 +610,13 @@ void DebuggerDialog::reset_disassembly_view()
 	disassembly_scrollbar->setValue(0);
 }
 
+void DebuggerDialog::save_ram_labels()
+{
+	memory_mapped_device *device = emu_ptr->memory_map->try_get_block_device("RAM");
+	if (device)
+		File::save_labels_dialog(this, emu_ptr, device->get_start(), device->get_end());
+}
+
 void DebuggerDialog::save_labels()
 {
 	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
