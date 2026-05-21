@@ -1,4 +1,5 @@
 #include "debugger.h"
+#include <QMessageBox>
 #include "debugger_ui.h"
 #include "goto.h"
 #include "label.h"
@@ -337,6 +338,16 @@ void DebuggerDialog::update_button_state()
 	step_over_button->setEnabled(!running);
 	step_out_button->setEnabled(!running);
 	reset_button->setEnabled(running);
+
+	if (debug_run_action)
+	{
+		debug_run_action->setEnabled(!running);
+		debug_stop_action->setEnabled(running);
+		debug_step_into_action->setEnabled(!running);
+		debug_step_over_action->setEnabled(!running);
+		debug_step_out_action->setEnabled(!running);
+		debug_reset_action->setEnabled(running);
+	}
 }
 
 void DebuggerDialog::memory_slider_moved(int value)
@@ -547,6 +558,16 @@ void DebuggerDialog::remove_breakpoint_from_table()
 	disassembly_view->rebuild();
 }
 
+void DebuggerDialog::clear_breakpoints()
+{
+	auto reply = QMessageBox::question(this, "Clear Breakpoints", "Clear all breakpoints?");
+	if (reply != QMessageBox::Yes)
+		return;
+	emu_ptr->breakpoints->clearBreakpoints();
+	populate_breakpoints_table();
+	disassembly_view->rebuild();
+}
+
 void DebuggerDialog::load_rom()
 {
 	File::load_rom_dialog(this, emu_ptr, parent_window->load_rom_settings);
@@ -664,6 +685,9 @@ void DebuggerDialog::diassembly_refresh()
 
 void DebuggerDialog::clear_labels()
 {
+	auto reply = QMessageBox::question(this, "Clear Labels", "Clear all RAM labels?");
+	if (reply != QMessageBox::Yes)
+		return;
 	disassembly_view->clearLabels();
 	reset_disassembly_view();
 	populate_labels_table();

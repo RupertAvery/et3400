@@ -2,6 +2,7 @@
 #include "memory_dev.h"
 #include "string.h"
 #include <string>
+#include "../util/log.h"
 
 memory_device::memory_device(std::string name, offs_t start, size_t size, bool readonly)
 {

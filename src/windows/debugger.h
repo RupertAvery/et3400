@@ -115,6 +115,13 @@ private:
 
 	QAction *breakpoint_handler_action;
 
+	QAction *debug_run_action = nullptr;
+	QAction *debug_stop_action = nullptr;
+	QAction *debug_step_over_action = nullptr;
+	QAction *debug_step_into_action = nullptr;
+	QAction *debug_step_out_action = nullptr;
+	QAction *debug_reset_action = nullptr;
+
 	MemoryView *memory_view = nullptr;
 	DisassemblyView *disassembly_view = nullptr;
 	StatusView *status_view = nullptr;
@@ -179,6 +186,7 @@ private:
 
 	void add_breakpoint_from_table();
 	void remove_breakpoint_from_table();
+	void clear_breakpoints();
 	void breakpoints_table_selection_changed();
 	void breakpoint_item_changed(QTableWidgetItem *item);
 	void populate_breakpoints_table();
@@ -214,6 +222,7 @@ private:
 	QToolBar *create_shortcuts_toolbar();
 
 	QToolButton *create_file_menu(QToolBar *toolbar);
+	QToolButton *create_debug_menu(QToolBar *toolbar);
 	QToolButton *create_view_menu(QToolBar *toolbar);
 
 	QGroupBox *create_status_group();

@@ -16,6 +16,7 @@ public:
     void addBreakpoint(offs_t address, bool hidden = false);
     void addBreakpoints(std::vector<Breakpoint> *newBreakpoints);
     void clearRamBreakpoints();
+    void clearBreakpoints();
     void removeBreakpoint(offs_t address);
     void addOrRemoveBreakpoint(offs_t address);
     bool hasBreakpoint(offs_t address);

@@ -93,6 +93,18 @@ void BreakpointManager::clearRamBreakpoints()
     }
 }
 
+void BreakpointManager::clearBreakpoints()
+{
+    std::lock_guard<std::mutex> guard(_lock);
+    for (auto it = breakpoints.begin(); it != breakpoints.end();)
+    {
+        if (!it->second.is_hidden)
+            it = breakpoints.erase(it);
+        else
+            ++it;
+    }
+}
+
 void BreakpointManager::loadBreakpoints(QString path, bool &success)
 {
     std::vector<Breakpoint> *loaded = BreakpointReader::Read(path, success);

@@ -9,9 +9,11 @@ QToolBar *DebuggerDialog::create_menu_toolbar()
     QToolBar *toolbar = new QToolBar(this);
 
     QToolButton *file_button = create_file_menu(toolbar);
+    QToolButton *debug_button = create_debug_menu(toolbar);
     QToolButton *view_button = create_view_menu(toolbar);
 
     toolbar->addWidget(file_button);
+    toolbar->addWidget(debug_button);
     toolbar->addWidget(view_button);
 
     return toolbar;
@@ -87,6 +89,45 @@ QToolButton *DebuggerDialog::create_file_menu(QToolBar *toolbar)
     return file_button;
 }
 
+QToolButton *DebuggerDialog::create_debug_menu(QToolBar *toolbar)
+{
+    QToolButton *debug_button = new QToolButton(toolbar);
+    debug_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    debug_button->setText("Debug   ");
+    debug_button->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
+
+    QMenu *debug_menu = new QMenu(debug_button);
+
+    debug_run_action       = new QAction(QIcon(":/buttons/Run.png"),     "Run\tF5",             this);
+    debug_stop_action      = new QAction(QIcon(":/buttons/Stop.png"),    "Stop\tF4",            this);
+    debug_step_over_action = new QAction(QIcon(":/buttons/StepOver.png"),"Step Over\tF10",      this);
+    debug_step_into_action = new QAction(QIcon(":/buttons/StepInto.png"),"Step Into\tF11",      this);
+    debug_step_out_action  = new QAction(QIcon(":/buttons/StepOut.png"), "Step Out\tShift+F11", this);
+    debug_reset_action     = new QAction(QIcon(":/buttons/Restart.png"), "Reset\tEsc",          this);
+
+    debug_menu->addAction(debug_run_action);
+    debug_menu->addAction(debug_stop_action);
+    debug_menu->addSeparator();
+    debug_menu->addAction(debug_step_over_action);
+    debug_menu->addAction(debug_step_into_action);
+    debug_menu->addAction(debug_step_out_action);
+    debug_menu->addSeparator();
+    debug_menu->addAction(debug_reset_action);
+    debug_menu->addSeparator();
+    MakeTriggeredActionNS(clear_ram_action, "Clear RAM", clear_ram);
+    debug_menu->addAction(clear_ram_action);
+
+    debug_button->setMenu(debug_menu);
+
+    connect(debug_run_action,       &QAction::triggered, this, &DebuggerDialog::start);
+    connect(debug_stop_action,      &QAction::triggered, this, &DebuggerDialog::stop);
+    connect(debug_step_over_action, &QAction::triggered, this, &DebuggerDialog::step_over);
+    connect(debug_step_into_action, &QAction::triggered, this, &DebuggerDialog::step_into);
+    connect(debug_step_out_action,  &QAction::triggered, this, &DebuggerDialog::step_out);
+    connect(debug_reset_action,     &QAction::triggered, this, &DebuggerDialog::reset);
+
+    return debug_button;
+}
 
 QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
 {
@@ -104,16 +145,12 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     MakeToggledAction(toggle_memory_action, "Memory", Qt::CTRL + Qt::Key_M, toggle_memory_panel);
     MakeToggledAction(toggle_heat_map_action, "Heat Map", Qt::CTRL + Qt::Key_H, toggle_heat_map);
 
-    MakeTriggeredActionNS(clear_ram_action, "Clear RAM", clear_ram);
-
     view_menu->addAction(toggle_disassembly_action);
     view_menu->addAction(refresh_disassembly_action);
     view_menu->addAction(toggle_autorefresh_disassembly_action);
     view_menu->addSeparator();
     view_menu->addAction(toggle_memory_action);
     view_menu->addAction(toggle_heat_map_action);
-    view_menu->addSeparator();
-    view_menu->addAction(clear_ram_action);
 
     view_button->setMenu(view_menu);
 
@@ -226,10 +263,11 @@ QWidget *DebuggerDialog::create_labels_tab()
     tab_edit_label_action->setEnabled(false);
     tab_remove_label_action->setEnabled(false);
 
-    QWidget *spacer = new QWidget();
-    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    toolbar->addWidget(spacer);
+    toolbar->addSeparator();
 
+    QAction *load_labels_action = toolbar->addAction(QIcon(":/buttons/OpenFile.png"), "Load Labels");
+    QAction *save_labels_action = toolbar->addAction(QIcon(":/buttons/Save.png"), "Save Labels");
+    toolbar->addSeparator();
     tab_clear_ram_labels_action = toolbar->addAction(QIcon(":/buttons/Trash.png"), "Clear RAM Labels");
     tab_clear_ram_labels_action->setEnabled(false);
 
@@ -250,6 +288,8 @@ QWidget *DebuggerDialog::create_labels_tab()
     connect(tab_edit_label_action, &QAction::triggered, this, &DebuggerDialog::edit_label_from_table);
     connect(tab_remove_label_action, &QAction::triggered, this, &DebuggerDialog::delete_label_from_table);
     connect(tab_goto_label_action, &QAction::triggered, this, &DebuggerDialog::goto_label);
+    connect(load_labels_action, &QAction::triggered, this, &DebuggerDialog::load_labels);
+    connect(save_labels_action, &QAction::triggered, this, &DebuggerDialog::save_labels);
     connect(tab_clear_ram_labels_action, &QAction::triggered, this, &DebuggerDialog::clear_labels);
     connect(labels_table, &QTableWidget::itemSelectionChanged, this, &DebuggerDialog::labels_table_selection_changed);
     connect(labels_table, &QTableWidget::cellDoubleClicked, this, [this](int, int) { goto_label_from_table(); });
@@ -271,6 +311,13 @@ QWidget *DebuggerDialog::create_breakpoints_tab()
     tab_remove_breakpoint_action = toolbar->addAction(QIcon(":/buttons/Remove.png"), "Remove");
     tab_remove_breakpoint_action->setEnabled(false);
 
+    toolbar->addSeparator();
+
+    QAction *load_breakpoints_action = toolbar->addAction(QIcon(":/buttons/OpenFile.png"), "Load Breakpoints");
+    QAction *save_breakpoints_action = toolbar->addAction(QIcon(":/buttons/Save.png"), "Save Breakpoints");
+    toolbar->addSeparator();
+    QAction *clear_breakpoints_action = toolbar->addAction(QIcon(":/buttons/Trash.png"), "Clear Breakpoints");
+
     breakpoints_table = new QTableWidget(tab);
     breakpoints_table->setColumnCount(3);
     breakpoints_table->setHorizontalHeaderLabels({"", "Address", "Type"});
@@ -288,6 +335,9 @@ QWidget *DebuggerDialog::create_breakpoints_tab()
 
     connect(add_action, &QAction::triggered, this, &DebuggerDialog::add_breakpoint_from_table);
     connect(tab_remove_breakpoint_action, &QAction::triggered, this, &DebuggerDialog::remove_breakpoint_from_table);
+    connect(load_breakpoints_action, &QAction::triggered, this, &DebuggerDialog::load_breakpoints);
+    connect(save_breakpoints_action, &QAction::triggered, this, &DebuggerDialog::save_breakpoints);
+    connect(clear_breakpoints_action, &QAction::triggered, this, &DebuggerDialog::clear_breakpoints);
     connect(breakpoints_table, &QTableWidget::itemSelectionChanged, this, &DebuggerDialog::breakpoints_table_selection_changed);
     connect(breakpoints_table, &QTableWidget::itemChanged, this, &DebuggerDialog::breakpoint_item_changed);
     connect(breakpoints_table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
