@@ -459,6 +459,15 @@ void DebuggerDialog::resizeEvent(QResizeEvent *event)
 			  << "status_groupBox width:" << status_groupBox->width();
 }
 
+void DebuggerDialog::closeEvent(QCloseEvent *event)
+{
+	if (labels_dialog) labels_dialog->close();
+	if (breakpoints_dialog) breakpoints_dialog->close();
+	if (emu_ptr && !emu_ptr->get_running())
+		emu_ptr->resume();
+	QDialog::closeEvent(event);
+}
+
 void DebuggerDialog::load_rom()
 {
 	File::load_rom_dialog(this, emu_ptr, parent_window->load_rom_settings);

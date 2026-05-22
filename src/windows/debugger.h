@@ -61,6 +61,7 @@ class MainWindow;
 #include <QDebug>
 #include <QComboBox>
 #include <QKeyEvent>
+#include <QCloseEvent>
 #include <QMenu>
 #include <QToolButton>
 #include <QSizeGrip>
@@ -112,6 +113,7 @@ protected:
 	void keyPressEvent(QKeyEvent *event) override;
 	void keyReleaseEvent(QKeyEvent *event) override;
 	void resizeEvent(QResizeEvent *event) override;
+	void closeEvent(QCloseEvent *event) override;
 
 private:
 	QToolButton *start_button;
