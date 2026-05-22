@@ -259,7 +259,7 @@ void LabelsDialog::clear_labels()
 
 void LabelsDialog::load_labels()
 {
-    File::load_labels_dialog(this, debugger->emu_ptr);
+    File::load_labels_dialog(this, debugger->emu_ptr, debugger->get_settings()->labelsDir);
     debugger->reset_disassembly_view();
     populate_labels_table();
 }

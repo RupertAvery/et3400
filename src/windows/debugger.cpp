@@ -483,19 +483,19 @@ void DebuggerDialog::closeEvent(QCloseEvent *event)
 
 void DebuggerDialog::load_rom()
 {
-	File::load_rom_dialog(this, emu_ptr, parent_window->load_rom_settings);
+	File::load_rom_dialog(this, emu_ptr, parent_window->load_rom_settings, settings->romDir);
 	after_load_rom();
 }
 
 void DebuggerDialog::load_ram()
 {
-	File::load_ram_dialog(this, emu_ptr, parent_window->load_ram_settings);
+	File::load_ram_dialog(this, emu_ptr, parent_window->load_ram_settings, settings->ramDir);
 	after_load_ram();
 }
 
 void DebuggerDialog::save_ram()
 {
-	File::save_ram_dialog(this, emu_ptr, parent_window->save_ram_settings);
+	File::save_ram_dialog(this, emu_ptr, parent_window->save_ram_settings, settings->ramDir);
 }
 
 
@@ -512,7 +512,7 @@ void DebuggerDialog::save_ram_labels()
 {
 	memory_mapped_device *device = emu_ptr->memory_map->try_get_block_device("RAM");
 	if (device)
-		File::save_labels_dialog(this, emu_ptr, device->get_start(), device->get_end());
+		File::save_labels_dialog(this, emu_ptr, device->get_start(), device->get_end(), settings->labelsDir);
 }
 
 void DebuggerDialog::save_labels()
@@ -520,9 +520,9 @@ void DebuggerDialog::save_labels()
 	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
 	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
 	if (device)
-		File::save_labels_dialog(this, emu_ptr, device->get_start(), device->get_end());
+		File::save_labels_dialog(this, emu_ptr, device->get_start(), device->get_end(), settings->labelsDir);
 	else
-		File::save_labels_dialog(this, emu_ptr);
+		File::save_labels_dialog(this, emu_ptr, settings->labelsDir);
 }
 
 void DebuggerDialog::after_load_rom()
@@ -614,10 +614,22 @@ void DebuggerDialog::goto_label()
 
 void DebuggerDialog::load_labels()
 {
-	File::load_labels_dialog(this, emu_ptr);
+	File::load_labels_dialog(this, emu_ptr, settings->labelsDir);
 	reset_disassembly_view();
 	if (labels_dialog)
 		labels_dialog->populate_labels_table();
+}
+
+void DebuggerDialog::load_breakpoints()
+{
+	File::load_breakpoint_dialog(this, emu_ptr, settings->breakpointsDir);
+	populate_breakpoints_table();
+	disassembly_view->rebuild();
+}
+
+void DebuggerDialog::save_breakpoints()
+{
+	File::save_breakpoint_dialog(this, emu_ptr, settings->breakpointsDir);
 }
 
 void DebuggerDialog::load_default_labels()
@@ -681,13 +693,3 @@ void DebuggerDialog::set_breakpoint_enabled(offs_t address, bool enabled)
 	populate_breakpoints_table();
 }
 
-void DebuggerDialog::load_breakpoints()
-{
-	File::load_breakpoint_dialog(this, emu_ptr);
-	disassembly_view->rebuild();
-}
-
-void DebuggerDialog::save_breakpoints()
-{
-	File::save_breakpoint_dialog(this, emu_ptr);
-}

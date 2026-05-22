@@ -105,6 +105,7 @@ public:
 
 	void reset_disassembly_view();
 	memory_mapped_device *get_disassembly_device();
+	Settings *get_settings() const { return settings; }
 
 	et3400emu *emu_ptr = nullptr;
 	DisassemblyView *disassembly_view = nullptr;

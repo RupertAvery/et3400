@@ -152,19 +152,19 @@ void MainWindow::show_settings()
 
 void MainWindow::load_rom()
 {
-  File::load_rom_dialog(this, emu, load_rom_settings);
+  File::load_rom_dialog(this, emu, load_rom_settings, settings.romDir);
   debugger_dialog->after_load_rom();
 }
 
 void MainWindow::load_ram()
 {
-  File::load_ram_dialog(this, emu, load_ram_settings);
+  File::load_ram_dialog(this, emu, load_ram_settings, settings.ramDir);
   debugger_dialog->after_load_ram();
 }
 
 void MainWindow::save_ram()
 {
-  File::save_ram_dialog(this, emu, save_ram_settings);
+  File::save_ram_dialog(this, emu, save_ram_settings, settings.ramDir);
 }
 
 void MainWindow::updatecps()

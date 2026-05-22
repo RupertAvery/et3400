@@ -1,6 +1,8 @@
 #ifndef SETTINGS_INI_H
 #define SETTINGS_INI_H
 
+#include <QString>
+
 struct Settings
 {
     bool showTips;
@@ -17,6 +19,10 @@ struct Settings
     int debuggerY;
     int debuggerWidth;
     int debuggerHeight;
+    QString romDir;
+    QString ramDir;
+    QString labelsDir;
+    QString breakpointsDir;
 };
 
 Settings load_settings();

@@ -173,12 +173,12 @@ void BreakpointsDialog::populate_breakpoints_table()
 
 void BreakpointsDialog::load_breakpoints()
 {
-	File::load_breakpoint_dialog(this, debugger->emu_ptr);
-    populate_breakpoints_table();
+	File::load_breakpoint_dialog(this, debugger->emu_ptr, debugger->get_settings()->breakpointsDir);
+	populate_breakpoints_table();
 	debugger->disassembly_view->rebuild();
 }
 
 void BreakpointsDialog::save_breakpoints()
 {
-	File::save_breakpoint_dialog(this, debugger->emu_ptr);
+	File::save_breakpoint_dialog(this, debugger->emu_ptr, debugger->get_settings()->breakpointsDir);
 }
