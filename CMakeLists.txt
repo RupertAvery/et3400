@@ -25,6 +25,7 @@ set(WINDOWS_SRC
     ${WIDGETS_SRC} 
     src/windows/mainwindow.cpp 
     src/windows/about.cpp 
+    src/windows/breakpoints.cpp 
     src/windows/save.cpp  
     src/windows/load.cpp  
     src/windows/clear_ram.cpp  
@@ -32,6 +33,7 @@ set(WINDOWS_SRC
     src/windows/debugger.cpp 
     src/windows/file.cpp 
     src/windows/label.cpp 
+    src/windows/labels.cpp 
     src/windows/remove_label.cpp 
     src/windows/tips.cpp 
     src/windows/goto.cpp 

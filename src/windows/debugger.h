@@ -2,10 +2,10 @@
 #define DEBUGGER_H
 
 #define MakeToolButton(toolbar, button, toolTip, icon, seq, delegate) \
-	button = new QToolButton();                                   \
-	button->setToolTip(toolTip);                                  \
-	button->setIcon(QIcon(icon));                                 \
-	button->setShortcut(QKeySequence(seq));                       \
+	button = new QToolButton();                                       \
+	button->setToolTip(toolTip);                                      \
+	button->setIcon(QIcon(icon));                                     \
+	button->setShortcut(QKeySequence(seq));                           \
 	connect(button, &QToolButton::clicked, this, &DebuggerDialog::delegate)
 
 #define MakeTriggeredActionNS(action, name, delegate) \
@@ -39,6 +39,8 @@
 #include "file.h"
 #include "save.h"
 #include "clear_ram.h"
+#include "labels.h"
+#include "breakpoints.h"
 
 class MainWindow;
 
@@ -85,6 +87,27 @@ public:
 	void after_load_ram();
 	void after_load_rom();
 
+	void goto_address(offs_t address);
+
+	void set_breakpoint_enabled(offs_t address, bool enabled);
+
+	void populate_breakpoints_table();
+	void update_clear_ram_labels_state();
+
+	void goto_label();
+	void load_labels();
+	void save_labels();
+	void load_default_labels();
+
+	void load_breakpoints();
+	void save_breakpoints();
+
+	void reset_disassembly_view();
+	memory_mapped_device *get_disassembly_device();
+
+	et3400emu *emu_ptr = nullptr;
+	DisassemblyView *disassembly_view = nullptr;
+
 protected:
 	void keyPressEvent(QKeyEvent *event) override;
 	void keyReleaseEvent(QKeyEvent *event) override;
@@ -124,10 +147,8 @@ private:
 	QAction *debug_reset_action = nullptr;
 
 	MemoryView *memory_view = nullptr;
-	DisassemblyView *disassembly_view = nullptr;
 	StatusView *status_view = nullptr;
 
-	et3400emu *emu_ptr = nullptr;
 	Settings *settings = nullptr;
 	ClearRamSettings clearRamSettings{0x0000, 0x01FF, 0x00};
 
@@ -167,7 +188,6 @@ private:
 	void toggle_heat_map(bool checked);
 	void toggle_auto_refresh_disassembly_panel(bool checked);
 	void toggle_load_default_labels(bool checked);
-	void load_default_labels();
 
 	void pauseAndUpdateDisassembler();
 	void stepAndUpdateDisassembler();
@@ -178,49 +198,24 @@ private:
 
 	void breakpoint_handler(bool checked);
 
-	void clear_labels();
-	void goto_label();
-	void add_label_from_table();
-	void edit_label_from_table();
-	void delete_label_from_table();
-	void goto_label_from_table();
-	void labels_table_selection_changed();
-	void populate_labels_table();
-
-	void add_breakpoint_from_table();
-	void remove_breakpoint_from_table();
-	void clear_breakpoints();
-	void breakpoints_table_selection_changed();
-	void breakpoint_item_changed(QTableWidgetItem *item);
-	void populate_breakpoints_table();
-	void update_clear_ram_labels_state();
-
 	void load_rom();
 	void load_ram();
 	void save_ram();
-	void load_breakpoints();
-	void save_breakpoints();
-	void load_labels();
-	void save_labels();
-	void save_ram_labels();
 
-	void reset_disassembly_view();
+	void save_ram_labels();
 
 	QGroupBox *memory_groupBox = nullptr;
 	QGroupBox *disassembly_groupBox = nullptr;
 	QGroupBox *status_groupBox = nullptr;
 
-	QTableWidget *labels_table = nullptr;
-	QAction *tab_edit_label_action = nullptr;
-	QAction *tab_remove_label_action = nullptr;
-	QAction *tab_goto_label_action = nullptr;
-	QAction *tab_clear_ram_labels_action = nullptr;
-
-	QTableWidget *breakpoints_table = nullptr;
-	QAction *tab_remove_breakpoint_action = nullptr;
+	LabelsDialog *labels_dialog = nullptr;
+	BreakpointsDialog *breakpoints_dialog = nullptr;
 
 	QScrollBar *memory_scrollbar = nullptr;
 	QScrollBar *disassembly_scrollbar = nullptr;
+
+	void show_labels_dialog();
+	void show_breakpoints_dialog();
 
 	QToolBar *create_menu_toolbar();
 	QToolBar *create_shortcuts_toolbar();
@@ -233,10 +228,6 @@ private:
 	QGroupBox *create_status_group();
 	QGroupBox *create_disassembly_group();
 	QGroupBox *create_memory_group();
-	QWidget *create_tab_panel();
-
-	QWidget *create_labels_tab();
-	QWidget *create_breakpoints_tab();
 };
 
 #endif // DEBUGGER_H

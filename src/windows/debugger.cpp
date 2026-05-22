@@ -215,15 +215,15 @@ void DebuggerDialog::select_disassembly_location(int index)
 
 	disassembly_view->set_range(device->get_start(), device->get_end(), device->get_mapped_memory());
 	disassembly_scrollbar->setValue(0);
-	populate_labels_table();
+	labels_dialog->populate_labels_table();
 	update_clear_ram_labels_state();
 }
 
-void DebuggerDialog::update_clear_ram_labels_state()
-{
-	if (tab_clear_ram_labels_action)
-		tab_clear_ram_labels_action->setEnabled(true);
-}
+// void DebuggerDialog::update_clear_ram_labels_state()
+// {
+// 	if (tab_clear_ram_labels_action)
+// 		tab_clear_ram_labels_action->setEnabled(true);
+// }
 
 void DebuggerDialog::update_memory_scrollbar(int value)
 {
@@ -461,111 +461,6 @@ void DebuggerDialog::resizeEvent(QResizeEvent *event)
 			  << "status_groupBox width:" << status_groupBox->width();
 }
 
-void DebuggerDialog::add_breakpoint(offs_t address)
-{
-	emu_ptr->add_breakpoint(address);
-	populate_breakpoints_table();
-}
-
-void DebuggerDialog::remove_breakpoint(offs_t address)
-{
-	emu_ptr->remove_breakpoint(address);
-	populate_breakpoints_table();
-}
-
-void DebuggerDialog::add_or_remove_breakpoint(offs_t address)
-{
-	emu_ptr->add_or_remove_breakpoint(address);
-	populate_breakpoints_table();
-}
-
-void DebuggerDialog::populate_breakpoints_table()
-{
-	if (!breakpoints_table || !emu_ptr)
-		return;
-
-	breakpoints_table->blockSignals(true);
-	breakpoints_table->setRowCount(0);
-
-	auto bps = emu_ptr->breakpoints->getBreakpoints();
-	for (const auto &bp : bps)
-	{
-		int row = breakpoints_table->rowCount();
-		breakpoints_table->insertRow(row);
-
-		auto *check_item = new QTableWidgetItem();
-		check_item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-		check_item->setCheckState(bp.is_enabled ? Qt::Checked : Qt::Unchecked);
-		check_item->setData(Qt::UserRole, bp.address);
-		breakpoints_table->setItem(row, 0, check_item);
-
-		breakpoints_table->setItem(row, 1, new QTableWidgetItem(toHex(bp.address)));
-
-		QString type_str;
-		switch (bp.type)
-		{
-		case 0: type_str = "Execute"; break;
-		case 1: type_str = "Read";    break;
-		case 2: type_str = "Write";   break;
-		default: type_str = QString::number(bp.type); break;
-		}
-		breakpoints_table->setItem(row, 2, new QTableWidgetItem(type_str));
-	}
-
-	breakpoints_table->blockSignals(false);
-}
-
-void DebuggerDialog::breakpoints_table_selection_changed()
-{
-	bool has_selection = !breakpoints_table->selectedItems().isEmpty();
-	tab_remove_breakpoint_action->setEnabled(has_selection);
-}
-
-void DebuggerDialog::breakpoint_item_changed(QTableWidgetItem *item)
-{
-	if (item->column() != 0)
-		return;
-	offs_t address = (offs_t)item->data(Qt::UserRole).toUInt();
-	emu_ptr->breakpoints->setEnabled(address, item->checkState() == Qt::Checked);
-}
-
-void DebuggerDialog::add_breakpoint_from_table()
-{
-	bool ok;
-	QString text = QInputDialog::getText(this, "Add Breakpoint", "Address (hex):", QLineEdit::Normal, "", &ok);
-	if (!ok || text.trimmed().isEmpty())
-		return;
-
-	offs_t address = (offs_t)text.toUInt(&ok, 16);
-	if (!ok)
-		return;
-
-	emu_ptr->add_breakpoint(address);
-	populate_breakpoints_table();
-}
-
-void DebuggerDialog::remove_breakpoint_from_table()
-{
-	int row = breakpoints_table->currentRow();
-	if (row < 0)
-		return;
-
-	offs_t address = (offs_t)breakpoints_table->item(row, 0)->data(Qt::UserRole).toUInt();
-	emu_ptr->remove_breakpoint(address);
-	populate_breakpoints_table();
-	disassembly_view->rebuild();
-}
-
-void DebuggerDialog::clear_breakpoints()
-{
-	auto reply = QMessageBox::question(this, "Clear Breakpoints", "Clear all breakpoints?");
-	if (reply != QMessageBox::Yes)
-		return;
-	emu_ptr->breakpoints->clearBreakpoints();
-	populate_breakpoints_table();
-	disassembly_view->rebuild();
-}
-
 void DebuggerDialog::load_rom()
 {
 	File::load_rom_dialog(this, emu_ptr, parent_window->load_rom_settings);
@@ -583,23 +478,6 @@ void DebuggerDialog::save_ram()
 	File::save_ram_dialog(this, emu_ptr, parent_window->save_ram_settings);
 }
 
-void DebuggerDialog::load_breakpoints()
-{
-	File::load_breakpoint_dialog(this, emu_ptr);
-	disassembly_view->rebuild();
-}
-
-void DebuggerDialog::save_breakpoints()
-{
-	File::save_breakpoint_dialog(this, emu_ptr);
-}
-
-void DebuggerDialog::load_labels()
-{
-	File::load_labels_dialog(this, emu_ptr);
-	reset_disassembly_view();
-	populate_labels_table();
-}
 
 void DebuggerDialog::reset_disassembly_view()
 {
@@ -693,141 +571,6 @@ void DebuggerDialog::diassembly_refresh()
 	disassembly_view->rebuild();
 }
 
-void DebuggerDialog::clear_labels()
-{
-	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
-	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
-	if (!device)
-		return;
-
-	auto reply = QMessageBox::question(this, "Clear Labels",
-		QString("Clear all labels for %1?").arg(QString::fromStdString(device->name)));
-	if (reply != QMessageBox::Yes)
-		return;
-
-	emu_ptr->labels->clearLabels(device->get_start(), device->get_end());
-	reset_disassembly_view();
-	populate_labels_table();
-}
-
-
-void DebuggerDialog::populate_labels_table()
-{
-	if (!labels_table || !emu_ptr)
-		return;
-
-	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
-	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
-
-	labels_table->setRowCount(0);
-	auto *all_labels = emu_ptr->labels->getLabels();
-	for (int i = 0; i < (int)all_labels->size(); i++)
-	{
-		const Label &label = all_labels->at(i);
-		if (device && (label.start < (uint32_t)device->get_start() || label.start > (uint32_t)device->get_end()))
-			continue;
-		int row = labels_table->rowCount();
-		labels_table->insertRow(row);
-		auto *start_item = new QTableWidgetItem(toHex(label.start));
-		start_item->setData(Qt::UserRole, i);
-		labels_table->setItem(row, 0, start_item);
-		labels_table->setItem(row, 1, new QTableWidgetItem(toHex(label.end)));
-		QString type_str;
-		switch (label.type)
-		{
-		case LabelType::COMMENT:  type_str = "Comment";  break;
-		case LabelType::DATA:     type_str = "Data";     break;
-		case LabelType::ASSEMBLY: type_str = "Assembly"; break;
-		}
-		labels_table->setItem(row, 2, new QTableWidgetItem(type_str));
-		labels_table->setItem(row, 3, new QTableWidgetItem(label.comment));
-	}
-}
-
-void DebuggerDialog::labels_table_selection_changed()
-{
-	bool has_selection = !labels_table->selectedItems().isEmpty();
-	tab_edit_label_action->setEnabled(has_selection);
-	tab_remove_label_action->setEnabled(has_selection);
-}
-
-void DebuggerDialog::goto_label_from_table()
-{
-	int row = labels_table->currentRow();
-	if (row < 0)
-		return;
-
-	int idx = labels_table->item(row, 0)->data(Qt::UserRole).toInt();
-	auto *labels = emu_ptr->labels->getLabels();
-	if (idx >= (int)labels->size())
-		return;
-
-	offs_t address = labels->at(idx).start;
-	memory_mapped_device *device = emu_ptr->get_block_device(address);
-	if (!device)
-		return;
-
-	selectByAddress(device->get_start());
-	disassembly_view->setSelected(address);
-	disassembly_scrollbar->setValue(disassembly_view->offset);
-}
-
-void DebuggerDialog::add_label_from_table()
-{
-	LabelDialog labelDialog;
-	labelDialog.setLabel(LabelInfo{"", LabelType::COMMENT, 0, 0}, LabelDialogMode::Add);
-
-	if (labelDialog.exec() == QDialog::Accepted)
-	{
-		LabelInfo info = labelDialog.getLabel();
-		emu_ptr->labels->addLabel(Label{info.start, info.end, info.type, info.text});
-		populate_labels_table();
-		reset_disassembly_view();
-	}
-}
-
-void DebuggerDialog::edit_label_from_table()
-{
-	int row = labels_table->currentRow();
-	if (row < 0)
-		return;
-
-	int idx = labels_table->item(row, 0)->data(Qt::UserRole).toInt();
-	auto *labels = emu_ptr->labels->getLabels();
-	if (idx >= (int)labels->size())
-		return;
-
-	Label &label = labels->at(idx);
-	LabelDialog labelDialog;
-	labelDialog.setLabel(LabelInfo{label.comment, label.type, label.start, label.end}, LabelDialogMode::Edit);
-
-	if (labelDialog.exec() == QDialog::Accepted)
-	{
-		LabelInfo info = labelDialog.getLabel();
-		label.comment = info.text;
-		label.type = info.type;
-		label.start = info.start;
-		label.end = info.end;
-		populate_labels_table();
-		reset_disassembly_view();
-	}
-}
-
-void DebuggerDialog::delete_label_from_table()
-{
-	int row = labels_table->currentRow();
-	if (row < 0)
-		return;
-
-	int idx = labels_table->item(row, 0)->data(Qt::UserRole).toInt();
-	auto *labels = emu_ptr->labels->getLabels();
-	if (idx >= (int)labels->size())
-		return;
-
-	emu_ptr->labels->removeLabel(&labels->at(idx));
-	populate_labels_table();
-	reset_disassembly_view();
-}
 
 void DebuggerDialog::goto_label()
 {
@@ -849,6 +592,44 @@ void DebuggerDialog::goto_label()
 	}
 }
 
+void DebuggerDialog::load_labels()
+{
+	File::load_labels_dialog(this, emu_ptr);
+	reset_disassembly_view();
+	if (labels_dialog)
+		labels_dialog->populate_labels_table();
+}
+
+void DebuggerDialog::load_default_labels()
+{
+	if (labels_dialog)
+		labels_dialog->load_default_labels();
+}
+
+void DebuggerDialog::populate_breakpoints_table()
+{
+	if (breakpoints_dialog)
+		breakpoints_dialog->populate_breakpoints_table();
+}
+
+void DebuggerDialog::update_clear_ram_labels_state()
+{
+}
+
+void DebuggerDialog::show_labels_dialog()
+{
+	labels_dialog->show();
+	labels_dialog->raise();
+	labels_dialog->activateWindow();
+}
+
+void DebuggerDialog::show_breakpoints_dialog()
+{
+	breakpoints_dialog->show();
+	breakpoints_dialog->raise();
+	breakpoints_dialog->activateWindow();
+}
+
 void DebuggerDialog::toggle_load_default_labels(bool checked)
 {
 	if (!settings)
@@ -857,33 +638,44 @@ void DebuggerDialog::toggle_load_default_labels(bool checked)
 	save_settings(settings);
 }
 
-void DebuggerDialog::load_default_labels()
+memory_mapped_device *DebuggerDialog::get_disassembly_device()
 {
-	if (!emu_ptr)
-		return;
-
 	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
 	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
-	if (!device)
-		return;
+	return device;
+}
 
-	QString name = QString::fromStdString(device->name).toLower();
-	QString mapPath;
-	if (name.contains("ram"))
-		mapPath = ":/ram/default.map";
-	else if (name.contains("monitor"))
-		mapPath = ":/rom/monitor.map";
-	else
-		return;
+void DebuggerDialog::add_breakpoint(offs_t address)
+{
+	emu_ptr->add_breakpoint(address);
+	populate_breakpoints_table();
+}
 
-	auto reply = QMessageBox::question(this, "Load Default Labels",
-		QString("Clear existing labels and load defaults for %1?").arg(QString::fromStdString(device->name)));
-	if (reply != QMessageBox::Yes)
-		return;
+void DebuggerDialog::remove_breakpoint(offs_t address)
+{
+	emu_ptr->remove_breakpoint(address);
+	populate_breakpoints_table();
+}
 
-	emu_ptr->labels->clearLabels(device->get_start(), device->get_end());
-	bool success;
-	File::load_labels(mapPath, emu_ptr, success);
-	reset_disassembly_view();
-	populate_labels_table();
+void DebuggerDialog::add_or_remove_breakpoint(offs_t address)
+{
+	emu_ptr->add_or_remove_breakpoint(address);
+	populate_breakpoints_table();
+}
+
+void DebuggerDialog::set_breakpoint_enabled(offs_t address, bool enabled)
+{
+	emu_ptr->breakpoints->setEnabled(address, enabled);
+	populate_breakpoints_table();
+}
+
+void DebuggerDialog::load_breakpoints()
+{
+	File::load_breakpoint_dialog(this, emu_ptr);
+	disassembly_view->rebuild();
+}
+
+void DebuggerDialog::save_breakpoints()
+{
+	File::save_breakpoint_dialog(this, emu_ptr);
 }
