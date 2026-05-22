@@ -309,8 +309,6 @@ void DebuggerDialog::set_settings(Settings *settings)
 	toggle_autorefresh_disassembly_action->setChecked(settings->autoRefreshDasm);
 	toggle_memory_action->setChecked(settings->showMemoryView);
 	toggle_heat_map_action->setChecked(settings->showHeatMap);
-	if (toggle_load_default_labels_action)
-		toggle_load_default_labels_action->setChecked(settings->loadDefaultLabels);
 
 	resize(sizeHint().width(), height());
 }
@@ -628,14 +626,6 @@ void DebuggerDialog::show_breakpoints_dialog()
 	breakpoints_dialog->show();
 	breakpoints_dialog->raise();
 	breakpoints_dialog->activateWindow();
-}
-
-void DebuggerDialog::toggle_load_default_labels(bool checked)
-{
-	if (!settings)
-		return;
-	settings->loadDefaultLabels = checked;
-	save_settings(settings);
 }
 
 memory_mapped_device *DebuggerDialog::get_disassembly_device()

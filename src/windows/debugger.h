@@ -134,7 +134,6 @@ private:
 	QAction *toggle_heat_map_action;
 	QAction *refresh_disassembly_action;
 	QAction *toggle_autorefresh_disassembly_action;
-	QAction *toggle_load_default_labels_action = nullptr;
 	QAction *clear_ram_action;
 
 	QAction *breakpoint_handler_action;

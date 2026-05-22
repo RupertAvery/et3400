@@ -184,9 +184,6 @@ QToolButton *DebuggerDialog::create_settings_menu(QToolBar *toolbar)
 
     QMenu *settings_menu = new QMenu(settings_button);
 
-    MakeToggledActionNS(toggle_load_default_labels_action, "Load Default Labels (RAM)", toggle_load_default_labels);
-    settings_menu->addAction(toggle_load_default_labels_action);
-
     settings_button->setMenu(settings_menu);
 
     return settings_button;
