@@ -338,7 +338,7 @@ void DebuggerDialog::update_button_state()
 	stop_button->setEnabled(running);
 	step_into_button->setEnabled(!running);
 	step_over_button->setEnabled(!running);
-	step_out_button->setEnabled(!running);
+	//step_out_button->setEnabled(!running);
 	reset_button->setEnabled(running);
 
 	if (debug_run_action)
@@ -347,7 +347,7 @@ void DebuggerDialog::update_button_state()
 		debug_stop_action->setEnabled(running);
 		debug_step_into_action->setEnabled(!running);
 		debug_step_over_action->setEnabled(!running);
-		debug_step_out_action->setEnabled(!running);
+		//debug_step_out_action->setEnabled(!running);
 		debug_reset_action->setEnabled(running);
 	}
 }

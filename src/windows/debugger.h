@@ -121,7 +121,7 @@ private:
 	QToolButton *stop_button;
 	QToolButton *step_into_button;
 	QToolButton *step_over_button;
-	QToolButton *step_out_button;
+	//QToolButton *step_out_button;
 	QToolButton *reset_button;
 
 	// QSlider* slider;
@@ -145,7 +145,7 @@ private:
 	QAction *debug_stop_action = nullptr;
 	QAction *debug_step_over_action = nullptr;
 	QAction *debug_step_into_action = nullptr;
-	QAction *debug_step_out_action = nullptr;
+	//QAction *debug_step_out_action = nullptr;
 	QAction *debug_reset_action = nullptr;
 
 	MemoryView *memory_view = nullptr;
