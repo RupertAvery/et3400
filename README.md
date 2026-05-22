@@ -341,6 +341,29 @@ The sample programs source code are available in Motorola S-record and Intel HEX
 
 These files can be loaded directly into the emulator
 
+# Emulation Quirks
+
+## ET3400 EXAM and Debugger Disassembly / Memory values disagree when examining stack addresses
+
+If you press `EXAM 00D0` and work your way though the stack by pressed `FWD` you will find that at some addresses the value displayed in the ET3400 seven-segment display do not agree with the values shown in the Disassembly and Memory panes in the Debugger.
+
+This is not a bug. The code that displays the stack unfortunately uses the stack as well, and for a brief moment when the ROM code is reading memory to be displayed, it reads whatever value is at the memory address. The code continues, overwriting the stack as it goes along. The final value ends up being shown in the debugger. This is the actual current value in memory, while the value displayed in the trainer is the one it read while trying to read from the stack it was writing to at the same time.
+
+## Breakpoints at the start address entered in DO are never hit
+
+If you have a program that starts at `0000` for example, and you add an emulator breakpoint at that address, and start the program with `DO 0000`, the breakpoint will never be hit.
+
+This is because the ROM will do one of 2 things:
+
+* If the instruction at the start address is a JSR, it will copy the address into the stack and perform an RTI directly to the target of your JSR instruction.
+* If the instruction at the start address is not a JSR, it will copy the instruction and arguments into the stack and append with two SWI instructions, and setup the stack and perform an RTI to the copy of your instruction.
+
+The code that does this is the SSTEP (Single Step routine) at ROM address `FE6B`.
+
+
+##
+
+
 # Development
 
 The code is cross-platofrm and can be compiled and executed on Windows and Linux. Mac OS is probably also possible, but I haven't tested it.
