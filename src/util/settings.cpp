@@ -13,7 +13,7 @@ QString getSettingsPath(bool &success)
 
 Settings load_settings()
 {
-    Settings settings{false, false, true, true, false, true, 471000};
+    Settings settings{false, false, true, true, false, true, 471000, -1, -1, false, -1, -1, -1, -1};
 
     bool success;
     QString settingsFile = getSettingsPath(success);
@@ -58,6 +58,34 @@ Settings load_settings()
                 {
                     settings.clockRate = list1.at(1).toInt();
                 }
+                else if (list1.at(0) == "MainWindowX")
+                {
+                    settings.mainWindowX = list1.at(1).toInt();
+                }
+                else if (list1.at(0) == "MainWindowY")
+                {
+                    settings.mainWindowY = list1.at(1).toInt();
+                }
+                else if (list1.at(0) == "DebuggerVisible")
+                {
+                    settings.debuggerVisible = list1.at(1) == "true";
+                }
+                else if (list1.at(0) == "DebuggerX")
+                {
+                    settings.debuggerX = list1.at(1).toInt();
+                }
+                else if (list1.at(0) == "DebuggerY")
+                {
+                    settings.debuggerY = list1.at(1).toInt();
+                }
+                else if (list1.at(0) == "DebuggerWidth")
+                {
+                    settings.debuggerWidth = list1.at(1).toInt();
+                }
+                else if (list1.at(0) == "DebuggerHeight")
+                {
+                    settings.debuggerHeight = list1.at(1).toInt();
+                }
                 LOG_DEBUG << "Settings entry:" << list1;
             }
         }
@@ -101,7 +129,14 @@ void save_settings(Settings *settings)
         out << "ShowDisassemblerView=" << (settings->showDasmView ? "true" : "false") << "\r\n";
         out << "ShowMemoryView=" << (settings->showMemoryView ? "true" : "false") << "\r\n";
         out << "ShowHeatMap=" << (settings->showHeatMap ? "true" : "false") << "\r\n";
-        out << "ClockRate=" << settings->clockRate;
+        out << "ClockRate=" << settings->clockRate << "\r\n";
+        out << "MainWindowX=" << settings->mainWindowX << "\r\n";
+        out << "MainWindowY=" << settings->mainWindowY << "\r\n";
+        out << "DebuggerVisible=" << (settings->debuggerVisible ? "true" : "false") << "\r\n";
+        out << "DebuggerX=" << settings->debuggerX << "\r\n";
+        out << "DebuggerY=" << settings->debuggerY << "\r\n";
+        out << "DebuggerWidth=" << settings->debuggerWidth << "\r\n";
+        out << "DebuggerHeight=" << settings->debuggerHeight;
 
         out.flush();
 

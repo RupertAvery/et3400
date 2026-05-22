@@ -10,6 +10,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
   settings = load_settings();
 
+  if (settings.mainWindowX >= 0)
+    move(settings.mainWindowX, settings.mainWindowY);
+
   settings_dialog = new SettingsDialog(this);
   debugger_dialog = new DebuggerDialog;
 
@@ -173,9 +176,13 @@ void MainWindow::updatecps()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+  settings.debuggerVisible = debugger_dialog->isVisible();
+  settings.mainWindowX = pos().x();
+  settings.mainWindowY = pos().y();
+  debugger_dialog->close();  // saves debugger geometry, resumes emu if paused
   if (emu)
     emu->stop();
-  debugger_dialog->close();
+  save_settings(&settings);
 }
 
 MainWindow::~MainWindow()
@@ -353,7 +360,7 @@ void MainWindow::execute_emu()
 
   emu->start();
 
-  if (showDebugger)
+  if (showDebugger || settings.debuggerVisible)
   {
     show_debugger();
   }

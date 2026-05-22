@@ -10,6 +10,13 @@ struct Settings
     bool autoRefreshDasm;
     bool autoRefreshMemory;
     int clockRate;
+    int mainWindowX;
+    int mainWindowY;
+    bool debuggerVisible;
+    int debuggerX;
+    int debuggerY;
+    int debuggerWidth;
+    int debuggerHeight;
 };
 
 Settings load_settings();

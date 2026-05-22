@@ -310,7 +310,13 @@ void DebuggerDialog::set_settings(Settings *settings)
 	toggle_memory_action->setChecked(settings->showMemoryView);
 	toggle_heat_map_action->setChecked(settings->showHeatMap);
 
-	resize(sizeHint().width(), height());
+	if (settings->debuggerWidth > 0 && settings->debuggerHeight > 0)
+		resize(settings->debuggerWidth, settings->debuggerHeight);
+	else
+		resize(sizeHint().width(), height());
+
+	if (settings->debuggerX >= 0 && settings->debuggerY >= 0)
+		move(settings->debuggerX, settings->debuggerY);
 }
 
 void DebuggerDialog::set_parent_window(MainWindow *parent)
@@ -463,6 +469,13 @@ void DebuggerDialog::closeEvent(QCloseEvent *event)
 {
 	if (labels_dialog) labels_dialog->close();
 	if (breakpoints_dialog) breakpoints_dialog->close();
+	if (settings)
+	{
+		settings->debuggerX = pos().x();
+		settings->debuggerY = pos().y();
+		settings->debuggerWidth = width();
+		settings->debuggerHeight = height();
+	}
 	if (emu_ptr && !emu_ptr->get_running())
 		emu_ptr->resume();
 	QDialog::closeEvent(event);
