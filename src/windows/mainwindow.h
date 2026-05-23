@@ -58,10 +58,10 @@ public:
 private:
   long long last_cycles;
   Settings settings;
-  Display *display;
-  Keypad *keypad;
-  SettingsDialog *settings_dialog;
-  DebuggerDialog *debugger_dialog;
+  Display *display = nullptr;
+  Keypad *keypad = nullptr;
+  SettingsDialog *settings_dialog = nullptr;
+  DebuggerDialog *debugger_dialog = nullptr;
   et3400emu *emu = nullptr;
   int16_t startAddress = -1;
   bool showDebugger = false;

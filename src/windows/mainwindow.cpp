@@ -14,7 +14,6 @@ MainWindow::MainWindow(QWidget *parent)
     move(settings.mainWindowX, settings.mainWindowY);
 
   settings_dialog = new SettingsDialog(this);
-  debugger_dialog = new DebuggerDialog;
 
   // Menu
 
@@ -133,9 +132,23 @@ void MainWindow::fps()
 
 void MainWindow::show_debugger()
 {
-  debugger_dialog->set_emulator(emu);
-  debugger_dialog->set_parent_window(this);
-  debugger_dialog->show();
+  if (debugger_dialog == nullptr)
+  {
+    debugger_dialog = new DebuggerDialog;
+    debugger_dialog->set_emulator(emu);
+    debugger_dialog->set_parent_window(this);
+    debugger_dialog->setAttribute(Qt::WA_DeleteOnClose);
+    connect(debugger_dialog, &QObject::destroyed, this, [this]()
+            { debugger_dialog = nullptr; });
+    debugger_dialog->set_settings(&settings);
+    debugger_dialog->show();
+  }
+  else if (debugger_dialog->isVisible())
+  {
+    debugger_dialog->raise();
+    debugger_dialog->activateWindow();
+    return;
+  }
 }
 
 void MainWindow::show_about()
@@ -153,13 +166,15 @@ void MainWindow::show_settings()
 void MainWindow::load_rom()
 {
   File::load_rom_dialog(this, emu, load_rom_settings, settings.romDir);
-  debugger_dialog->after_load_rom();
+  if (debugger_dialog)
+    debugger_dialog->after_load_rom();
 }
 
 void MainWindow::load_ram()
 {
   File::load_ram_dialog(this, emu, load_ram_settings, settings.ramDir);
-  debugger_dialog->after_load_ram();
+  if (debugger_dialog)
+    debugger_dialog->after_load_ram();
 }
 
 void MainWindow::save_ram()
@@ -176,24 +191,39 @@ void MainWindow::updatecps()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-  settings.debuggerVisible = debugger_dialog->isVisible();
+  settings.debuggerVisible = debugger_dialog && debugger_dialog->isVisible();
   settings.mainWindowX = pos().x();
   settings.mainWindowY = pos().y();
-  debugger_dialog->close();  // saves debugger geometry, resumes emu if paused
+
+  if (debugger_dialog)
+    debugger_dialog->close(); // saves debugger geometry, resumes emu if paused
+
   if (emu)
     emu->stop();
+
   save_settings(&settings);
 }
 
 MainWindow::~MainWindow()
 {
   LOG_DEBUG << "Main destroy";
+
   emu->stop();
+
   delete emu;
-  delete display;
-  delete keypad;
-  delete settings_dialog;
-  delete debugger_dialog;
+
+  if (display)
+    delete display;
+
+  if (keypad)
+    delete keypad;
+
+  if (settings_dialog)
+    delete settings_dialog;
+
+  if (debugger_dialog)
+    delete debugger_dialog;
+
   LOG_DEBUG << "Main destroy done";
 }
 
@@ -338,14 +368,10 @@ void MainWindow::init_emu()
 
 void MainWindow::execute_emu()
 {
-
-  LOG_DEBUG << "Setting up debugger";
-  debugger_dialog->set_emulator(emu);
-  debugger_dialog->set_settings(&settings);
-
   LOG_DEBUG << "Setting up event handlers";
   keypad->device->on_reset_press = [this]
   { emu->reset(); };
+  
   emu->on_render_frame = [this]
   { display->update_display(); };
 
