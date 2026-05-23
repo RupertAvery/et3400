@@ -7,6 +7,7 @@ MemoryView::MemoryView(QWidget *parent)
 	// setMidLineWidth(0);
 	setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
 	setLineWidth(3);
+	setFocusPolicy(Qt::StrongFocus); 
 
 	// setBackgroundRole(QPalette::Base);
 	// setAutoFillBackground(true);

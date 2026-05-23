@@ -8,6 +8,7 @@ DisassemblyView::DisassemblyView(QWidget *parent)
 	// setMidLineWidth(0);
 	setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
 	setLineWidth(3);
+	setFocusPolicy(Qt::StrongFocus);
 
 	// setBackgroundRole(QPalette::Base);
 	// setAutoFillBackground(true);
@@ -110,15 +111,21 @@ void DisassemblyView::bufferDraw()
 	QColor green = QColor("#38761D");
 
 	QBrush selected_brush = QBrush(QColor("#0000FF"));
+	QBrush selected_nofocus_brush = QBrush(QColor("#c0c0c0"));
 	QBrush breakpoint_brush = QBrush(QColor("#8B0000"));
 	QBrush current_brush = QBrush(QColor("#fff181"));
 	QBrush current_selected_brush = QBrush(QColor("#81ffaf"));
 
 	QColor white = QColor("#FFFFFF");
 
+	bool hasFocus = this->hasFocus();
+
 	// emu_ptr->breakpoints->lock();
 
 	int linesSize = lines->size();
+		
+	QBrush background_brush;
+
 
 	while (ctr < linesSize && ctr < offset + visible_items && ctr - visible_items + 1 < max_vscroll)
 	{
@@ -149,32 +156,41 @@ void DisassemblyView::bufferDraw()
 		else if (ctr == hover_row && !is_comment)
 		{
 			painter.drawPixmap(2, y - 13, 16, 16, breakpoint_available_icon);
-			// painter.save();
-			// painter.setPen(QPen(Qt::red, 1.5));
-			// painter.setBrush(Qt::NoBrush);
-			// painter.drawEllipse(3, y - 12, 13, 13);
-			// painter.restore();
 		}
 
 		const int yOffset = 13;
 		const int xOffset = 20;
 		const int breakpoint_width = 22;
 
+		background_brush = Qt::NoBrush;
+
 		if (is_current && is_selected)
 		{
-			painter.fillRect(xOffset, y - yOffset, width() - breakpoint_width, item_height - 2, current_selected_brush);
+			background_brush = current_selected_brush;
 		}
 		else if (is_current)
 		{
-			painter.fillRect(xOffset, y - yOffset, width() - breakpoint_width, item_height - 2, current_brush);
+			background_brush = current_brush;
 		}
 		else if (is_selected)
 		{
-			painter.fillRect(xOffset, y - yOffset, width() - breakpoint_width, item_height - 2, selected_brush);
+			if (hasFocus)
+			{
+				background_brush = selected_brush;
+			}
+			else
+			{
+				background_brush = selected_nofocus_brush;
+			}
 		}
 		else if (has_breakpoint)
 		{
-			painter.fillRect(xOffset, y - yOffset, width() - breakpoint_width, item_height - 2, breakpoint_brush);
+			background_brush = breakpoint_brush;
+		}
+
+		if (background_brush.style() != Qt::NoBrush)
+		{
+			painter.fillRect(xOffset, y - yOffset, width() - breakpoint_width, item_height - 2, background_brush);
 		}
 
 		painter.restore();
@@ -191,7 +207,7 @@ void DisassemblyView::bufferDraw()
 			insgtruction_color = black;
 			operand_color = black;
 		}
-		else if (is_selected)
+		else if (is_selected && hasFocus)
 		{
 			address_color = white;
 			opcode_color = white;
