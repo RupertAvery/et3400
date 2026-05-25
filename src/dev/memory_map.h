@@ -7,13 +7,12 @@
 #include "memory_mapped_device.h"
 #include "../util/breakpoint_manager.h"
 
+
 class MemoryMapManager
 {
 public:
     MemoryMapManager();
     ~MemoryMapManager();
-
-    BreakpointManager *breakpoints = nullptr;
 
     void map(memory_mapped_device *device);
     void unmap(memory_mapped_device *device);
@@ -27,6 +26,7 @@ public:
 private:
     const int BLOCK_SIZE = 1024;
     mapped_memory_block blocks[64];
+    uint8_t last_write;
 };
 
 #endif // MEMORY_MAP_H

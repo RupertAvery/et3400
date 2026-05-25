@@ -13,7 +13,6 @@ et3400emu::et3400emu(keypad_io *keypad_dev, display_io *display_dev)
     memory_map = new MemoryMapManager;
     breakpoints = new BreakpointManager;
     labels = new LabelManager;
-    memory_map->breakpoints = breakpoints;
 
     device = new m6800_cpu_device(memory_map);
 

@@ -108,6 +108,11 @@ bool keypad_io::is_mapped(offs_t addr)
 }
 
 
+uint8_t keypad_io::get_flags()
+{
+    return DEVICE_READ;
+}
+
 uint8_t *keypad_io::get_mapped_memory()
 {
 	return memory;

@@ -29,6 +29,11 @@ bool display_io::is_mapped(offs_t addr)
 	return addr >= 0xC100 && addr <= 0xC1FF;
 }
 
+uint8_t display_io::get_flags()
+{
+    return DEVICE_WRITE;
+}
+
 uint8_t *display_io::get_mapped_memory()
 {
 	return displaymem;

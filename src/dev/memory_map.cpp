@@ -80,13 +80,13 @@ uint8_t MemoryMapManager::read(offs_t addr)
 {
     memory_mapped_device *device = get_block_device(addr);
 
-    if (device == NULL)
-        return 0;
+    if (device == NULL || ((device->get_flags() & DEVICE_READ) != DEVICE_READ))
+    {
+        LOG_DEBUG << QString("Read failed at %1 last_write %2").arg(addr, 4, 16).arg(last_write, 4, 16);
+        return last_write;
+    }
 
     uint8_t data = device->read(addr);
-
-    if (breakpoints)
-        breakpoints->check_read(addr, data);
 
     return data;
 };
@@ -95,13 +95,15 @@ void MemoryMapManager::write(offs_t addr, uint8_t data)
 {
     memory_mapped_device *device = get_block_device(addr);
 
-    if (device == NULL)
+    if (device == NULL || ((device->get_flags() & DEVICE_WRITE) != DEVICE_WRITE))
+    {
+        LOG_DEBUG << QString("Write failed %1").arg(addr, 4, 16);
         return;
+    }
 
     device->write(addr, data);
 
-    if (breakpoints)
-        breakpoints->check_write(addr, data);
+    last_write = data;
 };
 
 std::vector<memory_mapped_device *> MemoryMapManager::get_block_devices()
