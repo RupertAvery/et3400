@@ -31,7 +31,7 @@ private:
     QPixmap dp[2];
     QAction *action;
     bool running;
-    uint8_t displaymem[256];
+    uint8_t segment[6];
     //QTimer *m_paintTimer;
 };
 

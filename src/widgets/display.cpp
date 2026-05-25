@@ -27,7 +27,19 @@ Display::Display(QWidget *parent)
     {
         addr = addr - 0xC100;
         addr = addr & 0b01110111;
-        displaymem[addr] = data;
+
+        int position = (6 - ((addr & 0xF0) >> 4)) & 0x7;
+        int seg = addr & 0x7;
+        uint8_t state = data & 1;
+
+        if (state == 1)
+        {
+            segment[position] |= (1 << seg);
+        }
+        else
+        {
+            segment[position] &= ~(1 << seg);
+        }
     };
 
     // device->read_hook = [this](offs_t addr)
@@ -61,53 +73,53 @@ void Display::paintEvent(QPaintEvent * /* event */)
 
     painter.save();
 
-    for (int address = 0x6F; address >= 0x10; address--)
+    // Go over each position
+    for (int pos = 0; pos < 6; pos++)
     {
-        int position = 6 - ((address & 0xF0) >> 4);
-        if (position < 0 || position >= 6)
-            continue;
-        int segment = address & 0x7;
-        uint8_t segdata = displaymem[address];
-
-        painter.save();
-        painter.translate(20 + position * 45, 10);
-
-        uint8_t state = segdata & 1;
-
-        switch (segment)
+        // Go over each segment
+        for (int seg = 0; seg <= 7; seg++)
         {
-        case 0:
-            painter.drawPixmap(11, 23, hr[state]);
-            break;
-        case 1:
-            painter.drawPixmap(5, 11, vt[state]);
-            break;
-        case 2:
-            painter.drawPixmap(4, 27, vt[state]);
-            break;
-        case 3:
-            painter.drawPixmap(8, 42, hr[state]);
-            break;
-        case 4:
-            painter.drawPixmap(25, 27, vt[state]);
-            break;
-        case 5:
-            painter.drawPixmap(26, 11, vt[state]);
-            break;
-        case 6:
-            painter.drawPixmap(11, 5, hr[state]);
-            break;
-        case 7:
-            painter.drawPixmap(31, 42, dp[state]);
-            break;
-        }
-        painter.restore();
+            uint8_t state = (segment[pos] >> seg) & 1;
 
-        painter.save();
-        painter.translate(20 + position * 45, 10);
-        painter.drawText(15, 65, letters[position]);
-        painter.restore();
+            painter.save();
+            painter.translate(20 + pos * 45, 10);
+
+            switch (seg)
+            {
+            case 0:
+                painter.drawPixmap(11, 23, hr[state]);
+                break;
+            case 1:
+                painter.drawPixmap(5, 11, vt[state]);
+                break;
+            case 2:
+                painter.drawPixmap(4, 27, vt[state]);
+                break;
+            case 3:
+                painter.drawPixmap(8, 42, hr[state]);
+                break;
+            case 4:
+                painter.drawPixmap(25, 27, vt[state]);
+                break;
+            case 5:
+                painter.drawPixmap(26, 11, vt[state]);
+                break;
+            case 6:
+                painter.drawPixmap(11, 5, hr[state]);
+                break;
+            case 7:
+                painter.drawPixmap(31, 42, dp[state]);
+                break;
+            }
+            painter.restore();
+
+            painter.save();
+            painter.translate(20 + pos * 45, 10);
+            painter.drawText(15, 65, letters[pos]);
+            painter.restore();
+        }
     }
+
     painter.restore();
 
     painter.end();
