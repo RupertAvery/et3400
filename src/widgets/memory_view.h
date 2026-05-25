@@ -20,8 +20,7 @@
 #include "../emu/et3400.h"
 #include "../dev/memory_map.h"
 #include "../common/common_defs.h"
-
-
+#include "../util/memory_builder.h"
 
 class MemoryView : public QFrame
 {
@@ -37,6 +36,7 @@ public:
     void set_emulator(et3400emu *emu);
     void set_range(offs_t start, offs_t end, uint8_t *memory);
     void setHeatMapEnabled(bool enabled);
+    void rebuild();
 
 signals:
     void on_scroll(int steps);
@@ -57,6 +57,7 @@ private:
     QTimer *m_paintTimer;
 
     et3400emu *emu_ptr;
+	std::vector<MemoryLine>* lines;
 
     bool running;
     offs_t start;

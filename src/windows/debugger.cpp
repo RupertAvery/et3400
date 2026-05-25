@@ -338,7 +338,7 @@ void DebuggerDialog::update_button_state()
 	stop_button->setEnabled(running);
 	step_into_button->setEnabled(!running);
 	step_over_button->setEnabled(!running);
-	//step_out_button->setEnabled(!running);
+	// step_out_button->setEnabled(!running);
 	reset_button->setEnabled(running);
 
 	if (debug_run_action)
@@ -347,7 +347,7 @@ void DebuggerDialog::update_button_state()
 		debug_stop_action->setEnabled(running);
 		debug_step_into_action->setEnabled(!running);
 		debug_step_over_action->setEnabled(!running);
-		//debug_step_out_action->setEnabled(!running);
+		// debug_step_out_action->setEnabled(!running);
 		debug_reset_action->setEnabled(running);
 	}
 }
@@ -467,8 +467,10 @@ void DebuggerDialog::resizeEvent(QResizeEvent *event)
 
 void DebuggerDialog::closeEvent(QCloseEvent *event)
 {
-	if (labels_dialog) labels_dialog->close();
-	if (breakpoints_dialog) breakpoints_dialog->close();
+	if (labels_dialog)
+		labels_dialog->close();
+	if (breakpoints_dialog)
+		breakpoints_dialog->close();
 	if (settings)
 	{
 		settings->debuggerX = pos().x();
@@ -497,7 +499,6 @@ void DebuggerDialog::save_ram()
 {
 	File::save_ram_dialog(this, emu_ptr, parent_window->save_ram_settings, settings->ramDir);
 }
-
 
 void DebuggerDialog::reset_disassembly_view()
 {
@@ -591,7 +592,6 @@ void DebuggerDialog::diassembly_refresh()
 	disassembly_view->rebuild();
 }
 
-
 void DebuggerDialog::goto_label()
 {
 	GotoDialog gotoDialog;
@@ -662,12 +662,28 @@ void DebuggerDialog::show_breakpoints_dialog()
 	breakpoints_dialog->activateWindow();
 }
 
+void DebuggerDialog::show_save_view_dialog()
+{
+	memory_mapped_device *dasm = get_disassembly_device();
+	memory_mapped_device *mem = get_memory_device();
+	File::save_memory_mapped_devices_dialog(this, emu_ptr, dasm, mem);
+}
+
+
 memory_mapped_device *DebuggerDialog::get_disassembly_device()
 {
 	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
 	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
 	return device;
 }
+
+memory_mapped_device *DebuggerDialog::get_memory_device()
+{
+	QVariant v = memory_selector->itemData(memory_selector->currentIndex());
+	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
+	return device;
+}
+
 
 void DebuggerDialog::add_breakpoint(offs_t address)
 {
@@ -692,4 +708,3 @@ void DebuggerDialog::set_breakpoint_enabled(offs_t address, bool enabled)
 	emu_ptr->breakpoints->setEnabled(address, enabled);
 	populate_breakpoints_table();
 }
-

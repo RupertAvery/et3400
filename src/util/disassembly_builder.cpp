@@ -93,12 +93,20 @@ void DisassemblyBuilder::build(std::vector<DisassemblyLine> *lines, offs_t start
 				{
 					offs_t save_address = address;
 					i = 0;
+					QString data = QString("%1 %2 %3 %4 %5 %6 %7 %8");
 					for (; address <= end && address <= label->end && i < 8; i++)
 					{
+						data = data.arg(memory[ptr], 2, 16, QChar('0')).toUpper();
 						address++;
 						ptr++;
 					}
-					lines->push_back(DisassemblyLine{save_address, DisassemblyType::Data, NULL, NULL, NULL, &(*label), i});
+
+					for (; i < 8; i++)
+					{
+						data = data.arg(" ");
+					}
+
+					lines->push_back(DisassemblyLine{save_address, DisassemblyType::Data, data, NULL, NULL, &(*label), i});
 					line_count++;
 				}
 				break;

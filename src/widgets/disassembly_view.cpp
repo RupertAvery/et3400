@@ -1,6 +1,7 @@
 #include "disassembly_view.h"
 #include "../util/log.h"
 #include "../common/util.h"
+#include <QStringBuilder>
 
 DisassemblyView::DisassemblyView(QWidget *parent)
 	: QFrame(parent)
@@ -236,25 +237,27 @@ void DisassemblyView::bufferDraw()
 		else
 		{
 			painter.setPen(address_color);
-			painter.drawText(20, y, toHex(line[ctr].address) + ":");
+			painter.drawText(20, y, toHex(line[ctr].address) % ":");
 
 			painter.setPen(opcode_color);
 
 			if (is_data)
 			{
 				// live view of data
-				int i = 0;
-				int ptr = line[ctr].address - start;
-				QString data = QString("%1 %2 %3 %4 %5 %6 %7 %8");
-				for (; i < line[ctr].bytes; i++)
-				{
-					data = data.arg(memory[ptr + i], 2, 16, QChar('0')).toUpper();
-				}
-				for (; i < 8; i++)
-				{
-					data = data.arg(" ");
-				}
-				painter.drawText(90, y, data);
+				// int i = 0;
+				// int ptr = line[ctr].address - start;
+				// QString data = QString("%1 %2 %3 %4 %5 %6 %7 %8");
+				// for (; i < line[ctr].bytes; i++)
+				// {
+				// 	data = data.arg(memory[ptr + i], 2, 16, QChar('0')).toUpper();
+				// }
+				// for (; i < 8; i++)
+				// {
+				// 	data = data.arg(" ");
+				// }
+
+				//painter.drawText(90, y, data);
+				painter.drawText(90, y, line[ctr].opcodes);
 
 				// while (address < line[ctr].map->end)
 				// {

@@ -1,4 +1,5 @@
 #include "file.h"
+#include "../util/snap.h"
 #include "../util/srec.h"
 #include "../util/hex.h"
 #include "../util/breakpoint.h"
@@ -7,6 +8,7 @@
 #include <algorithm>
 #include "../common/util.h"
 #include "../util/log.h"
+#include "../util/memory_builder.h"
 
 QString File::error;
 
@@ -17,6 +19,7 @@ QString IntelHexExtensions = "Intel HEX files (*.hex *.ihx)";
 QString BinExtensions = "BIN files (*.bin)";
 QString LabelFileExtensions = "Label Files (*.lbl)";
 QString BreakpointFileExtensions = "Breakpoint Files (*.brk)";
+QString TextFileExtensions = "Text Files (*.txt)";
 QString AllFiles = "All files (*)";
 
 void File::load_labels_dialog(QWidget *parent, et3400emu *emu_ptr, QString &dir)
@@ -352,4 +355,22 @@ void File::save_ram_dialog(QWidget *parent, et3400emu *emu_ptr, SaveSettings &se
 
         emu_ptr->start();
     }
+}
+
+void File::save_memory_mapped_devices_dialog(QWidget *parent, et3400emu *emu_ptr, memory_mapped_device *dasm, memory_mapped_device *mem)
+{
+    QString fileName = QFileDialog::getSaveFileName(parent, "Save View As Text", "",
+                                                    TextFileExtensions + ";;" + AllFiles);
+    if (fileName.isNull())
+        return;
+
+    std::vector<DisassemblyLine> *dasm_lines = new std::vector<DisassemblyLine>;
+    std::vector<MemoryLine> *mem_lines = new std::vector<MemoryLine>;
+
+    DisassemblyBuilder::build(dasm_lines, dasm->get_start(), dasm->get_end(), dasm->get_mapped_memory(), emu_ptr->labels->getLabels());
+    MemoryBuilder::build(mem_lines, mem->get_start(), mem->get_end(), mem->get_mapped_memory());
+
+    CpuStatus status = emu_ptr->get_status();
+
+    SnapFile::Write(fileName, status, dasm_lines, mem_lines, SnapFileSettings{});
 }

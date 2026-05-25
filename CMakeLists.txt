@@ -62,9 +62,11 @@ set(TOOLSRC
     src/util/breakpoint.cpp 
     src/util/label_manager.cpp  
     src/util/disassembly_builder.cpp 
+    src/util/memory_builder.cpp 
     src/util/breakpoint_manager.cpp 
     src/util/settings.cpp
     src/util/log.cpp
+    src/util/snap.cpp
     src/dasm/disassembler.cpp 
     )
 

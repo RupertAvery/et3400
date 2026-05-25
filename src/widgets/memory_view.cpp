@@ -1,5 +1,7 @@
 #include "memory_view.h"
 #include "../util/log.h"
+#include "../common/util.h"
+#include <QStringBuilder>
 
 MemoryView::MemoryView(QWidget *parent)
 	: QFrame(parent)
@@ -7,7 +9,7 @@ MemoryView::MemoryView(QWidget *parent)
 	// setMidLineWidth(0);
 	setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
 	setLineWidth(3);
-	setFocusPolicy(Qt::StrongFocus); 
+	setFocusPolicy(Qt::StrongFocus);
 
 	// setBackgroundRole(QPalette::Base);
 	// setAutoFillBackground(true);
@@ -28,9 +30,9 @@ MemoryView::MemoryView(QWidget *parent)
 	{
 		float t = i / 15.0f;
 		m_heat_colors[i] = QColor(
-			cold.red()   + t * (hot.red()   - cold.red()),
+			cold.red() + t * (hot.red() - cold.red()),
 			cold.green() + t * (hot.green() - cold.green()),
-			cold.blue()  + t * (hot.blue()  - cold.blue()));
+			cold.blue() + t * (hot.blue() - cold.blue()));
 	}
 
 	m_paintTimer = new QTimer(this);
@@ -84,6 +86,12 @@ void MemoryView::scrollTo(int value)
 	this->update();
 }
 
+void MemoryView::rebuild()
+{
+	MemoryBuilder::build(lines, start, end, memory);
+	this->update();
+}
+
 void MemoryView::bufferDraw()
 {
 	QPainter painter(buffer);
@@ -97,8 +105,6 @@ void MemoryView::bufferDraw()
 
 	QColor darkblue = QColor("#00018B");
 	QColor darkred = QColor("#8B0000");
-
-	QChar filler = QLatin1Char('0');
 
 	painter.save();
 
@@ -120,12 +126,14 @@ void MemoryView::bufferDraw()
 		}
 	}
 
+	
+
 	for (int line = offset; line < offset + visible_items && (start + (line * 8) < end); line++)
 	{
 		int address = start + line * 8;
 
 		painter.setPen(darkblue);
-		painter.drawText(5, y, QString("$%1:").arg(address, 4, 16, filler).toUpper());
+		painter.drawText(5, y, toHex(address) % ":");
 
 		int i = 0;
 
@@ -140,14 +148,14 @@ void MemoryView::bufferDraw()
 								 m_heat_colors[heat_map[heat_idx] / 16]);
 			}
 
-			painter.drawText(text_x, y, QString("%1").arg(shadow_memory[address + i - start], 2, 16, filler).toUpper());
+			painter.drawText(text_x, y, QString("%1").arg(shadow_memory[address + i - start], 2, 16, QChar('0')).toUpper());
 			i++;
 		}
 
 		while (i < 8)
 		{
 			painter.setPen(darkred);
-			painter.drawText(80 + i * 30, y, QString("%1").arg(0, 2, 16, filler).toUpper());
+			painter.drawText(80 + i * 30, y, QString("%1").arg(0, 2, 16, QChar('0')).toUpper());
 			i++;
 		}
 
@@ -214,9 +222,9 @@ void MemoryView::set_range(offs_t start, offs_t end, uint8_t *memory)
 	if (this->shadow_memory != nullptr)
 		free(this->shadow_memory);
 
-	this->last_memory    = (uint8_t *)calloc(end - start + 1, 1);
-	this->shadow_memory  = (uint8_t *)calloc(end - start + 1, 1);
-	this->heat_map       = (uint8_t *)calloc(end - start + 1, 1);
+	this->last_memory = (uint8_t *)calloc(end - start + 1, 1);
+	this->shadow_memory = (uint8_t *)calloc(end - start + 1, 1);
+	this->heat_map = (uint8_t *)calloc(end - start + 1, 1);
 
 	resizeEvent(new QResizeEvent(size(), size()));
 	offset = 0;

@@ -105,6 +105,8 @@ public:
 
 	void reset_disassembly_view();
 	memory_mapped_device *get_disassembly_device();
+	memory_mapped_device *get_memory_device();
+
 	Settings *get_settings() const { return settings; }
 
 	et3400emu *emu_ptr = nullptr;
@@ -218,6 +220,7 @@ private:
 
 	void show_labels_dialog();
 	void show_breakpoints_dialog();
+	void show_save_view_dialog();
 
 	QToolBar *create_menu_toolbar();
 	QToolBar *create_shortcuts_toolbar();

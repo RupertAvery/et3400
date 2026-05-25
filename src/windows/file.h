@@ -25,8 +25,11 @@ public:
     static void load_breakpoint_dialog(QWidget *parent, et3400emu *emu_ptr, QString &dir);
     static void save_breakpoint_dialog(QWidget *parent, et3400emu *emu_ptr, QString &dir);
 
+    static void save_memory_mapped_devices_dialog(QWidget *parent, et3400emu *emu_ptr, memory_mapped_device *dasm, memory_mapped_device *mem);
+
     static void load_labels(QString fileName, et3400emu *emu_ptr, bool &success);
     static size_t load_memory(QString path, QString device_name, et3400emu *emu_ptr, uint16_t address, bool &success);
+
 
     static QString error;
 };
