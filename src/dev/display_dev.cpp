@@ -1,4 +1,5 @@
 #include "display_dev.h"
+#include "../util/log.h"
 
 display_io::display_io()
 {
@@ -9,20 +10,18 @@ display_io::display_io()
 
 uint8_t display_io::read(offs_t addr)
 {
-	addr = addr - 0xC100;
-	//addr = addr & 0b01110111;
-	return displaymem[addr];
+	// Return floating gates
+	return 0xFF;
 };
 
 void display_io::write(offs_t addr, uint8_t data)
 {
+	if (write_hook != nullptr)
+	{
+		write_hook(addr, data);
+	}
 	addr = addr - 0xC100;
-	addr = addr & 0b01110111;
-	// write to all addresses that mirror the same data
 	displaymem[addr] = data;
-	displaymem[addr | 0x08] = data;
-	displaymem[addr | 0x80] = data;
-	displaymem[addr | 0x88] = data;
 };
 
 bool display_io::is_mapped(offs_t addr)
@@ -37,7 +36,7 @@ uint8_t *display_io::get_mapped_memory()
 
 offs_t display_io::get_start()
 {
-	return 0xC110;
+	return 0xC100;
 }
 
 offs_t display_io::get_end()

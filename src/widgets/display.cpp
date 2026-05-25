@@ -3,6 +3,7 @@
 
 #include <QPainter>
 #include <QPainterPath>
+#include "../util/log.h"
 
 Display::Display(QWidget *parent)
     : QWidget(parent)
@@ -22,6 +23,19 @@ Display::Display(QWidget *parent)
     // m_paintTimer->start(17); // 17ms, or every 1/60th of a second
     // connect(this->m_paintTimer, SIGNAL(timeout()), this, SLOT(redraw()));
     device = new display_io;
+    device->write_hook = [this](offs_t addr, uint8_t data)
+    {
+        addr = addr - 0xC100;
+        addr = addr & 0b01110111;
+        displaymem[addr] = data;
+    };
+
+    // device->read_hook = [this](offs_t addr)
+    // {
+    //     addr = addr - 0xC100;
+    //     addr = addr & 0b01110111;
+    //     return displaymem[addr];
+    // };
 
     action = new QAction;
     connect(action, &QAction::triggered, this, &Display::redraw);
@@ -46,11 +60,14 @@ void Display::paintEvent(QPaintEvent * /* event */)
     painter.setPen(Qt::white);
 
     painter.save();
-    for (int address = 0xC16F; address >= 0xC110; address--)
+
+    for (int address = 0x6F; address >= 0x10; address--)
     {
         int position = 6 - ((address & 0xF0) >> 4);
+        if (position < 0 || position >= 6)
+            continue;
         int segment = address & 0x7;
-        uint8_t segdata = device->read(address);
+        uint8_t segdata = displaymem[address];
 
         painter.save();
         painter.translate(20 + position * 45, 10);

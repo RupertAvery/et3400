@@ -16,7 +16,7 @@ class Display : public QWidget
 public:
     explicit Display(QWidget *parent = nullptr);
     ~Display();
-    display_io *device;
+    display_io *device = nullptr;
     void update_display();
 
 public slots:
@@ -31,6 +31,7 @@ private:
     QPixmap dp[2];
     QAction *action;
     bool running;
+    uint8_t displaymem[256];
     //QTimer *m_paintTimer;
 };
 
