@@ -1,5 +1,6 @@
 #include "srec.h"
 #include "log.h"
+#include "../common/newline.h"
 
 /*
  * Functions for reading and writing the Motorola S-record file format
@@ -147,7 +148,7 @@ void SrecFile::WriteHeader(QTextStream &out, QString header)
 
     checksum = ~(checksum & 0xFF);
     out << QString("%1").arg(checksum, 2, 16, QChar('0')).toUpper();
-    out << "\r\n";
+    out << NEWLINE;
 }
 
 uint16_t SrecFile::WriteRecords(QTextStream &out, std::vector<data_block> *blocks)
@@ -171,7 +172,7 @@ uint16_t SrecFile::WriteRecords(QTextStream &out, std::vector<data_block> *block
 
         checksum = ~(checksum & 0xFF);
         out << QString("%1").arg(checksum, 2, 16, QChar('0')).toUpper();
-        out << "\r\n";
+        out << NEWLINE;
         block++;
         recordCount++;
     }
@@ -189,7 +190,7 @@ void SrecFile::WriteRecordCount(QTextStream &out, uint16_t recordCount)
     checksum = ~(checksum & 0xFF);
 
     out << QString("%1").arg(checksum, 2, 16, QChar('0')).toUpper();
-    out << "\r\n";
+    out << NEWLINE;
 }
 
 void SrecFile::WriteTerminator(QTextStream &out, uint16_t startAddress)
@@ -202,5 +203,5 @@ void SrecFile::WriteTerminator(QTextStream &out, uint16_t startAddress)
     checksum = ~(checksum & 0xFF);
 
     out << QString("%1").arg(checksum, 2, 16, QChar('0')).toUpper();
-    out << "\r\n";
+    out << NEWLINE;
 }

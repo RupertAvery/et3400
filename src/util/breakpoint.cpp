@@ -1,5 +1,6 @@
 #include "breakpoint.h"
 #include "csv.h"
+#include "../common/newline.h"
 
 void BreakpointReader::Write(QString path, std::vector<Breakpoint> *breakpoints, bool &success)
 {
@@ -19,7 +20,7 @@ void BreakpointReader::Write(QString path, std::vector<Breakpoint> *breakpoints,
     {
         out << QString("%1").arg((*current).address, 4, 16, QChar('0')).toUpper() << ","
             << ((*current).is_enabled ? QString("Yes") : QString("No"))
-            << "\r\n";
+            << NEWLINE;
 
         current++;
     }

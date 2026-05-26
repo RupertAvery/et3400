@@ -2,6 +2,8 @@
 #include "snap.h"
 #include "log.h"
 #include "../common/util.h"
+#include "../common/newline.h"
+
 
 /*
  * Functions for writing the snapshot text file
@@ -20,22 +22,19 @@ bool SnapFile::Write(QString path, CpuStatus status, std::vector<DisassemblyLine
 
     QTextStream out(&file);
 
-    out << "# Status Registers\r\n";
-    out << "```\r\n";
+    out << "Status Registers" << NEWLINE;
+    out << "================" << NEWLINE;
     WriteStatus(out, status);
-    out << "```";
-    out << "\r\n";
-    out << "\r\n";
-    out << "# Disassembly View\r\n";
-    out << "```\r\n";
+    out << NEWLINE;
+    out << NEWLINE;
+    out << "Disassembly View" << NEWLINE;
+    out << "================" << NEWLINE;
     WriteDasm(out, dasm);
-    out << "```";
-    out << "\r\n";
-    out << "\r\n";
-    out << "# Memory View\r\n";
-    out << "```\r\n";
+    out << NEWLINE;
+    out << NEWLINE;
+    out << "# Memory View" << NEWLINE;
+    out << "=============" << NEWLINE;
     WriteMem(out, mem);
-    out << "```";
 
     return true;
 }
@@ -43,20 +42,20 @@ bool SnapFile::Write(QString path, CpuStatus status, std::vector<DisassemblyLine
 void SnapFile::WriteStatus(QTextStream &out, CpuStatus status)
 {
     out << "PC:     "
-        << toHex(status.pc)
-        << "\r\nACCA:     "
-        << toHex(status.acca, 2)
-        << "\r\nACCB:     "
-        << toHex(status.accb, 2)
-        << "\r\nIX:     "
-        << toHex(status.ix)
-        << "\r\nSP:     "
-        << toHex(status.sp)
-        << "\r\nCC:     "
-        << toBin(status.cc)
-        << "\r\n          HINZVC";
+        << toHex(status.pc) << NEWLINE
+        << "ACCA:     "
+        << toHex(status.acca, 2) << NEWLINE
+        << "ACCB:     "
+        << toHex(status.accb, 2) << NEWLINE
+        << "IX:     "
+        << toHex(status.ix) << NEWLINE
+        << "SP:     "
+        << toHex(status.sp) << NEWLINE
+        << "CC:     "
+        << toBin(status.cc) << NEWLINE
+        << "          HINZVC";
 
-    out << "\r\n";
+    out << NEWLINE;
 }
 
 void SnapFile::WriteDasm(QTextStream &out, std::vector<DisassemblyLine> *lines)
@@ -95,7 +94,7 @@ void SnapFile::WriteDasm(QTextStream &out, std::vector<DisassemblyLine> *lines)
         }
 
         line++;
-        out << "\r\n";
+        out << NEWLINE;
     }
 }
 
@@ -108,6 +107,6 @@ void SnapFile::WriteMem(QTextStream &out, std::vector<MemoryLine> *lines)
         out << toHex(line->address) % ":  ";
         out << line->data;
         line++;
-        out << "\r\n";
+        out << NEWLINE;
     }
 }

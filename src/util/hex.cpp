@@ -1,5 +1,6 @@
 #include "hex.h"
 #include "log.h"
+#include "../common/newline.h"
 
 /*
  * Functions for reading and writing the Intel Hex file format
@@ -188,7 +189,7 @@ uint16_t HexFile::WriteRecords(QTextStream &out, std::vector<data_block> *blocks
 
         checksum = (~checksum + 1) & 0xFF;                               // Two's complement
         out << QString("%1").arg(checksum, 2, 16, QChar('0')).toUpper(); // write checksum
-        out << "\r\n";
+        out << NEWLINE;
 
         block++;
         recordCount++;
@@ -207,5 +208,5 @@ void HexFile::WriteTerminator(QTextStream &out)
     uint8_t checksum = (~1 + 1) & 0xFF;
 
     out << QString("%1").arg(checksum, 2, 16, QChar('0')).toUpper();
-    out << "\r\n";
+    out << NEWLINE;
 }

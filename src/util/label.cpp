@@ -1,5 +1,6 @@
 #include "label.h"
 #include "csv.h"
+#include "../common/newline.h"
 
 void LabelReader::Write(QString path, std::vector<Label> *labels, bool &success)
 {
@@ -21,7 +22,7 @@ void LabelReader::Write(QString path, std::vector<Label> *labels, bool &success)
             << QString("%1").arg((*current).end, 4, 16, QChar('0')).toUpper() << ","
             << ((*current).type == LabelType::COMMENT ? QString("COMMENT") : ((*current).type == LabelType::DATA ? QString("DATA") : QString("ASSEMBLY"))) << ","
             << QString("\"%1\"").arg((*current).comment)
-            << "\r\n";
+            << NEWLINE;
 
         current++;
     }

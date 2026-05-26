@@ -6,6 +6,7 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QCoreApplication>
+#include "../common/newline.h"
 
 QString getSettingsPath(bool &success)
 {
@@ -103,21 +104,21 @@ void save_settings(Settings *settings)
 
     QTextStream out(&file);
 
-    out << "ShowTips=" << (settings->showTips ? "true" : "false") << "\r\n";
-    out << "ShowDisassemblerView=" << (settings->showDasmView ? "true" : "false") << "\r\n";
-    out << "ShowMemoryView=" << (settings->showMemoryView ? "true" : "false") << "\r\n";
-    out << "ShowHeatMap=" << (settings->showHeatMap ? "true" : "false") << "\r\n";
-    out << "ClockRate=" << settings->clockRate << "\r\n";
-    out << "MainWindowX=" << settings->mainWindowX << "\r\n";
-    out << "MainWindowY=" << settings->mainWindowY << "\r\n";
-    out << "DebuggerVisible=" << (settings->debuggerVisible ? "true" : "false") << "\r\n";
-    out << "DebuggerX=" << settings->debuggerX << "\r\n";
-    out << "DebuggerY=" << settings->debuggerY << "\r\n";
-    out << "DebuggerWidth=" << settings->debuggerWidth << "\r\n";
-    out << "DebuggerHeight=" << settings->debuggerHeight << "\r\n";
-    out << "RomDir=" << settings->romDir << "\r\n";
-    out << "RamDir=" << settings->ramDir << "\r\n";
-    out << "LabelsDir=" << settings->labelsDir << "\r\n";
+    out << "ShowTips=" << (settings->showTips ? "true" : "false") << NEWLINE;
+    out << "ShowDisassemblerView=" << (settings->showDasmView ? "true" : "false") << NEWLINE;
+    out << "ShowMemoryView=" << (settings->showMemoryView ? "true" : "false") << NEWLINE;
+    out << "ShowHeatMap=" << (settings->showHeatMap ? "true" : "false") << NEWLINE;
+    out << "ClockRate=" << settings->clockRate << NEWLINE;
+    out << "MainWindowX=" << settings->mainWindowX << NEWLINE;
+    out << "MainWindowY=" << settings->mainWindowY << NEWLINE;
+    out << "DebuggerVisible=" << (settings->debuggerVisible ? "true" : "false") << NEWLINE;
+    out << "DebuggerX=" << settings->debuggerX << NEWLINE;
+    out << "DebuggerY=" << settings->debuggerY << NEWLINE;
+    out << "DebuggerWidth=" << settings->debuggerWidth << NEWLINE;
+    out << "DebuggerHeight=" << settings->debuggerHeight << NEWLINE;
+    out << "RomDir=" << settings->romDir << NEWLINE;
+    out << "RamDir=" << settings->ramDir << NEWLINE;
+    out << "LabelsDir=" << settings->labelsDir << NEWLINE;
     out << "BreakpointsDir=" << settings->breakpointsDir;
 
     out.flush();
