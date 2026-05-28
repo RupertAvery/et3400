@@ -688,7 +688,6 @@ memory_mapped_device *DebuggerDialog::get_memory_device()
 	return device;
 }
 
-
 void DebuggerDialog::add_breakpoint(offs_t address)
 {
 	emu_ptr->add_breakpoint(address);
@@ -711,4 +710,9 @@ void DebuggerDialog::set_breakpoint_enabled(offs_t address, bool enabled)
 {
 	emu_ptr->breakpoints->setEnabled(address, enabled);
 	populate_breakpoints_table();
+}
+
+void DebuggerDialog::exit()
+{
+	close();
 }

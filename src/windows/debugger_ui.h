@@ -59,9 +59,12 @@ QToolButton *DebuggerDialog::create_file_menu(QToolBar *toolbar)
     QAction *openMap_action = new QAction("Load Labels (RAM)", this);
     QAction *saveMap_action = new QAction("Save Labels (RAM)", this);
 
+    QAction *exit_action = new QAction("E&xit", this);
+    exit_action->setShortcut(Qt::CTRL + Qt::Key_X);
+
     QToolButton *file_button = new QToolButton(toolbar);
     file_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    file_button->setText("File   ");
+    file_button->setText("&File   ");
     file_button->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
 
     QMenu *file_menu = new QMenu(file_button);
@@ -75,6 +78,9 @@ QToolButton *DebuggerDialog::create_file_menu(QToolBar *toolbar)
     file_menu->addSeparator();
     file_menu->addAction(openMap_action);
     file_menu->addAction(saveMap_action);
+    file_menu->addSeparator();
+    file_menu->addAction(exit_action);
+    
     file_button->setMenu(file_menu);
 
     connect(openRam_action, &QAction::triggered, this, &DebuggerDialog::load_ram);
@@ -88,6 +94,8 @@ QToolButton *DebuggerDialog::create_file_menu(QToolBar *toolbar)
     connect(openMap_action, &QAction::triggered, this, &DebuggerDialog::load_labels);
     connect(saveMap_action, &QAction::triggered, this, &DebuggerDialog::save_ram_labels);
 
+    connect(exit_action, &QAction::triggered, this, &DebuggerDialog::exit);
+
     return file_button;
 }
 
@@ -95,7 +103,7 @@ QToolButton *DebuggerDialog::create_debug_menu(QToolBar *toolbar)
 {
     QToolButton *debug_button = new QToolButton(toolbar);
     debug_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    debug_button->setText("Debug   ");
+    debug_button->setText("&Debug   ");
     debug_button->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
 
     QMenu *debug_menu = new QMenu(debug_button);
@@ -135,31 +143,31 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
 {
     QToolButton *view_button = new QToolButton(toolbar);
     view_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    view_button->setText("View   ");
+    view_button->setText("&View   ");
     view_button->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
 
     QMenu *view_menu = new QMenu(view_button);
 
-    MakeToggledAction(toggle_disassembly_action, "Disassembly", Qt::CTRL + Qt::Key_D, toggle_disassembly_panel);
+    MakeToggledAction(toggle_disassembly_action, "&Disassembly", Qt::CTRL + Qt::Key_D, toggle_disassembly_panel);
     MakeToggledActionNS(toggle_autorefresh_disassembly_action, "Auto Refresh Disassembly", toggle_auto_refresh_disassembly_panel);
 
-    MakeTriggeredAction(refresh_disassembly_action, "Refresh", Qt::CTRL + Qt::Key_R, diassembly_refresh);
-    MakeToggledAction(toggle_memory_action, "Memory", Qt::CTRL + Qt::Key_M, toggle_memory_panel);
-    MakeToggledAction(toggle_heat_map_action, "Heat Map", Qt::CTRL + Qt::Key_H, toggle_heat_map);
+    MakeTriggeredAction(refresh_disassembly_action, "&Refresh", Qt::CTRL + Qt::Key_R, diassembly_refresh);
+    MakeToggledAction(toggle_memory_action, "&Memory", Qt::CTRL + Qt::Key_M, toggle_memory_panel);
+    MakeToggledAction(toggle_heat_map_action, "&Heat Map", Qt::CTRL + Qt::Key_H, toggle_heat_map);
 
-    QAction *goto_label_action = new QAction("Goto Address/Label\tCtrl+G", this);
+    QAction *goto_label_action = new QAction("&Goto Address/Label\tCtrl+G", this);
     goto_label_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_G));
     connect(goto_label_action, &QAction::triggered, this, &DebuggerDialog::goto_label);
 
-    QAction *show_labels_action = new QAction("Labels\tCtrl+L", this);
+    QAction *show_labels_action = new QAction("&Labels\tCtrl+L", this);
     show_labels_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L));
     connect(show_labels_action, &QAction::triggered, this, &DebuggerDialog::show_labels_dialog);
 
-    QAction *show_breakpoints_action = new QAction("Breakpoints\tCtrl+B", this);
+    QAction *show_breakpoints_action = new QAction("&Breakpoints\tCtrl+B", this);
     show_breakpoints_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_B));
     connect(show_breakpoints_action, &QAction::triggered, this, &DebuggerDialog::show_breakpoints_dialog);
 
-    QAction *save_view_action = new QAction("Save View to Text", this);
+    QAction *save_view_action = new QAction("&Save Views as Text", this);
     connect(save_view_action, &QAction::triggered, this, &DebuggerDialog::show_save_view_dialog);
 
     view_menu->addAction(show_labels_action);
@@ -184,7 +192,7 @@ QToolButton *DebuggerDialog::create_settings_menu(QToolBar *toolbar)
 {
     QToolButton *settings_button = new QToolButton(toolbar);
     settings_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    settings_button->setText("Settings   ");
+    settings_button->setText("&Settings   ");
     settings_button->setPopupMode(QToolButton::ToolButtonPopupMode::InstantPopup);
 
     QMenu *settings_menu = new QMenu(settings_button);

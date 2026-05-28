@@ -103,6 +103,8 @@ public:
 	void load_breakpoints();
 	void save_breakpoints();
 
+	void exit();
+
 	void reset_disassembly_view();
 	memory_mapped_device *get_disassembly_device();
 	memory_mapped_device *get_memory_device();
