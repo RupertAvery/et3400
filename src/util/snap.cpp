@@ -4,7 +4,6 @@
 #include "../common/util.h"
 #include "../common/newline.h"
 
-
 /*
  * Functions for writing the snapshot text file
  */
@@ -22,38 +21,53 @@ bool SnapFile::Write(QString path, CpuStatus status, std::vector<DisassemblyLine
 
     QTextStream out(&file);
 
-    out << "Status Registers" << NEWLINE;
-    out << "================" << NEWLINE;
-    WriteStatus(out, status);
-    out << NEWLINE;
-    out << NEWLINE;
-    out << "Disassembly View" << NEWLINE;
-    out << "================" << NEWLINE;
-    WriteDasm(out, dasm);
-    out << NEWLINE;
-    out << NEWLINE;
-    out << "# Memory View" << NEWLINE;
-    out << "=============" << NEWLINE;
-    WriteMem(out, mem);
+    if (settings.include_status)
+    {
+        out << "Status Registers" << NEWLINE;
+        out << "================" << NEWLINE;
+        WriteStatus(out, status);
+        out << NEWLINE;
+        out << NEWLINE;
+    }
+
+    if (settings.include_dasm)
+    {
+        out << "Disassembly View" << NEWLINE;
+        out << "================" << NEWLINE;
+        WriteDasm(out, dasm);
+        out << NEWLINE;
+        out << NEWLINE;
+    }
+
+    if (settings.include_mem)
+    {
+        out << NEWLINE;
+        out << NEWLINE;
+        out << "# Memory View" << NEWLINE;
+        out << "=============" << NEWLINE;
+        WriteMem(out, mem);
+        out << NEWLINE;
+        out << NEWLINE;
+    }
 
     return true;
 }
 
 void SnapFile::WriteStatus(QTextStream &out, CpuStatus status)
 {
-    out << "PC:     "
+    out << "PC:        "
         << toHex(status.pc) << NEWLINE
-        << "ACCA:     "
+        << "ACCA:        "
         << toHex(status.acca, 2) << NEWLINE
-        << "ACCB:     "
+        << "ACCB:        "
         << toHex(status.accb, 2) << NEWLINE
-        << "IX:     "
+        << "IX:        "
         << toHex(status.ix) << NEWLINE
-        << "SP:     "
+        << "SP:        "
         << toHex(status.sp) << NEWLINE
         << "CC:     "
         << toBin(status.cc) << NEWLINE
-        << "          HINZVC";
+        << "        --HINZVC";
 
     out << NEWLINE;
 }

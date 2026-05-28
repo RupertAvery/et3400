@@ -1,5 +1,4 @@
 #include "file.h"
-#include "../util/snap.h"
 #include "../util/srec.h"
 #include "../util/hex.h"
 #include "../util/breakpoint.h"
@@ -357,7 +356,7 @@ void File::save_ram_dialog(QWidget *parent, et3400emu *emu_ptr, SaveSettings &se
     }
 }
 
-void File::save_memory_mapped_devices_dialog(QWidget *parent, et3400emu *emu_ptr, memory_mapped_device *dasm, memory_mapped_device *mem)
+void File::save_memory_mapped_devices_dialog(QWidget *parent, et3400emu *emu_ptr, memory_mapped_device *dasm, memory_mapped_device *mem, SnapFileSettings settings)
 {
     QString fileName = QFileDialog::getSaveFileName(parent, "Save View As Text", "",
                                                     TextFileExtensions + ";;" + AllFiles);
@@ -372,5 +371,5 @@ void File::save_memory_mapped_devices_dialog(QWidget *parent, et3400emu *emu_ptr
 
     CpuStatus status = emu_ptr->get_status();
 
-    SnapFile::Write(fileName, status, dasm_lines, mem_lines, SnapFileSettings{});
+    SnapFile::Write(fileName, status, dasm_lines, mem_lines, settings);
 }

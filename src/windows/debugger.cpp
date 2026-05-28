@@ -666,9 +666,13 @@ void DebuggerDialog::show_save_view_dialog()
 {
 	memory_mapped_device *dasm = get_disassembly_device();
 	memory_mapped_device *mem = get_memory_device();
-	File::save_memory_mapped_devices_dialog(this, emu_ptr, dasm, mem);
-}
 
+	SnapFileSettings snap_settings = SnapFileSettings{true, true, true};
+	//snap_settings.include_dasm = settings->showDasmView;
+	//snap_settings.include_mem = settings->showMemoryView;
+
+	File::save_memory_mapped_devices_dialog(this, emu_ptr, dasm, mem, snap_settings);
+}
 
 memory_mapped_device *DebuggerDialog::get_disassembly_device()
 {
