@@ -121,12 +121,16 @@ void DisassemblyView::bufferDraw()
 
 	bool hasFocus = this->hasFocus();
 
+	if (!hasFocus)
+	{
+		selected_line = -1;
+	}
+
 	// emu_ptr->breakpoints->lock();
 
 	int linesSize = lines->size();
-		
-	QBrush background_brush;
 
+	QBrush background_brush;
 
 	while (ctr < linesSize && ctr < offset + visible_items && ctr - visible_items + 1 < max_vscroll)
 	{
@@ -175,14 +179,15 @@ void DisassemblyView::bufferDraw()
 		}
 		else if (is_selected)
 		{
-			if (hasFocus)
-			{
-				background_brush = selected_brush;
-			}
-			else
-			{
-				background_brush = selected_nofocus_brush;
-			}
+			background_brush = selected_brush;
+			// if (hasFocus)
+			// {
+			// 	background_brush = selected_brush;
+			// }
+			// else
+			// {
+			// 	background_brush = selected_nofocus_brush;
+			// }
 		}
 		else if (has_breakpoint)
 		{
@@ -256,7 +261,7 @@ void DisassemblyView::bufferDraw()
 				// 	data = data.arg(" ");
 				// }
 
-				//painter.drawText(90, y, data);
+				// painter.drawText(90, y, data);
 				painter.drawText(90, y, line[ctr].opcodes);
 
 				// while (address < line[ctr].map->end)
@@ -463,7 +468,14 @@ void DisassemblyView::mousePressEvent(QMouseEvent *event)
 		}
 		else
 		{
-			selected_line = line;
+			if (selected_line == line)
+			{
+				selected_line = -1;
+			}
+			else
+			{
+				selected_line = line;
+			}
 		}
 		setFocus();
 	}
