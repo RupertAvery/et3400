@@ -625,6 +625,15 @@ void m6800_cpu_device::execute_run()
 			PC++;
 			(this->*m_insn[ireg])();
 			increment_counter(m_cycles[ireg]);
+
+			if (irq_timeout > -1)
+			{
+				irq_timeout--;
+				if (irq_timeout == 0)
+				{
+					CHECK_IRQ_LINES();
+				}
+			}
 		}
 	} while (m_icount > 0);
 }

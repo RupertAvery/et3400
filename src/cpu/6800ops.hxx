@@ -91,8 +91,9 @@ OP_HANDLER(asld)
 OP_HANDLER(tap)
 {
 	CC = A;
-	ONE_MORE_INSN();
-	CHECK_IRQ_LINES(); /* HJB 990417 */
+	irq_timeout = 2;
+	//ONE_MORE_INSN();
+	//CHECK_IRQ_LINES(); /* HJB 990417 */
 }
 
 /* $07 TPA inherent ----- */
@@ -145,16 +146,18 @@ OP_HANDLER(sec)
 OP_HANDLER(cli)
 {
 	CLI;
-	ONE_MORE_INSN();
-	CHECK_IRQ_LINES(); /* HJB 990417 */
+	irq_timeout = 2;
+	//ONE_MORE_INSN();
+	//CHECK_IRQ_LINES(); /* HJB 990417 */
 }
 
 /* $0f SEI */
 OP_HANDLER(sei)
 {
 	SEI;
-	ONE_MORE_INSN();
-	CHECK_IRQ_LINES(); /* HJB 990417 */
+	irq_timeout = 2;
+	//ONE_MORE_INSN();
+	//CHECK_IRQ_LINES(); /* HJB 990417 */
 }
 
 /* $10 SBA inherent -**** */

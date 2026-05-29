@@ -85,6 +85,8 @@ public:
 	uint8_t m_nmi_pending;	/* NMI pending */
 	uint8_t m_irq_state[3]; /* IRQ line state [IRQ1,TIN,SC1] */
 
+	int irq_timeout = -1;
+
 	/* Memory spaces */
 	// memory_access<16, 0, 0, ENDIANNESS_BIG>::cache m_cprogram, m_copcodes;
 	// memory_access<16, 0, 0, ENDIANNESS_BIG>::specific m_program;
