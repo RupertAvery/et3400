@@ -41,8 +41,6 @@ bool SnapFile::Write(QString path, CpuStatus status, std::vector<DisassemblyLine
 
     if (settings.include_mem)
     {
-        out << NEWLINE;
-        out << NEWLINE;
         out << "# Memory View" << NEWLINE;
         out << "=============" << NEWLINE;
         WriteMem(out, mem);
