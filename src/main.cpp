@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    window.setWindowTitle("ET-3400 Emulator");
+    window.setWindowTitle("ET-3400 Emulator v" + getVersion());
     window.show();
 
     QTimer::singleShot(0, &window, &MainWindow::start);
