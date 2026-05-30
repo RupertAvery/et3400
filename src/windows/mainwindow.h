@@ -55,6 +55,9 @@ public:
   SaveSettings save_ram_settings{"", 0x0000, 0x01FF};
   LoadSettings load_rom_settings{"Monitor ROM", 0xFC00, 0xFFFF};
 
+  static const int AUTOSTART_DELAY_MS = 500;
+  static const int AUTOSTART_KEY_HOLD_MS = 200;
+
 private:
   long long last_cycles;
   Settings settings;
@@ -63,7 +66,8 @@ private:
   SettingsDialog *settings_dialog = nullptr;
   DebuggerDialog *debugger_dialog = nullptr;
   et3400emu *emu = nullptr;
-  int16_t startAddress = -1;
+  uint16_t start_address = 0;
+  bool has_start_address = false;
   bool showDebugger = false;
 
   void init_emu();
@@ -77,6 +81,7 @@ private:
   void show_tips();
   void updatecps();
   void fps();
+  void autostart_sequence();
 
 };
 

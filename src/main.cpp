@@ -63,7 +63,7 @@ static void printHelp(const char *argv0)
               << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "  -m <path>            Load monitor ROM from file" << std::endl;
-    // std::cout << "  -a <start address>   Set start address for execution (hex)" << std::endl;
+    std::cout << "  -a <start address>   Set start address for execution (hex)" << std::endl;
     std::cout << "  -s <speed>           Set clock speed:" << std::endl;
     std::cout << "                          n - Percent of default clock speed (" << (DEFAULT_CLOCK_RATE / 1000) << "KHz)" << std::endl;
     std::cout << "                          n[k|M]Hz - speed in Hz, kHz or MHz" << std::endl;

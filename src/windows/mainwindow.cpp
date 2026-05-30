@@ -2,6 +2,7 @@
 #include "../util/log.h"
 #include <filesystem>
 #include "../common/default.h"
+#include "../common/util.h"
 
 using namespace std;
 
@@ -371,17 +372,20 @@ void MainWindow::execute_emu()
   LOG_DEBUG << "Setting up event handlers";
   keypad->device->on_reset_press = [this]
   { emu->reset(); };
-  
+
   emu->on_render_frame = [this]
   { display->update_display(); };
 
   LOG_DEBUG << "Initializing and starting emulator";
   emu->init();
 
-  if (startAddress > -1)
+  if (has_start_address)
   {
-    LOG_DEBUG << "Setting PC to " << startAddress;
-    emu->set_pc(startAddress);
+    int delay_time_ms = (int)((float)DEFAULT_CLOCK_RATE / (float)emu->get_clock_rate() * AUTOSTART_DELAY_MS);
+
+    delay_time_ms = std::max(delay_time_ms, AUTOSTART_DELAY_MS);
+
+    QTimer::singleShot(delay_time_ms, this, &MainWindow::autostart_sequence);
   }
 
   emu->start();
@@ -392,11 +396,46 @@ void MainWindow::execute_emu()
   }
 }
 
+void MainWindow::autostart_sequence()
+{
+  int hold_time_ms = (int)((float)DEFAULT_CLOCK_RATE / (float)emu->get_clock_rate() * AUTOSTART_KEY_HOLD_MS);
+  hold_time_ms = std::max(hold_time_ms, AUTOSTART_KEY_HOLD_MS);
+
+  LOG_DEBUG << "Hold time: " << hold_time_ms << "ms";
+
+  LOG_DEBUG << "Start Address: " << toHex(start_address);
+
+  uint16_t addr = static_cast<uint16_t>(start_address);
+
+  const keypad_io::Keys seq[] = {
+      keypad_io::Keys::KeyD,
+      static_cast<keypad_io::Keys>((addr >> 12) & 0xF),
+      static_cast<keypad_io::Keys>((addr >> 8) & 0xF),
+      static_cast<keypad_io::Keys>((addr >> 4) & 0xF),
+      static_cast<keypad_io::Keys>(addr & 0xF),
+  };
+
+  int t = 0;
+
+  for (auto key : seq)
+  {
+    LOG_DEBUG << "PRESS " << key;
+    QTimer::singleShot(t, this, [this, key]()
+                       { keypad->press_key(key); });
+    t += hold_time_ms;
+    LOG_DEBUG << "Release " << key;
+    QTimer::singleShot(t, this, [this, key]()
+                       { keypad->release_key(key); });
+    t += hold_time_ms;
+  }
+}
+
 void MainWindow::setAddress(std::string address)
 {
   try
   {
-    startAddress = (uint16_t)std::stoul(address, nullptr, 16);
+    start_address = (uint16_t)std::stoul(address, nullptr, 16);
+    has_start_address = true;
   }
   catch (const std::exception &)
   {
