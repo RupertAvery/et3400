@@ -59,7 +59,7 @@ The built-in ROM contains the Monitor program designed for the Heathkit ET-3400 
 
 # Features
 
-* [Loading files into RAM](#loading-files-into-ram)
+* [Loading programs into RAM](#loading-programs-into-ram)
 * [Saving Program RAM](#saving-program-ram)
 * [Loading alternate ROM files](#loading-alternate-rom-files)
 * [Debugger](#debugger)
@@ -100,11 +100,142 @@ Format | Extensions
 -------|-----------
 [Motorola S-record](https://en.wikipedia.org/wiki/Motorola_S-record) <sup>1</sup> | `.S19` `.OBJ` 
 [Intel HEX](https://en.wikipedia.org/wiki/Intel_HEX) <sup>1</sup> | `.HEX` `.IHX`
-Raw Binary <sup>2</sup> | `.BIN` 
+Raw binary <sup>2</sup> | `.BIN` 
 
 <sup>1</sup> For the S-Record and HEX format, you must ensure that the start address is at `$FC00` and the reset vector is set accordingly. 
 
-<sup>2</sup> The BIN format is raw bytes in binary format with no headers. The file should be exactly 1024 bytes to fit in the ROM address space.
+<sup>2</sup> The BIN format is raw bytes with no headers. The file should be exactly 1024 bytes to fit in the ROM address space.
+
+## Debugger
+
+Pressing the "Debugger" menu item in the main window will display the debugger dialog.
+
+The debugger lets you pause, step through instructions, and inspect CPU state, disassembly and memory.
+
+**While the Debugger has single-step and breakpoints, these are not the same as and should not be confused with the Single-Step, Breakpoint and others featured on the ET3400 interface.**
+
+The ET3400 provides single-step and breakpoint features through software via the Monitor ROM — to do so, the CPU must be actively running so the monitor can track and respond to CPU state.
+
+The Debugger operates at the hardware level, showing what is happening at the instruction level on the emulated hardware, independent of the monitor software.
+
+This can lead to what might seem to be "different" behavior, but are simply different contexts. Some of these are discussed in the section [Emulation Quirks](#emulation-quirks)
+
+### Controls
+
+The following buttons can be found in the toolbar
+
+* <img src="./src/resources/buttons/Run.png">  &nbsp;**Run** - Resumes emulation
+* <img src="./src/resources/buttons/Stop.png"> &nbsp;**Stop** - Pauses emulation
+* <img src="./src/resources/buttons/StepOver.png"> &nbsp;**Step Over** - Executes the next instruction. If it is a `JSR` or `BSR`, runs the entire subroutine and breaks on return.
+* <img src="./src/resources/buttons/StepInto.png"> &nbsp;**Step Into** - Executes the next instruction, entering any subroutine call.
+* <img src="./src/resources/buttons/StepOut.png"> &nbsp;**Step Out** - Runs until before the current subroutine returns (`RTS`), then breaks.
+* <img src="./src/resources/buttons/Restart.png"> &nbsp;**Reset** - Reset emulator
+
+The following keyboard shortcuts are also available:
+
+* **F5** - Resumes emulation
+* **F4** - Pauses emulation
+* **F9** - Toggle Breakpoint on the currently highlighted line
+* **F10** - Step Over
+* **F11** - Step Into
+* **Shift+F11** - Step Out 
+* **ESC** - Reset emulator
+
+<img alt="debugger" src="documentation/debugger.png" style="max-width: 100%; height: auto;"/>
+
+### Menus
+
+Most of the menu items are self-explanatory, but some may need clarification.
+
+#### File
+
+**Load Breakpoints** and **Save Breakpoints** refers to the the Debugger breakpoints, not any breakpoints created via the ET3400 interface. 
+
+#### Debug
+
+**Clear RAM** will allow you to set a region of RAM to a desired value. This can be useful when clearing an existing program. A reset will be be performed after clearing RAM.
+
+#### View
+
+**Labels** shows a dialog where you can manage [labels](#labels) directly. You can also load and save, and navigate to different locations in the disassembly view by clicking on the labels listed. This dialog shows the labels in the currently selected memory-mapped device in the Disassembly view. 
+
+**Breakpoints** shows a dialog where you can manage [breakpoints](#breakpoints) directly. You can also load and save, and navigate to different locations in the disassembly view by clicking on the breakpoints listed. This dialog shows all available breakpoints across all memory-mapped devices. Unchecking a breakpoint in the list will disable the breakpoint, preventing the emulator from stopping when it reaches the breakpoint address.
+
+Toggling **Disassembly** and **Memory** will show or hide the respective pane in the view.
+
+**Auto Refresh Disassembly** is useful for watching RAM updates live in the Disassembly view, to see variables or the stack being updated in real time. However, this usually requires that you have labels properly setup so that changing RAM does not affect the disassembly of any code after the variables or stack.
+
+When enabled, the **Heat map** feature will highlight the addresses in memory that have changed since the last refresh which happens approximately every 100ms.
+
+### Status Pane
+
+The Status Pane displays the live contents of the CPU registers:
+
+* PC - Program Counter
+* SP - Stack Pointer
+* IX - Index
+* ACCA - Accumulator A
+* ACCB - Accumulator B
+* CC - Status in Binary as --HINZVC
+
+### Disassembly Pane
+
+At the top of the pane you will see a dropdown containing the current list of memory-mapped devices with data that can be disassembled.  
+
+- RAM
+- Monitor ROM
+
+Selecting one of these will display the disassembled contents of the selected memory-mapped device.
+
+The disassembler reads consecutive bytes in memory and decodes them as instructions and operands — for example, `BD FC BC` becomes `JSR $FCBC`.
+
+When data such as variables or lookup tables precedes executable code, the disassembler may misinterpret those bytes as instructions, causing incorrect disassembly from that point forward. You can use [labels](#labels) to mark regions of memory so the disassembler treats them correctly.
+
+You can also set [breakpoints](#breakpoints) directly in the disassembly pane.
+
+When the emulator is paused — either manually or at a breakpoint — the next instruction to be executed is highlighted in yellow.
+
+Use the View > Refresh (Ctrl+R) function to update the disassembly view. This will run the disassembler over memory again, updating any values that have may have changed.
+
+### Memory Pane
+
+Similar to the Disassembler pane you will see a dropdown containing the current list of memory-mapped devices:
+
+- RAM
+- Keypad
+- Display
+- Monitor ROM
+
+Selecting one of these will display the raw byte contents of addressed memory of the selected memory-mapped device.
+
+The Display device does not actually have memory - it represents the last bytes written to the addresses indicated.
+
+Likewise, the Keypad device reflects the current values of the lines that are decoded at the keypad address. These are data lines that are kept high at logic level 1 and are pulled low to logic level 0 when a key is held down.
+
+## Breakpoints
+
+### Setting a breakpoint
+
+You can toggle a breakpoint at the currently selected line in the disassembly view by pressing F9.
+
+You can also toggle a breakpoint at any line by hovering over the leftmost side of the disassembly view. An empty red circle will appear indicating a breakpoint can be set.
+
+<img width="400" height="148" alt="image" src="https://github.com/user-attachments/assets/fdbd20bd-87d1-40d7-b7df-72c119d5d4a2" />
+
+Setting a breakpoint will add a filled red circle to the left of the instructions, indicating that a breakpoint has been set.
+
+<img width="386" height="127" alt="image" src="https://github.com/user-attachments/assets/9f69236c-5d10-4c56-99d1-7534d80a2c8c" />
+
+### Hitting a breakpoint
+
+When execution reaches the instruction where the breakpoint is set, the emulator will stop and the background color of the line will change to yellow, indicating that the instruction will be executed next when the emulator advances.
+
+<img width="369" height="112" alt="image" src="https://github.com/user-attachments/assets/b5fa37c9-e53c-41ac-a976-545754f6ceee" />
+
+### Loading and Saving Breakpoints
+
+Breakpoints can be loaded and saved from the toolbar menu (File > Load Breakpoints and File > Save Breakpoints)
+
 
 ## Labels
 
@@ -139,107 +270,6 @@ You can edit or remove a label by right-clicking on a labeled range in the disas
 ### Loading and Saving Labels
 
 Labels can be loaded and saved from the toolbar menu (**File > Load Labels (RAM)** and **File > Save Labels (RAM)**)
-
-## Debugger
-
-Pressing the "Debugger" menu item in the main window will display the debugger dialog.
-
-The debugger lets you pause, step through instructions, and inspect CPU state, disassembly and memory.
-
-### Controls
-
-The following buttons can be found in the toolbar
-
-* <img src="./src/resources/buttons/Run.png">  &nbsp;**Run** - Resumes emulation
-* <img src="./src/resources/buttons/Stop.png"> &nbsp;**Stop** - Pauses emulation
-* <img src="./src/resources/buttons/StepOver.png"> &nbsp;**Step Over** - Executes the next instruction. If it is a `JSR` or `BSR`, runs the entire subroutine and breaks on return.
-* <img src="./src/resources/buttons/StepInto.png"> &nbsp;**Step Into** - Executes the next instruction, entering any subroutine call.
-* <img src="./src/resources/buttons/StepOut.png"> &nbsp;**Step Out** - Runs until before the current subroutine returns (`RTS`), then breaks.
-* <img src="./src/resources/buttons/Restart.png"> &nbsp;**Reset** - Reset emulator
-
-The following keyboard shortcuts are also available:
-
-* **F5** - Resumes emulation
-* **F4** - Pauses emulation
-* **F9** - Toggle Breakpoint on the currently highlighted line
-* **F10** - Step Over
-* **F11** - Step Into
-* **Shift+F11** - Step Out 
-* **ESC** - Reset emulator
-
-<img width="987" height="753" alt="debugger" src="https://github.com/user-attachments/assets/9c0e19d1-5436-4fec-85eb-26ff87c84b39" />
-
-### Status Pane
-
-The Status Pane displays the live contents of the following CPU registers:
-
-* PC - Program Counter
-* SP - Stack Pointer
-* IX - Index
-* ACCA - Accumulator A
-* ACCB - Accumulator B
-* CC - Status in Binary as --HINZVC
-
-### Disassembly Pane
-
-At the top of the pane you will see a dropdown containing the current list of memory-mapped devices
-
-- RAM
-- Keypad
-- Display
-- ROM
-
-Selecting one of these will display the disassembled contents of addressed memory of the selected memory-mapped device.
-
-The disassembler will decode consecutive contents of memory as instructions and arguments.
-
-For example the consecutive bytes `BD FC BC` as `JSR $FCBC`
-
-When instructions are preceded by variables or lookup data, this can affect how the instruction are disassembled due to the the disassembler interpreting previous memory as instructions.
-
-To avoid this problem, you can add [labels](#labels) to the code to force the disassembler to treat ranges of code differently.
-
-You can set [breakpoints](#breakpoints) in the disassembly pane.
-
-You can also see the next line to be executed highlighted in yellow when the emulator is stopped (manually or because of a breakpoint).
-
-### Memory Pane
-
-Similar to the Disassmbler pane you will see a dropdown containing the current list of memory-mapped devices
-
-- RAM
-- Keypad
-- Display
-- ROM
-
-Selecting one of these will display the raw byte contents of addressed memory of the selected memory-mapped device.
-
-Heat map
-
-## Breakpoints
-
-### Setting a breakpoint
-
-You can toggle a breakpoint at the currently selected line in the disassembly view by pressing F9.
-
-You can also toggle a breakpoint at any line by hovering over the leftmost side of the disassembly view. An empty red circle will appear indicating a breakpoint can be set.
-
-<img width="400" height="148" alt="image" src="https://github.com/user-attachments/assets/fdbd20bd-87d1-40d7-b7df-72c119d5d4a2" />
-
-Setting a breakpoint will add a filled red circle to the left of the instructions, indicating that a breakpoint has been set.
-
-<img width="386" height="127" alt="image" src="https://github.com/user-attachments/assets/9f69236c-5d10-4c56-99d1-7534d80a2c8c" />
-
-### Hitting a breakpoint
-
-When execution reaches the instruction where the breakpoint is set, the emulator will stop and the background color of the line will change to yellow, indicating that the instruction will be executed next when the emulator advances.
-
-<img width="369" height="112" alt="image" src="https://github.com/user-attachments/assets/b5fa37c9-e53c-41ac-a976-545754f6ceee" />
-
-### Loading and Saving Breakpoints
-
-Breakpoints can be loaded and saved from the toolbar menu (File > Load Breakpoints and File > Save Breakpoints)
-
 
 # Manual
 
@@ -286,20 +316,24 @@ Pressing one of the buttons will execute one of the built-in commands in the ROM
 |    4     |  **INDEX**    | View contents of Index Pointer Register		   |
 |    5     |  **CC**       | View contents of Condition Codes Register		   |
 |    6     |  **SP**       | View contents of Stack Pointer Register		   |
-|    7     |  **RTI**      | Execute Return from Interrupt							   |
-|    8     |  **SS**       | Single Step									   |
-|    9     |  **BR**       | Break											   |
+|    7     |  **RTI**      | Return from Interrupt <sup>1</sup>       |
+|    8     |  **SS**       | Single step <sup>2</sup> 					   |
+|    9     |  **BR**       | Add breakpoint <sup>3</sup>  |
 |    A     |  **AUTO**     | Start entering hex at specified address		   |
-|    B     |  **BACK**     | During Examine mode, move address back		       |
+|    B     |  **BACK**     | During Examine mode, move address back 		       |
 |    C     |  **CHAN**     | During Examine mode, edit hex at specified address. During ACCA/ACCB/PC mode, edit hex in selected register |
 |    D     |  **DO**       | Execute RAM at given address                      |
 |    E     |  **EXAM**     | Start viewing hex at specified address            |
 |    F     |  **FWD**      | During Examine mode, move address forward         |
-|   ESC    |  **RESET**    | Reset the CPU <sup>1</sup>        |
+|   ESC    |  **RESET**    | Reset the CPU <sup>4</sup>        |
 
 **Notes**
 
-<sup>1</sup> RESET only takes effect while the CPU is running. It has no effect when the CPU is paused, and single-stepping after pressing RESET will also have no effect — the RESET line is released as soon as the key is released.
+<sup>1</sup> When the program is halted at software breakpoint, this will resume execution.
+
+<sup>2, 3</sup> Features of the ROM that simulate debugger behavior in software. These are implemented by the ET3400 ROM, and are not related to the emulator Debugger and will behave differently.
+
+<sup>4</sup> RESET only takes effect while the CPU is running. It has no effect when the CPU is paused, and single-stepping after pressing RESET will also have no effect — the RESET line is released as soon as the key is released.
 
 ## Sample Program
 
@@ -343,23 +377,41 @@ These files can be loaded directly into the emulator
 
 # Emulation Quirks
 
+## Debugger Breakpoints at the start address entered in DO command are never hit
+
+If you set an emulator breakpoint at a program's start address and launch it with `DO`, the breakpoint will never be hit.
+
+The monitor ROM's `DO` command does not jump directly to the entered address. Instead, it copies the first instruction (1, 2, or 3 bytes) into stack memory at `$00F9`, appends a software interrupt to trap it, and executes from there — returning to the next instruction in your program afterward. For `JSR` instructions, it executes the call and sets up the return to the next instruction.
+
+Because execution never passes through the original address, any breakpoint set there is bypassed. 
+
+The reason that the ROM does this is to trap its own breakpoints. When you enter breakpoints in the ET3400, the ROM will patch the address with a `3F` - the software vector interrupt - so that it can handle the instruction itself.
+
+The relevant routine is `SSTEP` in the Monitor ROM at `$FE6B`.
+
+
 ## ET3400 EXAM and Debugger Disassembly / Memory values disagree when examining stack addresses
 
-If you press `EXAM 00D0` and work your way though the stack by pressed `FWD` you will find that at some addresses the value displayed in the ET3400 seven-segment display do not agree with the values shown in the Disassembly and Memory panes in the Debugger.
+If you press `EXAM 00D0` and step through the stack using `FWD`, you may notice that some values shown on the ET3400's display do not match the values in the Debugger's Disassembly and Memory panes.
 
-This is not a bug. The code that displays the stack unfortunately uses the stack as well, and for a brief moment when the ROM code is reading memory to be displayed, it reads whatever value is at the memory address. The code continues, overwriting the stack as it goes along. The final value ends up being shown in the debugger. This is the actual current value in memory, while the value displayed in the trainer is the one it read while trying to read from the stack it was writing to at the same time.
+This is not a bug. The monitor ROM code that reads and displays stack memory also uses the stack itself. As it reads a value to display, it simultaneously writes to the stack — so the value it reads is briefly whatever happens to be at that address during that write. The Debugger shows the final settled value in memory, while the ET3400 display shows the transient value captured mid-write.
 
-## Breakpoints at the start address entered in DO are never hit
+## ET3400 behavior with Single-Step (SS) may be different from Debugger single-step
 
-If you have a program that starts at `0000` for example, and you add an emulator breakpoint at that address, and start the program with `DO 0000`, the breakpoint will never be hit.
+This is less of a quirk and more of a difference in how each single-step operates.
 
-This is because the ROM will do one of 2 things:
+The ET3400's Single-Step is a software routine in the Monitor ROM. For each instruction, it copies the instruction bytes onto the stack, executes them there, then returns control to the ROM so it can update the display and respond to keypresses. The CPU keeps running throughout — the ROM is managing every step.
 
-* If the instruction at the start address is a JSR, it will copy the address into the stack and perform an RTI directly to the target of your JSR instruction.
-* If the instruction at the start address is not a JSR, it will copy the instruction and arguments into the stack and append with two SWI instructions, and setup the stack and perform an RTI to the copy of your instruction.
+The Debugger's single-step works differently: it pauses the CPU entirely and executes each instruction directly, without any ROM involvement.
 
-The code that does this is the SSTEP (Single Step routine) at ROM address `FE6B`.
+**Example: stepping over a `SWI` instruction**
 
+| | Next address shown | Vector used |
+|---|---|---|
+| ET3400 Single-Step | `$00FA` — User SWI Vector | Set by the ROM's SWI handler |
+| Debugger Step | `$00F4` — System SWI Vector | Read from ROM at `$FFFA` |
+
+When the ET3400 single-steps over `SWI`, its ROM intercepts the interrupt and redirects execution to `$00FA` (the "User" SWI vector). The Debugger lets the instruction execute as the hardware would: it pushes registers to the stack and jumps to the vector stored at `$FFFA`, which in the standard ROM points to `$00F4`.
 
 ##
 
