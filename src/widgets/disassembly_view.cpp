@@ -13,6 +13,10 @@ DisassemblyView::DisassemblyView(QWidget *parent)
 
 	// setBackgroundRole(QPalette::Base);
 	// setAutoFillBackground(true);
+	QFont font("Courier", 12);
+	font.setWeight(QFont::Medium);
+	item_height = QFontMetrics(font).lineSpacing();
+
 	running = true;
 	start = 0;
 	end = 0x100;
@@ -300,7 +304,7 @@ void DisassemblyView::resizeEvent(QResizeEvent *event)
 	if (is_memory_set)
 	{
 		visible_items = size.height() / item_height;
-		int x = lines->size() - visible_items + 1;
+		int x = lines->size() - visible_items + 2;
 		max_vscroll = x > 0 ? x : 0;
 		emit onSize(max_vscroll);
 
@@ -515,6 +519,7 @@ void DisassemblyView::rebuild()
 {
 	DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
 	this->update();
+	resizeEvent(new QResizeEvent(size(), size()));
 }
 
 void DisassemblyView::redraw()
@@ -613,6 +618,7 @@ void DisassemblyView::refresh()
 	if (auto_refresh)
 	{
 		DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
+		resizeEvent(new QResizeEvent(size(), size()));
 	}
 	redraw();
 }
@@ -627,12 +633,9 @@ void DisassemblyView::set_range(offs_t start, offs_t end, uint8_t *memory)
 
 	DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
 
-	// int x = lines->size() - visible_items;
-	// max_vscroll = x > 0 ? x : 0;
-	// emit on_size(max_vscroll);
-	resizeEvent(new QResizeEvent(size(), size()));
 	offset = 0;
 	is_memory_set = true;
+	resizeEvent(new QResizeEvent(size(), size()));
 }
 
 void DisassemblyView::setEmulator(et3400emu *emu)

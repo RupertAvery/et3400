@@ -177,7 +177,7 @@ void MemoryView::resizeEvent(QResizeEvent *event)
 	QSize size = event->size();
 	buffer = new QPixmap(size);
 	visible_items = size.height() / item_height;
-	int x = (end - start) / 8 - visible_items + 1;
+	int x = (end - start) / 8 - visible_items + 2;
 	max_vscroll = x > 0 ? x : 0;
 	emit on_size(max_vscroll);
 }
