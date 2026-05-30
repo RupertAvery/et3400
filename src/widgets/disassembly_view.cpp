@@ -104,6 +104,7 @@ void DisassemblyView::bufferDraw()
 	int x = 5;
 	painter.save();
 
+
 	std::vector<DisassemblyLine>::iterator line = lines->begin();
 
 	QColor darkblue = QColor("#00018B");
@@ -563,37 +564,43 @@ void DisassemblyView::ensureVisible(offs_t address)
 void DisassemblyView::setSelected(offs_t address)
 {
 	int ctr = -1;
+	bool found = false;
 	std::vector<DisassemblyLine>::iterator line = lines->begin();
 	while (line != lines->end())
 	{
 		if (line->address == address)
 		{
 			selected_line = ctr + 1;
+			found = true;
 			break;
 		}
 		ctr++;
 		line++;
 	}
 
-	ensureVisible(selected_line);
+	if (found)
+		ensureVisible(selected_line);
 }
 
 void DisassemblyView::setCurrent(offs_t address)
 {
 	int ctr = -1;
+	bool found = false;
 	std::vector<DisassemblyLine>::iterator line = lines->begin();
 	while (line != lines->end())
 	{
 		if (line->address == address)
 		{
 			current = ctr + 1;
+			found = true;
 			break;
 		}
 		ctr++;
 		line++;
 	}
 
-	ensureVisible(current);
+	if (found)
+		ensureVisible(current);
 }
 
 void DisassemblyView::setAutoRefresh(bool value)
