@@ -5,6 +5,7 @@
 #include <string>
 #include <functional>
 #include "../common/common_defs.h"
+#include "../util/settings.h"
 
 #define DEVICE_READ 1
 #define DEVICE_WRITE 2
@@ -40,6 +41,7 @@ public:
     virtual offs_t get_end() { return 0; }
     virtual offs_t get_size() { return get_end() - get_start() + 1; }
     virtual void load(offs_t addr, uint8_t *data, size_t size) {}
+    void set_settings(Settings *settings) { this->settings = settings; }
 
     std::function<void(offs_t addr, uint8_t data)> write_hook = nullptr;
     std::function<uint8_t(offs_t addr)> read_hook = nullptr;
@@ -48,6 +50,10 @@ public:
     bool can_disassemble;
 
     memory_mapped_device *next = nullptr;
+
+protected:
+    Settings *settings = nullptr;
+
 };
 
 struct mapped_memory_block

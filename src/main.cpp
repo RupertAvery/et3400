@@ -110,17 +110,19 @@ int main(int argc, char *argv[])
 
     app.setStyleSheet(
         "QToolButton  { font-size: 10pt; }"
-        "QComboBox    { font-size: 10pt; }"
         "QButton      { font-size: 10pt; }"
-        "QPushButton  { font-size: 10pt; }"
+        "QComboBox    { font-size: 10pt; }"
+        "QCheckBox    { font-size: 10pt; }"
         "QGroupBox    { font-size: 10pt; }"
+        "QLabel       { font-size: 10pt; }"
         "QLineEdit    { font-size: 10pt; }"
-        "QListView    { font-size: 10pt; }"
-        "QRadioButton { font-size: 10pt; }"
-        "QMenuBar     { font-size: 10pt; }"
         "QMenu        { font-size: 10pt; }"
+        "QMenuBar     { font-size: 10pt; }"
+        "QListView    { font-size: 10pt; }"
+        "QPushButton  { font-size: 10pt; }"
+        "QRadioButton { font-size: 10pt; }"
         "QTabWidget, QTabBar::tab { font-size: 10pt; }"
-        "QLabel       { font-size: 10pt; }");
+        );
 
         
 

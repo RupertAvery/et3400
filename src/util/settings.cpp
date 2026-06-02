@@ -75,6 +75,8 @@ Settings load_settings()
                 settings.breakpointsDir = value;
             else if (key == "ClearRamOnLoad")
                 settings.clearRamOnLoad = value == "true";
+            else if (key == "ShowBit0DisplayWrites")
+                settings.showBit0DisplayWrites = value == "true";
             }
 
         file.close();
@@ -123,6 +125,7 @@ void save_settings(Settings *settings)
     out << "LabelsDir=" << settings->labelsDir << NEWLINE;
     out << "BreakpointsDir=" << settings->breakpointsDir << NEWLINE;
     out << "ClearRamOnLoad=" << (settings->clearRamOnLoad ? "true" : "false") << NEWLINE;
+    out << "ShowBit0DisplayWrites=" << (settings->showBit0DisplayWrites ? "true" : "false") << NEWLINE;
 
     out.flush();
     file.close();

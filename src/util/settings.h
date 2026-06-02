@@ -24,6 +24,7 @@ struct Settings
     QString labelsDir;
     QString breakpointsDir;
     bool clearRamOnLoad;
+    bool showBit0DisplayWrites;
 };
 
 Settings load_settings();

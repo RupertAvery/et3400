@@ -8,7 +8,7 @@
 // #include <QTimer>
 #include <QAction>
 #include "../dev/display_dev.h"
-
+#include "../util/settings.h"
 class Display : public QWidget
 {
     Q_OBJECT
@@ -18,6 +18,7 @@ public:
     ~Display();
     display_io *device = nullptr;
     void update_display();
+    void set_settings(Settings *settings);
 
 public slots:
     void redraw();
@@ -32,7 +33,7 @@ private:
     QAction *action;
     bool running;
     uint8_t segment[6];
-    //QTimer *m_paintTimer;
+
 };
 
 #endif // DISPLAY_H

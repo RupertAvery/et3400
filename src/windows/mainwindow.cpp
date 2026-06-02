@@ -53,6 +53,8 @@ MainWindow::MainWindow(QWidget *parent)
   help_menu->addAction(tips_action);
 
   display = new Display;
+  display->set_settings(&settings);
+
   keypad = new Keypad;
 
   connect(openRom_action, &QAction::triggered, this, &MainWindow::load_rom);

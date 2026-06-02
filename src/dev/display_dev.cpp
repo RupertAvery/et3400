@@ -21,6 +21,10 @@ void display_io::write(offs_t addr, uint8_t data)
 		write_hook(addr, data);
 	}
 	addr = addr - 0xC100;
+	if(settings != nullptr && settings->showBit0DisplayWrites)
+	{
+		data = data & 1;
+	}
 	displaymem[addr] = data;
 };
 

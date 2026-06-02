@@ -70,6 +70,8 @@ private:
     QSlider *horizontalSlider;
     QPushButton *reset_button;
     QCheckBox *clear_ram_checkbox;
+    QCheckBox *show_bit0_display_writes_checkbox;
+
     int multiplier = 1;
 
     void setHz();
@@ -80,6 +82,7 @@ private:
     QWidget *createTabs();
     QWidget *createClockRateTab();
     QWidget *createGeneralTab();
+    QWidget *createDisplayTab();
 
     void setupUi(QDialog *Dialog);
     void retranslateUi(QDialog *Dialog);

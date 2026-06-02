@@ -134,3 +134,8 @@ void Display::update_display()
 {
     action->trigger();
 }
+
+void Display::set_settings(Settings *settings)
+{
+    device->set_settings(settings);
+}

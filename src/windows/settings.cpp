@@ -18,6 +18,7 @@ QWidget *SettingsDialog::createTabs()
     QTabWidget *tabs = new QTabWidget(this);
     tabs->addTab(createClockRateTab(), "Clock Rate");
     tabs->addTab(createGeneralTab(), "General");
+    tabs->addTab(createDisplayTab(), "Display");
     return tabs;
 }
 
@@ -111,6 +112,26 @@ QWidget *SettingsDialog::createGeneralTab()
     return tab;
 }
 
+QWidget *SettingsDialog::createDisplayTab()
+{
+    QWidget *tab = new QWidget();
+    QVBoxLayout *verticalLayout = new QVBoxLayout(tab);
+
+    QHBoxLayout *horizontalLayout = new QHBoxLayout((QWidget *)verticalLayout);
+    show_bit0_display_writes_checkbox = new QCheckBox("Only show writes to bit 0 for display addresses in the memory pane", tab);
+    QLabel *show_bit0_label = new QLabel("Display latches are only connected to bit 0 of the data bus. Enabling this option will cause the memory pane to show only writes to bit 0", tab);
+    show_bit0_label->setWordWrap(true);
+
+    horizontalLayout->addWidget(show_bit0_display_writes_checkbox);
+
+    verticalLayout->addLayout(horizontalLayout);
+    verticalLayout->addWidget(show_bit0_label);
+
+    connect(show_bit0_display_writes_checkbox, &QCheckBox::toggled, [this](bool checked)
+            { settings->showBit0DisplayWrites = checked; });
+
+    return tab;
+}
 
 void SettingsDialog::setupUi(QDialog *Dialog)
 {
@@ -257,4 +278,5 @@ void SettingsDialog::set_settings(Settings *settings)
 {
     this->settings = settings;
     clear_ram_checkbox->setChecked(settings->clearRamOnLoad);
+    show_bit0_display_writes_checkbox->setChecked(settings->showBit0DisplayWrites);
 }
