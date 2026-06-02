@@ -7,7 +7,8 @@ IF '%1'=='Release' goto build:
 goto err:
 
 :build
-SET VCPKG_TOOLCHAIN=C:\git\vcpkg\scripts\buildsystems\vcpkg.cmake
+SET VCPKG_ROOT=D:\git\vcpkg
+SET VCPKG_TOOLCHAIN=%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake
 
 md %1
 cd %1
