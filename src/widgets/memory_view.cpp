@@ -182,7 +182,7 @@ void MemoryView::resizeEvent(QResizeEvent *event)
 	emit on_size(max_vscroll);
 }
 
-void MemoryView::paintEvent(QPaintEvent * /* event */)
+void MemoryView::paintEvent(QPaintEvent *event)
 {
 	QPainter painter(this);
 	if (is_memory_set)
@@ -191,6 +191,7 @@ void MemoryView::paintEvent(QPaintEvent * /* event */)
 		painter.drawPixmap(0, 0, *buffer, 0, 0, 0, 0);
 		painter.end();
 	}
+	QFrame::paintEvent(event);
 }
 
 // void MemoryView::set_range()

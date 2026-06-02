@@ -449,7 +449,7 @@ void DisassemblyView::adjustSelected(int direction)
 	}
 }
 
-void DisassemblyView::paintEvent(QPaintEvent * /* event */)
+void DisassemblyView::paintEvent(QPaintEvent *event)
 {
 	QPainter painter(this);
 	if (is_memory_set)
@@ -458,6 +458,7 @@ void DisassemblyView::paintEvent(QPaintEvent * /* event */)
 		painter.drawPixmap(0, 0, *buffer, 0, 0, 0, 0);
 		painter.end();
 	}
+	QFrame::paintEvent(event);
 }
 
 void DisassemblyView::mousePressEvent(QMouseEvent *event)
