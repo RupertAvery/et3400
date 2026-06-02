@@ -30,7 +30,7 @@ QToolBar *DebuggerDialog::create_shortcuts_toolbar()
     MakeToolButton(shortcut_toolbar, step_over_button, "Step Over (F10)", ":/buttons/StepOver.png", Qt::Key_F10, step_over);
     MakeToolButton(shortcut_toolbar, step_into_button, "Step Into (F11)", ":/buttons/StepInto.png", Qt::Key_F11, step_into);
     // MakeToolButton(shortcut_toolbar, step_out_button, "Step Out (Shift+F11)", ":/buttons/StepOut.png", Qt::SHIFT + Qt::Key_F11, step_out);
-    MakeToolButton(shortcut_toolbar, reset_button, "Reset (ESC)", ":/buttons/Restart.png", Qt::Key_Escape, reset);
+    MakeToolButtonNS(shortcut_toolbar, reset_button, "Reset", ":/buttons/Restart.png", reset);
 
     shortcut_toolbar->addWidget(start_button);
     shortcut_toolbar->addWidget(stop_button);
@@ -113,7 +113,7 @@ QToolButton *DebuggerDialog::create_debug_menu(QToolBar *toolbar)
     debug_step_over_action = new QAction(QIcon(":/buttons/StepOver.png"), "Step Over\tF10", this);
     debug_step_into_action = new QAction(QIcon(":/buttons/StepInto.png"), "Step Into\tF11", this);
     // debug_step_out_action = new QAction(QIcon(":/buttons/StepOut.png"), "Step Out\tShift+F11", this);
-    debug_reset_action = new QAction(QIcon(":/buttons/Restart.png"), "Reset\tEsc", this);
+    debug_reset_action = new QAction(QIcon(":/buttons/Restart.png"), "Reset", this);
 
     debug_menu->addAction(debug_run_action);
     debug_menu->addAction(debug_stop_action);
@@ -287,6 +287,7 @@ QGroupBox *DebuggerDialog::create_memory_group()
 
     connect(memory_view, &MemoryView::on_scroll, this, &DebuggerDialog::update_memory_scrollbar);
     connect(memory_view, &MemoryView::on_size, this, &DebuggerDialog::update_memory_scrollbar_max);
+    connect(memory_view, &MemoryView::on_offset_change, this, &DebuggerDialog::update_memory_scrollbar_offset);
 
     return memory_groupBox;
 }

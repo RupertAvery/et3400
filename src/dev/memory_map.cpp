@@ -54,7 +54,6 @@ void MemoryMapManager::unmap(memory_mapped_device *device)
         // If the device is in the slot, free the slot
         if (blocks[block].device == device)
         {
-            LOG_DEBUG << "";
             blocks[block].device = NULL;
         }
         else

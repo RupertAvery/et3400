@@ -14,10 +14,7 @@ MemoryView::MemoryView(QWidget *parent)
 	// setBackgroundRole(QPalette::Base);
 	// setAutoFillBackground(true);
 	running = true;
-	start = 0;
-	end = 0x100;
 	offset = 0;
-	is_memory_set = false;
 
 	m_font = QFont("Courier", 12);
 	m_font.setWeight(QFont::Medium);
@@ -105,11 +102,31 @@ void MemoryView::bufferDraw()
 
 	QColor darkblue = QColor("#00018B");
 	QColor darkred = QColor("#8B0000");
+	QBrush selected_brush = QBrush(QColor("#0000FF"));
+
+	bool hasFocus = this->hasFocus();
+
+	if (!hasFocus)
+	{
+		selected_address = -1;
+		is_editing = false;
+	}
 
 	painter.save();
 
 	// Snapshot live memory once — all reads below use shadow, not the live buffer
 	memcpy(shadow_memory, memory, end - start + 1);
+
+	if (is_editing)
+	{
+		blink_counter -= 1;
+		if (blink_counter <= 0)
+		{
+			blink_counter = blink_counter_max;
+		}
+	}
+
+	int half_life = blink_counter_max / 2;
 
 	if (heat_map_enabled)
 	{
@@ -126,7 +143,8 @@ void MemoryView::bufferDraw()
 		}
 	}
 
-	
+	int ascent = m_fm->ascent();
+	int descent = m_fm->descent();
 
 	for (int line = offset; line < offset + visible_items && (start + (line * 8) < end); line++)
 	{
@@ -141,14 +159,53 @@ void MemoryView::bufferDraw()
 		{
 			int heat_idx = address + i - start;
 			int text_x = 80 + i * 30;
+			int box_x = text_x - 4;
+			int box_y = y - ascent - 1;
+			int box_width = 28;
+			int box_height = ascent + descent;
+
 			painter.setPen(darkred);
-			if (heat_map_enabled && heat_map[heat_idx] > 0)
+
+			if (!is_editing && heat_map_enabled && heat_map[heat_idx] > 0)
 			{
-				painter.fillRect(text_x - 2, y - m_fm->ascent(), 28, m_fm->ascent() + m_fm->descent(),
+				painter.fillRect(box_x, box_y, box_width, box_height,
 								 m_heat_colors[heat_map[heat_idx] / 16]);
 			}
 
-			painter.drawText(text_x, y, QString("%1").arg(shadow_memory[address + i - start], 2, 16, QChar('0')).toUpper());
+			if (hasFocus && !is_editing && selected_address == address + i)
+			{
+
+				painter.fillRect(box_x, box_y, box_width, box_height, selected_brush);
+			}
+
+			if (hasFocus && is_editing && address + i == editing_address)
+			{
+				painter.setPen(Qt::blue);
+				painter.drawRect(box_x, box_y, box_width, box_height);
+
+				if (editing_nibble == 0 && blink_counter > half_life)
+				{
+					painter.drawText(text_x, y, QString(" %1").arg(editing_value & 0x0F, 1, 16, QChar('0')).toUpper());
+				}
+				else if (editing_nibble == 1 && blink_counter > half_life)
+				{
+					painter.drawText(text_x, y, QString("%1 ").arg((editing_value >> 4) & 0x0F, 1, 16, QChar('0')).toUpper());
+				}
+				else
+				{
+					painter.drawText(text_x, y, QString("%1").arg(editing_value, 2, 16, QChar('0')).toUpper());
+				}
+			}
+			else
+			{
+				if (hasFocus && !is_editing && address + i == selected_address)
+				{
+					painter.setPen(Qt::white);
+				}
+
+				painter.drawText(text_x, y, QString("%1").arg(shadow_memory[address + i - start], 2, 16, QChar('0')).toUpper());
+			}
+
 			i++;
 		}
 
@@ -185,7 +242,7 @@ void MemoryView::resizeEvent(QResizeEvent *event)
 void MemoryView::paintEvent(QPaintEvent *event)
 {
 	QPainter painter(this);
-	if (is_memory_set)
+	if (is_device_set)
 	{
 		bufferDraw();
 		painter.drawPixmap(0, 0, *buffer, 0, 0, 0, 0);
@@ -208,11 +265,13 @@ void MemoryView::update_display()
 	// action->trigger();
 }
 
-void MemoryView::set_range(offs_t start, offs_t end, uint8_t *memory)
+void MemoryView::set_device(memory_mapped_device *device)
 {
-	this->start = start;
-	this->end = end;
-	this->memory = memory;
+	this->device = device;
+
+	this->start = device->get_start();
+	this->end = device->get_end();
+	this->memory = device->get_mapped_memory();
 
 	if (this->last_memory != nullptr)
 		free(this->last_memory);
@@ -229,10 +288,282 @@ void MemoryView::set_range(offs_t start, offs_t end, uint8_t *memory)
 
 	resizeEvent(new QResizeEvent(size(), size()));
 	offset = 0;
-	is_memory_set = true;
+	is_device_set = true;
 }
+
+// void MemoryView::set_range(offs_t start, offs_t end, uint8_t *memory)
+// {
+// 	this->start = start;
+// 	this->end = end;
+// 	this->memory = memory;
+
+// 	if (this->last_memory != nullptr)
+// 		free(this->last_memory);
+
+// 	if (this->heat_map != nullptr)
+// 		free(this->heat_map);
+
+// 	if (this->shadow_memory != nullptr)
+// 		free(this->shadow_memory);
+
+// 	this->last_memory = (uint8_t *)calloc(end - start + 1, 1);
+// 	this->shadow_memory = (uint8_t *)calloc(end - start + 1, 1);
+// 	this->heat_map = (uint8_t *)calloc(end - start + 1, 1);
+
+// 	resizeEvent(new QResizeEvent(size(), size()));
+// 	offset = 0;
+// 	is_memory_set = true;
+// }
 
 void MemoryView::set_emulator(et3400emu *emu)
 {
 	emu_ptr = emu;
+}
+
+void MemoryView::keyPressEvent(QKeyEvent *event)
+{
+	if (event->key() == Qt::Key_Escape && is_editing)
+	{
+		stop_editing();
+		return;
+	}
+
+	if (!is_editing)
+	{
+		if (event->key() == Qt::Key_Home)
+		{
+			selected_address = start;
+			update_offset();
+			update();
+		}
+		else if (event->key() == Qt::Key_End)
+		{
+			selected_address = end;
+			update_offset();
+			update();
+		}
+		else if (event->key() == Qt::Key_F2)
+		{
+			start_editing(selected_address);
+		}
+		else if (event->key() == Qt::Key_Up)
+		{
+			if (selected_address > (int)start)
+			{
+				if (selected_address - 8 >= (int)start)
+				{
+					selected_address -= 8;
+					update_offset();
+					if (selected_address < (int)start)
+						selected_address = start;
+				}
+
+				update();
+			}
+		}
+		else if (event->key() == Qt::Key_Down)
+		{
+			if (selected_address < (int)end)
+			{
+				if (selected_address + 8 <= end)
+				{
+					selected_address += 8;
+					update_offset();
+					if (selected_address > end)
+						selected_address = end;
+				}
+
+				update();
+			}
+		}
+		else if (event->key() == Qt::Key_Left)
+		{
+			if (selected_address > (int)start)
+			{
+				selected_address -= 1;
+				update_offset();
+				if (selected_address < (int)start)
+					selected_address = start;
+
+				update();
+			}
+		}
+		else if (event->key() == Qt::Key_Right)
+		{
+			if (selected_address < (int)end)
+			{
+				selected_address += 1;
+				update_offset();
+				if (selected_address > (int)end)
+					selected_address = end;
+
+				update();
+			}
+		}
+		else if (event->key() == Qt::Key_PageUp)
+		{
+			if (selected_address > (int)start)
+			{
+				selected_address -= visible_items * 8;
+				update_offset();
+				if (selected_address < (int)start)
+					selected_address = start;
+
+				update();
+			}
+		}
+		else if (event->key() == Qt::Key_PageDown)
+		{
+			if (selected_address < (int)end)
+			{
+				selected_address += visible_items * 8;
+				update_offset();
+				if (selected_address > (int)end)
+					selected_address = end;
+
+				update();
+			}
+		}
+	}
+	else
+	{
+		if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
+		{
+			device->write(editing_address, editing_value);
+			// memory[editing_address - start] = editing_value;
+			is_editing = false;
+			update();
+		}
+		else if (event->key() == Qt::Key_Backspace)
+		{
+			if (editing_nibble == 0)
+			{
+				editing_value = editing_value & 0x0F;
+				editing_nibble = 1;
+				editing_address -= 1;
+				if (editing_address < start)
+					editing_address = start;
+				selected_address = editing_address;
+				editing_value = memory[editing_address - start];
+			}
+			else
+			{
+				editing_value = editing_value & 0xF0;
+				editing_nibble = 0;
+			}
+			update();
+		}
+		else
+		{
+			int key = event->key();
+			if ((key >= Qt::Key_0 && key <= Qt::Key_9) || (key >= Qt::Key_A && key <= Qt::Key_F))
+			{
+				int value = (key >= Qt::Key_A) ? (key - Qt::Key_A + 10) : (key - Qt::Key_0);
+
+				if (editing_nibble == 0)
+				{
+					editing_value = (editing_value & 0x0F) | (value << 4);
+					editing_nibble = 1;
+				}
+				else
+				{
+					editing_value = (editing_value & 0xF0) | value;
+					device->write(editing_address, editing_value);
+					editing_nibble = 0;
+					if (editing_address < end)
+					{
+						editing_address += 1;
+						selected_address = editing_address;
+					}
+					editing_value = memory[editing_address - start];
+				}
+
+				update();
+			}
+		}
+	}
+}
+
+void MemoryView::update_offset()
+{
+	if (selected_address < (int)start + offset * 8)
+	{
+		while (selected_address < (int)start + offset * 8)
+		{
+			offset -= 1;
+			if (offset < 0)
+			{
+				offset = 0;
+				break;
+			}
+		}
+		emit on_offset_change(offset);
+	}
+	else if (selected_address > (int)start + (offset + visible_items) * 8 - 1)
+	{
+		while (selected_address > (int)start + (offset + visible_items) * 8 - 1)
+		{
+			offset += 1;
+			if (offset > max_vscroll)
+			{
+				offset = max_vscroll;
+				break;
+			}
+		}
+		emit on_offset_change(offset);
+	}
+}
+
+void MemoryView::mousePressEvent(QMouseEvent *event)
+{
+	int y = event->y();
+	int x = event->x();
+	int ascent = m_fm->ascent();
+	int line = (y - 1) / item_height;
+	int col = (x - 80) / 30;
+	int address = start + (offset + line) * 8 + col;
+	if (address <= end)
+	{
+		selected_address = address;
+		update();
+	}
+}
+
+void MemoryView::mouseDoubleClickEvent(QMouseEvent *event)
+{
+	int y = event->y();
+	int x = event->x();
+	int ascent = m_fm->ascent();
+	int line = (y - 1) / item_height;
+	int col = (x - 80) / 30;
+	int address = start + (offset + line) * 8 + col;
+	if (address <= end)
+	{
+		start_editing(address);
+	}
+}
+
+void MemoryView::start_editing(uint16_t address)
+{
+	LOG_DEBUG << "Start editing address" << toHex(address);
+	LOG_DEBUG << "Device name:" << QString::fromStdString(device->name);
+	LOG_DEBUG << "Device flags:" << device->get_flags();
+	if ((device->get_flags() & DEVICE_WRITE) != DEVICE_WRITE)
+		return;
+
+	is_editing = true;
+	editing_address = address;
+	editing_nibble = 0;
+	editing_value = memory[address - start];
+	blink_counter = blink_counter_max;
+	update();
+}
+
+void MemoryView::stop_editing()
+{
+	is_editing = false;
+	blink_counter = blink_counter_max;
+	editing_nibble = 0;
+	editing_value = 0;
+	update();
 }

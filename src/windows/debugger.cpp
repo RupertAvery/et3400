@@ -201,7 +201,7 @@ void DebuggerDialog::select_memory_location(int index)
 	if (device == nullptr)
 		return;
 
-	memory_view->set_range(device->get_start(), device->get_end(), device->get_mapped_memory());
+	memory_view->set_device(device);
 	memory_scrollbar->setValue(0);
 }
 
@@ -228,6 +228,11 @@ void DebuggerDialog::select_disassembly_location(int index)
 void DebuggerDialog::update_memory_scrollbar(int value)
 {
 	memory_scrollbar->setValue(memory_scrollbar->value() - value);
+}
+
+void DebuggerDialog::update_memory_scrollbar_offset(int value)
+{
+	memory_scrollbar->setValue(value);
 }
 
 void DebuggerDialog::update_memory_scrollbar_max(int value)
@@ -668,8 +673,8 @@ void DebuggerDialog::show_save_view_dialog()
 	memory_mapped_device *mem = get_memory_device();
 
 	SnapFileSettings snap_settings = SnapFileSettings{true, true, true};
-	//snap_settings.include_dasm = settings->showDasmView;
-	//snap_settings.include_mem = settings->showMemoryView;
+	// snap_settings.include_dasm = settings->showDasmView;
+	// snap_settings.include_mem = settings->showMemoryView;
 
 	File::save_memory_mapped_devices_dialog(this, emu_ptr, dasm, mem, snap_settings);
 }

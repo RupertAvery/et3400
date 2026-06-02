@@ -8,6 +8,12 @@
 	button->setShortcut(QKeySequence(seq));                           \
 	connect(button, &QToolButton::clicked, this, &DebuggerDialog::delegate)
 
+#define MakeToolButtonNS(toolbar, button, toolTip, icon, delegate) \
+	button = new QToolButton();                                    \
+	button->setToolTip(toolTip);                                   \
+	button->setIcon(QIcon(icon));                                  \
+	connect(button, &QToolButton::clicked, this, &DebuggerDialog::delegate)
+
 #define MakeTriggeredActionNS(action, name, delegate) \
 	action = new QAction(name, this);                 \
 	connect(action, &QAction::triggered, this, &DebuggerDialog::delegate)
@@ -125,7 +131,7 @@ private:
 	QToolButton *stop_button;
 	QToolButton *step_into_button;
 	QToolButton *step_over_button;
-	//QToolButton *step_out_button;
+	// QToolButton *step_out_button;
 	QToolButton *reset_button;
 
 	// QSlider* slider;
@@ -149,7 +155,7 @@ private:
 	QAction *debug_stop_action = nullptr;
 	QAction *debug_step_over_action = nullptr;
 	QAction *debug_step_into_action = nullptr;
-	//QAction *debug_step_out_action = nullptr;
+	// QAction *debug_step_out_action = nullptr;
 	QAction *debug_reset_action = nullptr;
 
 	MemoryView *memory_view = nullptr;
@@ -177,6 +183,7 @@ private:
 	void adjustDisassemblyScrollbar(int value);
 	void update_memory_scrollbar_max(int value);
 	void update_disassembly_scrollbar_max(int value);
+	void update_memory_scrollbar_offset(int value);
 
 	void memory_slider_moved(int value);
 	void disassembly_slider_moved(int value);

@@ -12,6 +12,7 @@ public:
     void write(offs_t addr, uint8_t data) override;
     void write_block(offs_t addr, uint8_t *data, size_t length) override;
     bool is_mapped(offs_t addr) override;
+    uint8_t get_flags() override { return readonly ? DEVICE_READ : (DEVICE_READ | DEVICE_WRITE); }
     uint8_t *get_mapped_memory() override;
     offs_t get_start() override;
     offs_t get_end() override;
