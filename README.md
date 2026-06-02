@@ -1,10 +1,10 @@
 # ET-3400 Emulator
 
-This is an emulator for the [Heathkit ET-3400 Trainer](http://www.oldcomputermuseum.com/heathkit_et3400.html) built in C++.
+This is an emulator for the [Heathkit ET-3400 Trainer](http://www.oldcomputermuseum.com/heathkit_ET-3400.html) built in C++.
 
-This is a port of my emulator built in C# (https://github.com/RupertAvery/et3400-emu) with the goal of better performance and speed accuracy, as well as portability, with Windows and Linux targets.
+This is a port of my emulator built in C# (https://github.com/RupertAvery/ET-3400-emu) with the goal of better performance and speed accuracy, as well as portability, with Windows and Linux targets.
 
-The Heathkit ET-3400 Trainer is a device intended to teach microprocessor basics and assembly programming. The trainer was sold in kit form, requiring the user to build the device from parts.
+The Heathkit ET-3400 Trainer is a basic computer intended to teach microprocessor basics and assembly programming. The trainer was sold in kit form, requiring the user to build the device from the parts included in the kit.
 
 # Acknowledgement
 
@@ -17,7 +17,7 @@ For more information on the kit itself as well as access to the information, pro
 Here are the optional command line arguments:
 
 ```
-Usage: et3400.exe [options] [file]
+Usage: ET-3400.exe [options] [file]
 
 Options:
   -m <path>            Load alternate monitor ROM from file (.s19, .hex, .bin)
@@ -47,11 +47,11 @@ Notes:
 
 * Motorola 8-bit 6800 CPU running at 471kHz 
 * 6 7-segment LED displays
-* a hex keypad
-* 1KB RAM
+* Hex Keypad with 16 buttons (0-F) + Reset button
+* 512B RAM
 * 1KB Monitor ROM
 
-The built-in ROM contains the Monitor program designed for the Heathkit ET-3400 Trainer, which interacts with the keypad and display to run programs and view CPU registers.
+The built-in ROM contains the Monitor program designed for the Heathkit ET-3400 Trainer, which interfaces with the keypad and display, and allows viewing and editing memory to enter and execute programs, and view CPU registers.
 
 # Screenshot
 
@@ -68,7 +68,7 @@ The built-in ROM contains the Monitor program designed for the Heathkit ET-3400 
 
 ## Loading programs into RAM
 
-You can load programs compiled from another device into emulator RAM. 
+You can load compiled programs into emulator RAM.
 
 Click `File` > `Load RAM` and select your file to load it into memory. 
 
@@ -110,15 +110,23 @@ Raw binary <sup>2</sup> | `.BIN`
 
 Pressing the "Debugger" menu item in the main window will display the debugger dialog.
 
-The debugger lets you pause, step through instructions, and inspect CPU state, disassembly and memory.
+The debugger lets you pause, single-step through instructions, and inspect CPU state, disassembly and memory.
 
-**While the Debugger has single-step and breakpoints, these are not the same as and should not be confused with the Single-Step, Breakpoint and others featured on the ET3400 interface.**
+The disassembly view also allows you to add labels and set breakpoints.
 
-The ET3400 provides single-step and breakpoint features through software via the Monitor ROM — to do so, the CPU must be actively running so the monitor can track and respond to CPU state.
+## A Note on Single-Step and Breakpoints
 
-The Debugger operates at the hardware level, showing what is happening at the instruction level on the emulated hardware, independent of the monitor software.
+While the Debugger has single-step and breakpoints, these are not the same as and should not be confused with the Single-Step and Breakpoints on the ET-3400 interface.
 
-This can lead to what might seem to be "different" behavior, but are simply different contexts. Some of these are discussed in the section [Emulation Quirks](#emulation-quirks)
+The ET-3400 provides single-step and breakpoint features through software via the Monitor ROM — to do so, the CPU must be actively running so the monitor can track and respond to CPU state.
+
+The Debugger operates at the hardware level, showing what is happening at the instruction level on the emulated hardware, independent of the monitor software. When a breakpoint is encountered or during single-step operation, the CPU is effectively halted.
+
+This can lead to what might seem to be bugs or different behavior, but are simply different contexts. Some of these are discussed in the section [Emulation Quirks](#emulation-quirks)
+
+Any time single-step and breakpoints are mentioned in the context of the debugger, this refers exclusively to  single-step and breakpoints within the debugger.
+
+Unless specifically mentioned, single-step and breakpoints in this document will refer to the debugger feature. Where necessary, the ET-3400 feature will be referred to as software single-step and breakpoints.
 
 ### Controls
 
@@ -149,7 +157,7 @@ Most of the menu items are self-explanatory, but some may need clarification.
 
 #### File
 
-**Load Breakpoints** and **Save Breakpoints** refers to the the Debugger breakpoints, not any breakpoints created via the ET3400 interface. 
+**Load Breakpoints** and **Save Breakpoints** refers to the the Debugger breakpoints, not any breakpoints created via the ET-3400 interface. 
 
 #### Debug
 
@@ -176,20 +184,22 @@ The Status Pane displays the live contents of the CPU registers:
 * IX - Index
 * ACCA - Accumulator A
 * ACCB - Accumulator B
-* CC - Status in Binary as --HINZVC
+* CC - Status in binary as --HINZVC
 
 ### Disassembly Pane
 
-At the top of the pane you will see a dropdown containing the current list of memory-mapped devices with data that can be disassembled.  
+At the top of the pane you will see a dropdown containing the list of memory-mapped devices with data that can be disassembled, with the following devices available:  
 
 - RAM
 - Monitor ROM
 
 Selecting one of these will display the disassembled contents of the selected memory-mapped device.
 
-The disassembler reads consecutive bytes in memory and decodes them as instructions and operands — for example, `BD FC BC` becomes `JSR $FCBC`.
+The disassembler reads consecutive bytes in memory and decodes them as instructions and operands — for example, `BD FC BC` becomes `JSR $FCBC`. 
 
-When data such as variables or lookup tables precedes executable code, the disassembler may misinterpret those bytes as instructions, causing incorrect disassembly from that point forward. You can use [labels](#labels) to mark regions of memory so the disassembler treats them correctly.
+By default it does so without context, so when data such as variables or lookup tables precedes executable code, the disassembler may misinterpret those bytes as instructions, causing incorrect disassembly from that point forward. 
+
+You can use [labels](#labels) to mark regions of memory as DATA to force the disassembler to skip over the region. Adding a COMMENT will not affect disassembly and is used to label code as desired.
 
 You can also set [breakpoints](#breakpoints) directly in the disassembly pane.
 
@@ -199,20 +209,22 @@ Use the View > Refresh (Ctrl+R) function to update the disassembly view. This wi
 
 ### Memory Pane
 
-Similar to the Disassembler pane you will see a dropdown containing the current list of memory-mapped devices:
+At the top of the pane is a dropdown containing the list of memory-mapped devices, including the Keypad and Display devices.
 
 - RAM
 - Keypad
 - Display
 - Monitor ROM
 
-Selecting one of these will display the raw byte contents of addressed memory of the selected memory-mapped device.
+Selecting one of these will display the raw byte contents of the selected device.
 
-The Display device does not actually have memory - it represents the last bytes written to the addresses indicated.
+The Display device does not actually have memory - it represents the last bytes written to the addresses indicated. To understand how the Display device works, please see [How the Display works](documentation/display_device.md) 
 
 Likewise, the Keypad device reflects the current values of the lines that are decoded at the keypad address. These are data lines that are kept high at logic level 1 and are pulled low to logic level 0 when a key is held down.
 
 ## Breakpoints
+
+NOTE: This section describes the debugger feature, not the ET-3400 software breakpoints.
 
 ### Setting a breakpoint
 
@@ -245,7 +257,7 @@ This is important when you have a section of memory that does not contain code a
 
 Below is a view of a section of RAM before and after adding labels.
 
-<img alt="image" src="documentation/et3400-labels.png" />
+<img alt="image" src="documentation/ET-3400-labels.png" />
 
 ### Adding Labels
 
@@ -270,6 +282,16 @@ You can edit or remove a label by right-clicking on a labeled range in the disas
 ### Loading and Saving Labels
 
 Labels can be loaded and saved from the toolbar menu (**File > Load Labels (RAM)** and **File > Save Labels (RAM)**)
+
+# Monitor ROM
+
+The Monitor ROM forms the heart of the system and provides the functionality that monitors the keyboard, updates the display, allows inspection of the CPU status registers and entry of programs.
+
+It is a 1024 byte (1KB) ROM chip that is address decoded at `FC00`.
+
+* [ROM Analysis](documentation/rom_analysis.md)
+*  [Annotated Listing](documentation/ET-3400.html)
+
 
 # Manual
 
@@ -300,7 +322,7 @@ FC46-FC7D - BKSET and DOPMT routines
 FF2A-FF2F - Start of SPECIAL HANDLERS
 ```
 
-For the complete source code of the Monitor ROM, I recommend visiting https://groups.io/g/ET-3400/files/3.%20ROM%20Info/6.%20ET-3400%20Monitor%20source%20code and looking at ET3400.LST
+For the complete source code of the Monitor ROM, I recommend visiting https://groups.io/g/ET-3400/files/3.%20ROM%20Info/6.%20ET-3400%20Monitor%20source%20code and looking at ET-3400.LST
 
 ## Basic Usage
 
@@ -331,7 +353,7 @@ Pressing one of the buttons will execute one of the built-in commands in the ROM
 
 <sup>1</sup> When the program is halted at software breakpoint, this will resume execution.
 
-<sup>2, 3</sup> Features of the ROM that simulate debugger behavior in software. These are implemented by the ET3400 ROM, and are not related to the emulator Debugger and will behave differently.
+<sup>2, 3</sup> Features of the ROM that simulate debugger behavior in software. These are implemented by the ET-3400 ROM, and are not related to the emulator Debugger and will behave differently.
 
 <sup>4</sup> RESET only takes effect while the CPU is running. It has no effect when the CPU is paused, and single-stepping after pressing RESET will also have no effect — the RESET line is released as soon as the key is released.
 
@@ -341,7 +363,7 @@ This sample program cycles through each segment on each display, repeating conti
 
 To enter the program, press `A`, then type `0000` to begin entering hex data at that address. Enter the bytes from the Instr column below, making sure each instruction lands at the correct address. If you make a mistake, press `ESC` or `RESET` to reset, then press `A` again and enter the address where you want to resume.
 
-Press `E` to inspect memory, then `F` or `B` to step forward or backward through addresses.
+Press `E` to inspect memory, then `F` or `B` to step forward or backward through addresses. While viewing the contents of memory, you can press `C` to edit the value at the current address.
 
 To run the program, press `D` and enter `0000`.
 
@@ -377,30 +399,30 @@ These files can be loaded directly into the emulator
 
 # Emulation Quirks
 
-## Debugger Breakpoints at the start address entered in DO command are never hit
+## Hardware breakpoints at the start address entered in DO command are not hit on first execution
 
-If you set an emulator breakpoint at a program's start address and launch it with `DO`, the breakpoint will never be hit.
+If you set an emulator breakpoint at a program's start address and launch it with `DO`, the breakpoint will not be hit.
 
-The monitor ROM's `DO` command does not jump directly to the entered address. Instead, it copies the first instruction (1, 2, or 3 bytes) into stack memory at `$00F9`, appends a software interrupt to trap it, and executes from there — returning to the next instruction in your program afterward. For `JSR` instructions, it executes the call and sets up the return to the next instruction.
+The monitor ROM's `DO` command does not jump directly to the entered address. Instead, it performs a [software single-step](documentation/rom_analysis.md#single-stepping-step-sstep) in order to catch a possible software breakpoint. This involves in some cases copying the instruction into the stack, and executing it from there.
 
-Because execution never passes through the original address, any breakpoint set there is bypassed. 
+Because execution doesn't pass through the original start address, any hardware breakpoint set there will not be hit by the hardware debugger on the first execution, although if the program branches to the start address at any point 
 
-The reason that the ROM does this is to trap its own breakpoints. When you enter breakpoints in the ET3400, the ROM will patch the address with a `3F` - the software vector interrupt - so that it can handle the instruction itself.
+The reason that the ROM does this is to trap its own breakpoints. When you enter breakpoints in the ET-3400, the ROM will patch the address with a `3F` - the software vector interrupt - so that it can handle the instruction itself.
 
 The relevant routine is `SSTEP` in the Monitor ROM at `$FE6B`.
 
 
-## ET3400 EXAM and Debugger Disassembly / Memory values disagree when examining stack addresses
+## ET-3400 EXAM and Debugger Disassembly / Memory values disagree when examining stack addresses
 
-If you press `EXAM 00D0` and step through the stack using `FWD`, you may notice that some values shown on the ET3400's display do not match the values in the Debugger's Disassembly and Memory panes.
+If you press `EXAM 00D0` and step through the stack using `FWD`, you may notice that some values shown on the ET-3400's display do not match the values in the Debugger's Disassembly and Memory panes.
 
-This is not a bug. The monitor ROM code that reads and displays stack memory also uses the stack itself. As it reads a value to display, it simultaneously writes to the stack — so the value it reads is briefly whatever happens to be at that address during that write. The Debugger shows the final settled value in memory, while the ET3400 display shows the transient value captured mid-write.
+This is not a bug. The monitor ROM code that reads and displays stack memory also uses the stack itself. As it reads a value to display, it simultaneously writes to the stack — so the value it reads is briefly whatever happens to be at that address during that write. The Debugger shows the final settled value in memory, while the ET-3400 display shows the transient value captured mid-write.
 
-## ET3400 behavior with Single-Step (SS) may be different from Debugger single-step
+## ET-3400 behavior with Single-Step (SS) may be different from Debugger single-step
 
 This is less of a quirk and more of a difference in how each single-step operates.
 
-The ET3400's Single-Step is a software routine in the Monitor ROM. For each instruction, it copies the instruction bytes onto the stack, executes them there, then returns control to the ROM so it can update the display and respond to keypresses. The CPU keeps running throughout — the ROM is managing every step.
+The ET-3400's Single-Step is a software routine in the Monitor ROM. For each instruction, it copies the instruction bytes onto the stack, executes them there, then returns control to the ROM so it can update the display and respond to keypresses. The CPU keeps running throughout — the ROM is managing every step.
 
 The Debugger's single-step works differently: it pauses the CPU entirely and executes each instruction directly, without any ROM involvement.
 
@@ -408,10 +430,10 @@ The Debugger's single-step works differently: it pauses the CPU entirely and exe
 
 | | Next address shown | Vector used |
 |---|---|---|
-| ET3400 Single-Step | `$00FA` — User SWI Vector | Set by the ROM's SWI handler |
+| ET-3400 Single-Step | `$00FA` — User SWI Vector | Set by the ROM's SWI handler |
 | Debugger Step | `$00F4` — System SWI Vector | Read from ROM at `$FFFA` |
 
-When the ET3400 single-steps over `SWI`, its ROM intercepts the interrupt and redirects execution to `$00FA` (the "User" SWI vector). The Debugger lets the instruction execute as the hardware would: it pushes registers to the stack and jumps to the vector stored at `$FFFA`, which in the standard ROM points to `$00F4`.
+When the ET-3400 single-steps over `SWI`, the Single-Step routine intercepts the instruction and redirects execution to `$00FA` (the "User" SWI vector). The Debugger shows what actually happens in hardware: it pushes registers to the stack and jumps to the vector stored at `$FFFA`, which in the standard ROM points to `$00F4`.
 
 ##
 
@@ -433,7 +455,7 @@ The code is cross-platofrm and can be compiled and executed on Windows and Linux
 ### Clone this repository
 
 ```
-git clone https://github.com/RupertAvery/et3400.git
+git clone https://github.com/RupertAvery/ET-3400.git
 ```
 
 ### Installing vcpkg 
@@ -523,7 +545,7 @@ sudo apt-get update
 sudo apt install git build-essential cmake qt5-base qt5-multimedia
 ```
 
-If this does not work, you might want to try the following (from https://github.com/RupertAvery/et3400/issues/13)
+If this does not work, you might want to try the following (from https://github.com/RupertAvery/ET-3400/issues/13)
 
 ```
 apt-get install cmake-dbgsym cmake-qt-gui-dbgsym cmake
@@ -535,7 +557,7 @@ apt-get install qtdeclarative5-dev
 ### Clone this repository
 
 ```
-git clone https://github.com/RupertAvery/et3400.git
+git clone https://github.com/RupertAvery/ET-3400.git
 ```
 
 ### Build and compile
@@ -543,9 +565,9 @@ git clone https://github.com/RupertAvery/et3400.git
 Perform a standard out-of-source build.
 
 ```
-cd et3400/build
+cd ET-3400/build
 cmake ..
 make
 ```
 
-The executable `et3400` will be created in the `build` directory.
+The executable `ET-3400` will be created in the `build` directory.
