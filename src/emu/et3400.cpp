@@ -107,6 +107,7 @@ void et3400emu::step()
         {
             device->execute_step();
         }
+        render_frame();
     }
 }
 
