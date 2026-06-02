@@ -15,7 +15,9 @@
 #include <QLineEdit>
 #include <QString>
 #include <QRadioButton>
+#include <QCheckBox>
 #include <QDialogButtonBox>
+#include "../util/settings.h"
 
 static QString format(int i)
 {
@@ -25,7 +27,7 @@ static QString format(int i)
     }
     else if (i > 1000)
     {
-        return QString("%1 klHz").arg(i / (float)1000);
+        return QString("%1 kHz").arg(i / (float)1000);
     }
     return QString("%1 Hz").arg(i);
 };
@@ -38,6 +40,7 @@ public:
     SettingsDialog();
     SettingsDialog(QWidget *parent);
     void set_emulator(et3400emu *emu);
+    void set_settings(Settings *settings);
 
 signals:
     // void valueChanged(int value);
@@ -55,16 +58,18 @@ private:
     QLineEdit *freq_input;
     QLabel *clock_rate_label;
     QLabel *warning_label;
-    et3400emu *emu_ptr;
+    et3400emu *emu_ptr = nullptr;
+
+    Settings *settings = nullptr;
 
     QDialogButtonBox *buttonBox;
-    QVBoxLayout *verticalLayout;
-    QHBoxLayout *horizontalLayout;
+
     QRadioButton *radioButton_Hz;
     QRadioButton *radioButton_kHz;
     QRadioButton *radioButton_MHz;
     QSlider *horizontalSlider;
     QPushButton *reset_button;
+    QCheckBox *clear_ram_checkbox;
     int multiplier = 1;
 
     void setHz();
@@ -72,88 +77,12 @@ private:
     void setMHz();
     void setClockRate(int value);
 
-    void setupUi(QDialog *Dialog)
-    {
-        if (Dialog->objectName().isEmpty())
-            Dialog->setObjectName(QStringLiteral("Settings"));
+    QWidget *createTabs();
+    QWidget *createClockRateTab();
+    QWidget *createGeneralTab();
 
-        Dialog->resize(408, 280);
-
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
-
-        radioButton_Hz = new QRadioButton(Dialog);
-        radioButton_Hz->setObjectName(QStringLiteral("radioButton"));
-        radioButton_Hz->setFixedHeight(24);
-
-        radioButton_kHz = new QRadioButton(Dialog);
-        radioButton_kHz->setObjectName(QStringLiteral("radioButton_2"));
-        radioButton_kHz->setFixedHeight(24);
-
-        radioButton_MHz = new QRadioButton(Dialog);
-        radioButton_MHz->setObjectName(QStringLiteral("radioButton_3"));
-        radioButton_MHz->setFixedHeight(24);
-
-        horizontalLayout->addWidget(radioButton_Hz);
-        horizontalLayout->addWidget(radioButton_kHz);
-        horizontalLayout->addWidget(radioButton_MHz);
-
-        horizontalSlider = new QSlider(Dialog);
-        horizontalSlider->setObjectName(QStringLiteral("horizontalSlider"));
-        horizontalSlider->setOrientation(Qt::Horizontal);
-        horizontalSlider->setFocusPolicy(Qt::StrongFocus);
-        horizontalSlider->setTickPosition(QSlider::TicksBothSides);
-        horizontalSlider->setTickInterval(100);
-        horizontalSlider->setSingleStep(1);
-        horizontalSlider->setMinimum(1);
-        horizontalSlider->setMaximum(999);
-        horizontalSlider->setFixedHeight(24);
-
-        clock_rate_label = new QLabel("Clock Rate", Dialog);
-        clock_rate_label->setAlignment(Qt::AlignCenter);
-        clock_rate_label->setFixedHeight(24);
-
-        warning_label = new QLabel("The ROM key press routine scans the keypad and waits to eliminate contact bouncing on a real ET-3400. Setting the clock rate below 200kHz will affect keypad response, requiring you to hold down (and release between key presses) the buttons for slightly longer.", Dialog);
-        warning_label->setWordWrap(true);
-        warning_label->hide();
-
-        reset_button = new QPushButton("Reset Clock", this);
-        reset_button->setFixedWidth(120);
-
-        buttonBox = new QDialogButtonBox(Dialog);
-        buttonBox->setObjectName(QStringLiteral("buttonBox"));
-        buttonBox->setOrientation(Qt::Horizontal);
-        buttonBox->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
-
-        QHBoxLayout *resetLayout = new QHBoxLayout();
-        resetLayout->addStretch();
-        resetLayout->addWidget(reset_button);
-        resetLayout->addStretch();
-
-        verticalLayout = new QVBoxLayout(Dialog);
-        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
-        verticalLayout->addLayout(horizontalLayout);
-        verticalLayout->addWidget(horizontalSlider);
-        verticalLayout->addWidget(clock_rate_label);
-        verticalLayout->addWidget(warning_label);
-        verticalLayout->addLayout(resetLayout);
-        verticalLayout->addStretch();
-        verticalLayout->addWidget(buttonBox);
-
-        retranslateUi(Dialog);
-        QObject::connect(buttonBox, SIGNAL(accepted()), Dialog, SLOT(accept()));
-        QObject::connect(buttonBox, SIGNAL(rejected()), Dialog, SLOT(reject()));
-
-        QMetaObject::connectSlotsByName(Dialog);
-    } // setupUi
-
-    void retranslateUi(QDialog *Dialog)
-    {
-        Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", nullptr));
-        radioButton_Hz->setText(QApplication::translate("Dialog", "Hz", nullptr));
-        radioButton_kHz->setText(QApplication::translate("Dialog", "kHz", nullptr));
-        radioButton_MHz->setText(QApplication::translate("Dialog", "MHz", nullptr));
-    } // retranslateUi
+    void setupUi(QDialog *Dialog);
+    void retranslateUi(QDialog *Dialog);
 };
 
 #endif // SETTINGS_H

@@ -73,7 +73,9 @@ Settings load_settings()
                 settings.labelsDir = value;
             else if (key == "BreakpointsDir")
                 settings.breakpointsDir = value;
-        }
+            else if (key == "ClearRamOnLoad")
+                settings.clearRamOnLoad = value == "true";
+            }
 
         file.close();
     }
@@ -119,7 +121,8 @@ void save_settings(Settings *settings)
     out << "RomDir=" << settings->romDir << NEWLINE;
     out << "RamDir=" << settings->ramDir << NEWLINE;
     out << "LabelsDir=" << settings->labelsDir << NEWLINE;
-    out << "BreakpointsDir=" << settings->breakpointsDir;
+    out << "BreakpointsDir=" << settings->breakpointsDir << NEWLINE;
+    out << "ClearRamOnLoad=" << (settings->clearRamOnLoad ? "true" : "false") << NEWLINE;
 
     out.flush();
     file.close();

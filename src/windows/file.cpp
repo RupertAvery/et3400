@@ -260,7 +260,23 @@ size_t File::load_memory(QString path, QString device_name, et3400emu *emu_ptr, 
     return size;
 }
 
-void File::load_ram_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &settings, QString &dir)
+void File::clear_ram(et3400emu *emu_ptr)
+{
+    memory_mapped_device *ram = emu_ptr->memory_map->try_get_block_device("RAM");
+
+    if (ram != nullptr)
+    {
+        emu_ptr->stop();
+        uint16_t addr = ram->get_start();
+        while (addr <= ram->get_end())
+        {
+            ram->write(addr, 0);
+            addr++;
+        }
+    }
+}
+
+void File::load_ram_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &settings, QString &dir, bool clear_ram)
 {
     QString extensions = AllRAMExtensions + ";;" + MotorolaSrecExtensions + ";;" + IntelHexExtensions + ";;" + AllFiles;
 
@@ -273,6 +289,10 @@ void File::load_ram_dialog(QWidget *parent, et3400emu *emu_ptr, LoadSettings &se
     emu_ptr->stop();
 
     bool success;
+
+    if (clear_ram)
+        File::clear_ram(emu_ptr);
+
     load_memory(fileName, "RAM", emu_ptr, settings.start, success);
 
     if (!success)

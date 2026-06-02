@@ -491,7 +491,7 @@ void DebuggerDialog::load_rom()
 
 void DebuggerDialog::load_ram()
 {
-	File::load_ram_dialog(this, emu_ptr, parent_window->load_ram_settings, settings->ramDir);
+	File::load_ram_dialog(this, emu_ptr, parent_window->load_ram_settings, settings->ramDir, settings->clearRamOnLoad);
 	after_load_ram();
 }
 

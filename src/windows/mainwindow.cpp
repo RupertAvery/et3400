@@ -14,8 +14,6 @@ MainWindow::MainWindow(QWidget *parent)
   if (settings.mainWindowX >= 0)
     move(settings.mainWindowX, settings.mainWindowY);
 
-  settings_dialog = new SettingsDialog(this);
-
   // Menu
 
   QAction *debugger_action = new QAction("&Debugger", this);
@@ -160,8 +158,12 @@ void MainWindow::show_about()
 
 void MainWindow::show_settings()
 {
+  settings_dialog = new SettingsDialog(this);
+  settings_dialog->set_settings(&settings);
   settings_dialog->set_emulator(emu);
   settings_dialog->show();
+  // delete settings_dialog;
+  // settings_dialog = nullptr;
 }
 
 void MainWindow::load_rom()
@@ -173,7 +175,7 @@ void MainWindow::load_rom()
 
 void MainWindow::load_ram()
 {
-  File::load_ram_dialog(this, emu, load_ram_settings, settings.ramDir);
+  File::load_ram_dialog(this, emu, load_ram_settings, settings.ramDir, settings.clearRamOnLoad);
   if (debugger_dialog)
     debugger_dialog->after_load_ram();
 }

@@ -23,6 +23,7 @@ struct Settings
     QString ramDir;
     QString labelsDir;
     QString breakpointsDir;
+    bool clearRamOnLoad;
 };
 
 Settings load_settings();
