@@ -14,8 +14,8 @@ StatusView::StatusView(QWidget *parent)
     m_paintTimer->start(100);
     connect(this->m_paintTimer, &QTimer::timeout, this, &StatusView::update);
 
-    QString style = "border: 1px solid black; font-size: 12pt; font-family: Courier; height: 25px; padding-left: 5px";
-    QString bits_style = "padding-right: 10px; font-size: 12pt; font-family: Courier; height: 25px; padding-left: 5px";
+    QString style = "border: 1px solid black; font-size: 12pt; font-family: Courier; height: 25px;";
+    QString bits_style = "padding-right: 10px; font-size: 12pt; font-family: Courier; height: 25px;";
 
     pc_label = new RegisterView(RegisterView::WORD, this);
     sp_label = new RegisterView(RegisterView::WORD, this);
@@ -42,7 +42,7 @@ StatusView::StatusView(QWidget *parent)
     mainLayout->setRowStretch(4, 1);
     mainLayout->setRowStretch(5, 1);
     mainLayout->setRowStretch(6, 1);
-    mainLayout->setRowStretch(7, 80);
+    mainLayout->setRowStretch(7, 50);
     mainLayout->addWidget(new QLabel("PC"), 0, 0, 1, 1);
     mainLayout->addWidget(new QLabel("SP"), 1, 0, 1, 1);
     mainLayout->addWidget(new QLabel("IX"), 2, 0, 1, 1);
