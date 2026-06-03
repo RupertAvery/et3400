@@ -147,6 +147,31 @@ void et3400emu::set_pc(uint16_t pc)
     device->m_pc.d = pc;
 }
 
+void et3400emu::set_sp(uint16_t sp)
+{
+    device->m_s.d = sp;
+}
+
+void et3400emu::set_ix(uint16_t ix)
+{
+    device->m_x.d = ix;
+}
+
+void et3400emu::set_acca(uint8_t acca)
+{
+    device->m_d.b.h = acca;
+}
+
+void et3400emu::set_accb(uint8_t accb)
+{
+    device->m_d.b.l = accb;
+}
+
+void et3400emu::set_cc(uint8_t cc)
+{
+    device->m_cc = cc;
+}
+
 void et3400emu::reset()
 {
     device->reset_line = 0;

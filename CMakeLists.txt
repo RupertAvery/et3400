@@ -19,6 +19,7 @@ set(WIDGETS_SRC
     src/widgets/memory_view.cpp 
     src/widgets/disassembly_view.cpp 
     src/widgets/status_view.cpp
+    src/widgets/register.cpp
     )
 
 set(WINDOWS_SRC 

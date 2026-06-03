@@ -346,15 +346,14 @@ void DebuggerDialog::update_button_state()
 	// step_out_button->setEnabled(!running);
 	reset_button->setEnabled(running);
 
-	if (debug_run_action)
-	{
-		debug_run_action->setEnabled(!running);
-		debug_stop_action->setEnabled(running);
-		debug_step_into_action->setEnabled(!running);
-		debug_step_over_action->setEnabled(!running);
-		// debug_step_out_action->setEnabled(!running);
-		debug_reset_action->setEnabled(running);
-	}
+	debug_run_action->setEnabled(!running);
+	debug_stop_action->setEnabled(running);
+	debug_step_into_action->setEnabled(!running);
+	debug_step_over_action->setEnabled(!running);
+	// debug_step_out_action->setEnabled(!running);
+	debug_reset_action->setEnabled(running);
+
+	status_view->set_enabled(!running);
 }
 
 void DebuggerDialog::memory_slider_moved(int value)
@@ -577,15 +576,22 @@ void DebuggerDialog::clear_ram()
 
 		if (ram != nullptr)
 		{
-			emu_ptr->stop();
+			bool was_running = emu_ptr->get_running();
+			if (was_running)
+				emu_ptr->stop();
+
 			uint16_t addr = clearRamSettings.start;
 			while (addr <= clearRamSettings.end)
 			{
 				ram->write(addr, clearRamSettings.value);
 				addr++;
 			}
-			emu_ptr->reset();
-			emu_ptr->start();
+
+			if (was_running)
+			{
+				emu_ptr->reset();
+				emu_ptr->start();
+			}
 
 			disassembly_view->rebuild();
 		}

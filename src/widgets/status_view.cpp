@@ -11,18 +11,18 @@ StatusView::StatusView(QWidget *parent)
     is_emulator_set = false;
 
     m_paintTimer = new QTimer(this);
-    m_paintTimer->start(100); 
+    m_paintTimer->start(100);
     connect(this->m_paintTimer, &QTimer::timeout, this, &StatusView::update);
 
-    QString style = "border: 1px solid black; font-size: 12pt; font-family: Courier";
-    QString bits_style = "padding-right: 10px; font-size: 12pt; font-family: Courier";
+    QString style = "border: 1px solid black; font-size: 12pt; font-family: Courier; height: 25px; padding-left: 5px";
+    QString bits_style = "padding-right: 10px; font-size: 12pt; font-family: Courier; height: 25px; padding-left: 5px";
 
-    pc_label = new QLabel;
-    sp_label = new QLabel;
-    ix_label = new QLabel;
-    acca_label = new QLabel;
-    accb_label = new QLabel;
-    cc_label = new QLabel;
+    pc_label = new RegisterView(RegisterView::WORD, this);
+    sp_label = new RegisterView(RegisterView::WORD, this);
+    ix_label = new RegisterView(RegisterView::WORD, this);
+    acca_label = new RegisterView(RegisterView::BYTE, this);
+    accb_label = new RegisterView(RegisterView::BYTE, this);
+    cc_label = new RegisterView(RegisterView::FLAGS, this);
     QLabel *bits_label = new QLabel("--HINZVC");
     pc_label->setStyleSheet(style);
     sp_label->setStyleSheet(style);
@@ -61,6 +61,44 @@ StatusView::StatusView(QWidget *parent)
     // connect(action, &QAction::triggered, this, &Display::redraw);
 
     // this->setFixedSize(QSize(320, 85));
+    connect(pc_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value) {
+        if (is_emulator_set)
+        {
+            emu_ptr->set_pc(new_value);
+        }
+    });
+    connect(sp_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value) {
+        if (is_emulator_set)
+        {
+            emu_ptr->set_sp(new_value);
+        }
+    });
+    connect(ix_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value) {
+        if (is_emulator_set)
+        {
+            emu_ptr->set_ix(new_value);
+        }
+    });
+    connect(acca_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value) {
+        if (is_emulator_set)
+        {
+            emu_ptr->set_acca(new_value);
+        }
+    });
+    connect(accb_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value) {
+        if (is_emulator_set)
+        {
+            emu_ptr->set_accb(new_value);
+        }
+    });
+    connect(cc_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value) {
+        if (is_emulator_set)
+        {
+            emu_ptr->set_cc(new_value);
+        }
+    });
+
+
     setLayout(mainLayout);
     setLineWidth(3);
 }
@@ -71,26 +109,27 @@ StatusView::~StatusView()
     delete m_paintTimer;
 }
 
+void StatusView::set_enabled(bool enabled)
+{
+    pc_label->set_enabled(enabled);
+    sp_label->set_enabled(enabled);
+    ix_label->set_enabled(enabled);
+    acca_label->set_enabled(enabled);
+    accb_label->set_enabled(enabled);
+    cc_label->set_enabled(enabled);
+}
+
 void StatusView::update()
 {
     if (is_emulator_set)
     {
-        QChar filler = QLatin1Char('0');
         CpuStatus status = emu_ptr->get_status();
-        pc_label->setText(QString("%1").arg(status.pc, 4, 16, filler).toUpper());
-        sp_label->setText(QString("%1").arg(status.sp, 4, 16, filler).toUpper());
-        ix_label->setText(QString("%1").arg(status.ix, 4, 16, filler).toUpper());
-        acca_label->setText(QString("%1").arg(status.acca, 2, 16, filler).toUpper());
-        accb_label->setText(QString("%1").arg(status.accb, 2, 16, filler).toUpper());
-        cc_label->setText(QString("11%1%2%3%4%5%6")
-                              .arg(status.cc >> 5 & 1)
-                              .arg(status.cc >> 4 & 1)
-                              .arg(status.cc >> 3 & 1)
-                              .arg(status.cc >> 2 & 1)
-                              .arg(status.cc >> 1 & 1)
-                              .arg(status.cc >> 0 & 1))
-
-            ;
+        pc_label->set_value(status.pc);
+        sp_label->set_value(status.sp);
+        ix_label->set_value(status.ix);
+        acca_label->set_value(status.acca);
+        accb_label->set_value(status.accb);
+        cc_label->set_value(status.cc);
     }
 }
 

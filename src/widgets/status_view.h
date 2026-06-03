@@ -9,6 +9,8 @@
 #include <QGridLayout>
 #include <QAction>
 #include <QLabel>
+#include "register.h"
+
 
 class StatusView : public QFrame
 {
@@ -19,16 +21,17 @@ public:
     StatusView(QWidget *parent);
     ~StatusView();
     void set_emulator(et3400emu *emu);
+    void set_enabled(bool enabled);
 
 private:
     QAction *action;
     QTimer *m_paintTimer;
-    QLabel *pc_label;
-    QLabel *sp_label;
-    QLabel *ix_label;
-    QLabel *acca_label;
-    QLabel *accb_label;
-    QLabel *cc_label;
+    RegisterView *pc_label;
+    RegisterView *sp_label;
+    RegisterView *ix_label;
+    RegisterView *acca_label;
+    RegisterView *accb_label;
+    RegisterView *cc_label;
 
     et3400emu *emu_ptr;
     bool is_emulator_set;

@@ -42,6 +42,12 @@ public:
 	bool has_breakpoint(offs_t address);
 	void handle_breakpoint();
 	void set_pc(uint16_t pc);
+	void set_sp(uint16_t sp);
+	void set_ix(uint16_t ix);
+	void set_acca(uint8_t acca);
+	void set_accb(uint8_t accb);
+	void set_cc(uint8_t cc);
+
 	byte read_byte(offs_t address);
 	void set_step_out();
 
