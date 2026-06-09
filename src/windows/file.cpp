@@ -32,6 +32,9 @@ void File::load_labels_dialog(QWidget *parent, et3400emu *emu_ptr, QString &dir)
 
     bool success;
     load_labels(fileName, emu_ptr, success);
+
+    if (!success)
+        QMessageBox::critical(parent, "Error loading Labels", error);
 }
 
 void File::load_labels(QString fileName, et3400emu *emu_ptr, bool &success)
@@ -45,6 +48,10 @@ void File::load_labels(QString fileName, et3400emu *emu_ptr, bool &success)
         emu_ptr->labels->addLabels(labels);
 
         delete labels;
+    }
+    else
+    {
+        error = "Invalid Label file";
     }
 }
 
@@ -89,6 +96,10 @@ void File::load_breakpoint_dialog(QWidget *parent, et3400emu *emu_ptr, QString &
     emu_ptr->stop();
     emu_ptr->breakpoints->clearBreakpoints();
     emu_ptr->breakpoints->loadBreakpoints(fileName, success);
+
+    if (!success)
+        QMessageBox::critical(parent, "Error loading Breakpoints", "Invalid Breakpoint file");
+
     emu_ptr->start();
 }
 

@@ -30,8 +30,8 @@ void LabelReader::Write(QString path, std::vector<Label> *labels, bool &success)
     out.flush();
     file.close();
     success = true;
-
 }
+
 std::vector<Label> *LabelReader::Read(QString path, bool &success)
 {
     std::vector<Label> *labels = new std::vector<Label>;
@@ -49,10 +49,50 @@ std::vector<Label> *LabelReader::Read(QString path, bool &success)
     while (readCSVRow(in, &parts))
     {
         bool bStatus = false;
+
+        if (parts.length() == 0)
+        {
+            continue;
+        }
+
+        if (parts.length() != 4)
+        {
+            success = false;
+            return nullptr;
+        }
+
         uint32_t start = parts.at(0).toUInt(&bStatus, 16);
+
+        if (!bStatus)
+        {
+            success = false;
+            return nullptr;
+        }
+
         uint32_t end = parts.at(1).toUInt(&bStatus, 16);
-        LabelType type = parts.at(2) == "ASSEMBLY" ? ASSEMBLY : parts.at(2) == "DATA" ? DATA : COMMENT;
+
+        if (!bStatus)
+        {
+            success = false;
+            return nullptr;
+        }
+
+        LabelType type = parts.at(2) == "ASSEMBLY"
+                             ? ASSEMBLY
+                         : parts.at(2) == "DATA"
+                             ? DATA
+                         : parts.at(2) == "COMMENT"
+                             ? COMMENT
+                             : LABEL_ERROR;
+
+        if (type == LABEL_ERROR)
+        {
+            success = false;
+            return nullptr;
+        }
+
         QString comment = parts.at(3);
+
         labels->push_back(Label{start, end, type, comment});
     }
 

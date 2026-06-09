@@ -29,6 +29,7 @@ void BreakpointReader::Write(QString path, std::vector<Breakpoint> *breakpoints,
     file.close();
     success = true;
 }
+
 std::vector<Breakpoint> *BreakpointReader::Read(QString path, bool &success)
 {
     std::vector<Breakpoint> *breakpoints = new std::vector<Breakpoint>;
@@ -45,8 +46,21 @@ std::vector<Breakpoint> *BreakpointReader::Read(QString path, bool &success)
 
     while (readCSVRow(in, &parts))
     {
+        if (parts.length() != 2)
+        {
+            success = false;
+            return nullptr;
+        }
+
         bool bStatus = false;
         uint32_t start = parts.at(0).toUInt(&bStatus, 16);
+
+        if (!bStatus)
+        {
+            success = false;
+            return nullptr;
+        }
+
         bool is_enabled = parts.at(1).toLower() == "yes";
         breakpoints->push_back(Breakpoint{start, is_enabled});
     }

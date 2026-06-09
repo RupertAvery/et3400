@@ -8,9 +8,10 @@
 
 enum LabelType
 {
-    COMMENT,
-    ASSEMBLY,
-    DATA
+    COMMENT = 0,
+    ASSEMBLY = 1,
+    DATA = 2,
+    LABEL_ERROR = -1
 };
 
 struct Label
