@@ -1,4 +1,6 @@
 #include "memory_view.h"
+#include "colors.h"
+
 #include "../util/log.h"
 #include "../common/util.h"
 #include <QStringBuilder>
@@ -102,15 +104,9 @@ void MemoryView::bufferDraw()
 
 	QColor darkblue = QColor("#00018B");
 	QColor darkred = QColor("#8B0000");
-	QBrush selected_brush = QBrush(QColor("#0000FF"));
+	QBrush selected_brush = QBrush(selected_bg_color);
 
 	bool hasFocus = this->hasFocus();
-
-	if (!hasFocus)
-	{
-		selected_address = -1;
-		is_editing = false;
-	}
 
 	painter.save();
 
@@ -138,7 +134,7 @@ void MemoryView::bufferDraw()
 			}
 			else if (heat_map[i] > 0)
 			{
-				heat_map[i] = heat_map[i] > 12 ? heat_map[i] - 12 : 0;
+				heat_map[i] = heat_map[i] > heat_map_decay ? heat_map[i] - heat_map_decay : 0;
 			}
 		}
 	}
@@ -166,7 +162,7 @@ void MemoryView::bufferDraw()
 
 			painter.setPen(darkred);
 
-			if (!is_editing && heat_map_enabled && heat_map[heat_idx] > 0)
+			if (heat_map_enabled && heat_map[heat_idx] > 0)
 			{
 				painter.fillRect(box_x, box_y, box_width, box_height,
 								 m_heat_colors[heat_map[heat_idx] / 16]);
@@ -200,7 +196,7 @@ void MemoryView::bufferDraw()
 			{
 				if (hasFocus && !is_editing && address + i == selected_address)
 				{
-					painter.setPen(Qt::white);
+					painter.setPen(selected_fg_color);
 				}
 
 				painter.drawText(text_x, y, QString("%1").arg(shadow_memory[address + i - start], 2, 16, QChar('0')).toUpper());
@@ -229,6 +225,26 @@ void MemoryView::setHeatMapEnabled(bool enabled)
 	heat_map_enabled = enabled;
 }
 
+void MemoryView::setHeatMapDecay(int decay)
+{
+	heat_map_decay = decay;
+	if (decay == 0)
+	{
+		for (int i = 0; i < end - start + 1; i++)
+		{
+			if (this->heat_map[i] > 0)
+			{
+				this->heat_map[i] = 255;
+			}
+		}
+	}
+}
+
+void MemoryView::clearHeatMap()
+{
+	memset(this->heat_map, 0, end - start + 1);
+}
+
 void MemoryView::resizeEvent(QResizeEvent *event)
 {
 	QSize size = event->size();
@@ -250,10 +266,6 @@ void MemoryView::paintEvent(QPaintEvent *event)
 	}
 	QFrame::paintEvent(event);
 }
-
-// void MemoryView::set_range()
-// {
-// }
 
 void MemoryView::redraw()
 {
@@ -290,30 +302,6 @@ void MemoryView::set_device(memory_mapped_device *device)
 	offset = 0;
 	is_device_set = true;
 }
-
-// void MemoryView::set_range(offs_t start, offs_t end, uint8_t *memory)
-// {
-// 	this->start = start;
-// 	this->end = end;
-// 	this->memory = memory;
-
-// 	if (this->last_memory != nullptr)
-// 		free(this->last_memory);
-
-// 	if (this->heat_map != nullptr)
-// 		free(this->heat_map);
-
-// 	if (this->shadow_memory != nullptr)
-// 		free(this->shadow_memory);
-
-// 	this->last_memory = (uint8_t *)calloc(end - start + 1, 1);
-// 	this->shadow_memory = (uint8_t *)calloc(end - start + 1, 1);
-// 	this->heat_map = (uint8_t *)calloc(end - start + 1, 1);
-
-// 	resizeEvent(new QResizeEvent(size(), size()));
-// 	offset = 0;
-// 	is_memory_set = true;
-// }
 
 void MemoryView::set_emulator(et3400emu *emu)
 {
@@ -441,7 +429,7 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 				editing_value = editing_value & 0x0F;
 				editing_nibble = 1;
 				editing_address -= 1;
-				if (editing_address < start)
+				if (editing_address < (int)start)
 					editing_address = start;
 				selected_address = editing_address;
 				editing_value = memory[editing_address - start];
@@ -450,6 +438,46 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 			{
 				editing_value = editing_value & 0xF0;
 				editing_nibble = 0;
+			}
+			update();
+		}
+		else if (event->key() == Qt::Key_Left)
+		{
+			if (editing_nibble == 0)
+			{
+				editing_address -= 1;
+				if (editing_address < (int)start)
+					editing_address = start;
+				else
+				{
+					editing_nibble = 1;
+					selected_address = editing_address;
+					editing_value = memory[editing_address - start];
+				}
+			}
+			else
+			{
+				editing_nibble = 0;
+			}
+			update();
+		}
+		else if (event->key() == Qt::Key_Right)
+		{
+			if (editing_nibble == 0)
+			{
+				editing_nibble = 1;
+			}
+			else
+			{
+				editing_address += 1;
+				if (editing_address > (int)end)
+					editing_address = end;
+				else
+				{
+					editing_nibble = 0;
+					selected_address = editing_address;
+					editing_value = memory[editing_address - start];
+				}
 			}
 			update();
 		}
@@ -470,7 +498,7 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 					editing_value = (editing_value & 0xF0) | value;
 					device->write(editing_address, editing_value);
 					editing_nibble = 0;
-					if (editing_address < end)
+					if (editing_address < (int)end)
 					{
 						editing_address += 1;
 						selected_address = editing_address;
@@ -516,6 +544,8 @@ void MemoryView::update_offset()
 
 void MemoryView::mousePressEvent(QMouseEvent *event)
 {
+	if (is_editing)
+		return;
 	int y = event->y();
 	int x = event->x();
 	int ascent = m_fm->ascent();
@@ -541,6 +571,14 @@ void MemoryView::mouseDoubleClickEvent(QMouseEvent *event)
 	{
 		start_editing(address);
 	}
+}
+
+void MemoryView::focusOutEvent(QFocusEvent *event)
+{
+	Q_UNUSED(event);
+	selected_address = -1;
+	stop_editing();
+	update();
 }
 
 void MemoryView::start_editing(uint16_t address)

@@ -72,6 +72,7 @@ protected:
 	void mouseMoveEvent(QMouseEvent* event) override;
 	void leaveEvent(QEvent* event) override;
 	void keyPressEvent(QKeyEvent* event) override;
+	void focusOutEvent(QFocusEvent *event) override;
 
 private:
 	QScrollBar* scrollbar;

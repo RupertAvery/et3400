@@ -26,14 +26,14 @@
 #define MakeToggledAction(action, name, seq, delegate) \
 	action = new QAction(name, this);                  \
 	action->setCheckable(true);                        \
-	action->setChecked(true);                          \
+	action->setChecked(false);                         \
 	action->setShortcut(QKeySequence(seq));            \
 	connect(action, &QAction::toggled, this, &DebuggerDialog::delegate)
 
 #define MakeToggledActionNS(action, name, delegate) \
 	action = new QAction(name, this);               \
 	action->setCheckable(true);                     \
-	action->setChecked(true);                       \
+	action->setChecked(false);                      \
 	connect(action, &QAction::toggled, this, &DebuggerDialog::delegate)
 
 // #include "memory_location.h"
@@ -77,6 +77,10 @@ class MainWindow;
 #include <QHeaderView>
 #include <QPushButton>
 #include <QInputDialog>
+
+const int FADE_SPEED = 12;
+const int FADE_SLOW_SPEED = 1;
+const int PERSIST_SPEED = 0;
 
 class DebuggerDialog : public QDialog
 {
@@ -144,7 +148,15 @@ private:
 	QAction *toggle_memory_action;
 	QAction *toggle_disassembly_action;
 	QAction *toggle_status_action;
+
+	QAction *heat_map_action;
+	QAction *set_heat_map_off_action;
+	QAction *set_heat_map_fade_action;
+	QAction *set_heat_map_fade_slow_action;
+	QAction *set_heat_map_persist_action;
 	QAction *toggle_heat_map_action;
+	QAction *clear_heat_map_action;
+
 	QAction *refresh_disassembly_action;
 	QAction *toggle_autorefresh_disassembly_action;
 	QAction *clear_ram_action;
@@ -198,7 +210,14 @@ private:
 	void toggle_memory_panel(bool checked);
 	void toggle_disassembly_panel(bool checked);
 	void toggle_status_panel(bool checked);
-	void toggle_heat_map(bool checked);
+	void toggle_heat_map();
+
+	void set_heat_map_off();
+	void set_heat_map_fade();
+	void set_heat_map_fade_slow();
+	void set_heat_map_persist();
+	void clear_heat_map();
+
 	void toggle_auto_refresh_disassembly_panel(bool checked);
 	void toggle_load_default_labels(bool checked);
 

@@ -77,6 +77,8 @@ Settings load_settings()
                 settings.clearRamOnLoad = value == "true";
             else if (key == "ShowBit0DisplayWrites")
                 settings.showBit0DisplayWrites = value == "true";
+            else if (key == "HeatMapDecay")
+                settings.heatMapDecay = value.toInt();
             }
 
         file.close();
@@ -126,6 +128,7 @@ void save_settings(Settings *settings)
     out << "BreakpointsDir=" << settings->breakpointsDir << NEWLINE;
     out << "ClearRamOnLoad=" << (settings->clearRamOnLoad ? "true" : "false") << NEWLINE;
     out << "ShowBit0DisplayWrites=" << (settings->showBit0DisplayWrites ? "true" : "false") << NEWLINE;
+    out << "HeatMapDecay=" << settings->heatMapDecay << NEWLINE;
 
     out.flush();
     file.close();

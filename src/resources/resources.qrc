@@ -59,6 +59,11 @@
         <file>buttons/StepOut.png</file>
         <file>buttons/Stop.png</file>
         <file>buttons/Trash.png</file>
+        <file>buttons/HeatOff.png</file>
+        <file>buttons/HeatFade.png</file>
+        <file>buttons/HeatFadeSlow.png</file>
+        <file>buttons/HeatPersist.png</file>
+        <file>buttons/Eraser.png</file>
         <file>ram/default.map</file>
         <file>rom/monitor.bin</file>
         <file>rom/monitor.map</file>

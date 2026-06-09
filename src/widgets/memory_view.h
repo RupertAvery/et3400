@@ -38,6 +38,9 @@ public:
     void set_device(memory_mapped_device *device);
 
     void setHeatMapEnabled(bool enabled);
+    void setHeatMapDecay(int decay);
+    void clearHeatMap();
+
     void rebuild();
 
 signals:
@@ -55,6 +58,7 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
+    void focusOutEvent(QFocusEvent *event) override;
 
 private:
     QScrollBar *scrollbar;
@@ -75,11 +79,15 @@ private:
     uint8_t *heat_map = nullptr;
 
     bool is_device_set = false;
+
     bool heat_map_enabled = true;
+    int heat_map_decay = 12;
+
     int offset;
     int visible_items;
     int item_height = 20;
     int max_vscroll;
+
     int blink_counter_max = 10;
 
     QFont m_font;

@@ -41,6 +41,7 @@ void File::load_labels(QString fileName, et3400emu *emu_ptr, bool &success)
 
     if (success)
     {
+        emu_ptr->labels->clearLabels();
         emu_ptr->labels->addLabels(labels);
 
         delete labels;

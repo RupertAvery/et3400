@@ -1,4 +1,5 @@
 #include "register.h"
+#include "colors.h"
 
 RegisterView::RegisterView(RegisterType type, QWidget *parent) : QFrame(parent)
 {
@@ -52,7 +53,14 @@ void RegisterView::bufferDraw()
     if (buffer->size() != size())
         *buffer = QPixmap(size());
 
-    buffer->fill(Qt::white);
+    if (is_selected && !is_editing)
+    {
+        buffer->fill(selected_bg_color);
+    }
+    else
+    {
+        buffer->fill(Qt::white);
+    }
 
     QPainter painter(buffer);
     painter.setFont(m_font);
@@ -96,7 +104,11 @@ void RegisterView::bufferDraw()
     int x = 5;
     int y = (height() + m_fm->ascent() - m_fm->descent()) / 2;
 
-    if (is_editing)
+    if (is_selected && !is_editing)
+    {
+        painter.setPen(selected_fg_color);
+    }
+    else if (is_editing)
     {
         painter.setPen(Qt::blue);
     }
@@ -109,6 +121,7 @@ void RegisterView::keyPressEvent(QKeyEvent *event)
     if (event->key() == Qt::Key_Escape && is_editing)
     {
         stop_editing();
+        update();
         return;
     }
 
@@ -117,6 +130,11 @@ void RegisterView::keyPressEvent(QKeyEvent *event)
         if (event->key() == Qt::Key_F2)
         {
             start_editing();
+            update();
+        }
+        else
+        {
+            QFrame::keyPressEvent(event);
         }
     }
     else
@@ -191,17 +209,32 @@ void RegisterView::keyPressEvent(QKeyEvent *event)
     }
 }
 
+void RegisterView::mousePressEvent(QMouseEvent *event)
+{
+    is_selected = true;
+    update();
+}
+
 void RegisterView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     start_editing();
+    update();
+}
+
+void RegisterView::focusInEvent(QFocusEvent *event)
+{
+    is_selected = true;
+    update();
 }
 
 void RegisterView::focusOutEvent(QFocusEvent *event)
 {
+    is_selected = false;
     if (is_editing)
     {
         stop_editing();
     }
+    update();
 }
 
 void RegisterView::start_editing()
@@ -213,7 +246,6 @@ void RegisterView::start_editing()
     is_editing = true;
     editing_nibble = 0;
     editing_value = value;
-    update();
 }
 
 void RegisterView::stop_editing()
@@ -223,5 +255,4 @@ void RegisterView::stop_editing()
     blink_state = 1;
     editing_nibble = 0;
     editing_value = 0;
-    update();
 }

@@ -135,13 +135,71 @@ void DebuggerDialog::toggle_memory_panel(bool checked)
 	save_settings(settings);
 }
 
-void DebuggerDialog::toggle_heat_map(bool checked)
+void DebuggerDialog::set_heat_map_off()
 {
-	memory_view->setHeatMapEnabled(checked);
-	settings->showHeatMap = checked;
+	memory_view->setHeatMapEnabled(false);
+	settings->showHeatMap = false;
 
 	LOG_DEBUG << "toggle heat";
 	save_settings(settings);
+}
+
+void DebuggerDialog::set_heat_map_fade()
+{
+	memory_view->setHeatMapEnabled(true);
+	memory_view->setHeatMapDecay(FADE_SPEED);
+	settings->showHeatMap = true;
+	settings->heatMapDecay = FADE_SPEED;
+
+	save_settings(settings);
+}
+
+void DebuggerDialog::set_heat_map_fade_slow()
+{
+	memory_view->setHeatMapEnabled(true);
+	memory_view->setHeatMapDecay(FADE_SLOW_SPEED);
+	settings->showHeatMap = true;
+	settings->heatMapDecay = FADE_SLOW_SPEED;
+
+	save_settings(settings);
+}
+
+void DebuggerDialog::set_heat_map_persist()
+{
+	memory_view->setHeatMapEnabled(true);
+	memory_view->setHeatMapDecay(PERSIST_SPEED);
+	settings->showHeatMap = true;
+	settings->heatMapDecay = PERSIST_SPEED;
+
+	save_settings(settings);
+}
+
+void DebuggerDialog::toggle_heat_map()
+{
+	if (settings->showHeatMap)
+	{
+		switch (settings->heatMapDecay)
+		{
+		case FADE_SPEED:
+			set_heat_map_fade_slow_action->setChecked(true);
+			break;
+		case FADE_SLOW_SPEED:
+			set_heat_map_persist_action->setChecked(true);
+			break;
+		case PERSIST_SPEED:
+			set_heat_map_off_action->setChecked(true);
+			break;
+		}
+	}
+	else
+	{
+		set_heat_map_fade_action->setChecked(true);
+	}
+}
+
+void DebuggerDialog::clear_heat_map()
+{
+	memory_view->clearHeatMap();
 }
 
 void DebuggerDialog::toggle_disassembly_panel(bool checked)
@@ -313,7 +371,29 @@ void DebuggerDialog::set_settings(Settings *settings)
 	toggle_disassembly_action->setChecked(settings->showDasmView);
 	toggle_autorefresh_disassembly_action->setChecked(settings->autoRefreshDasm);
 	toggle_memory_action->setChecked(settings->showMemoryView);
-	toggle_heat_map_action->setChecked(settings->showHeatMap);
+
+	if (settings->showHeatMap)
+	{
+		switch (settings->heatMapDecay)
+		{
+		case FADE_SPEED:
+			set_heat_map_fade_action->setChecked(true);
+			break;
+		case FADE_SLOW_SPEED:
+			set_heat_map_fade_slow_action->setChecked(true);
+			break;
+		case PERSIST_SPEED:
+			set_heat_map_persist_action->setChecked(true);
+			break;
+		default:
+			settings->heatMapDecay = PERSIST_SPEED;
+			break;
+		}
+
+		memory_view->setHeatMapDecay(settings->heatMapDecay);
+	}
+
+	// toggle_heat_map_action->setChecked(settings->showHeatMap);
 
 	if (settings->debuggerWidth > 0 && settings->debuggerHeight > 0)
 		resize(settings->debuggerWidth, settings->debuggerHeight);

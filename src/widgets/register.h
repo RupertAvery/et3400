@@ -46,7 +46,9 @@ signals:
 protected:
     void paintEvent(QPaintEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
+    void focusInEvent(QFocusEvent *event) override;
     void focusOutEvent(QFocusEvent *event) override;
 
 private:
@@ -65,6 +67,7 @@ private:
     QPixmap *buffer;
 
     bool enabled = false;
+    bool is_selected = false;
     bool is_editing = false;
     int editing_nibble = 0;
     uint16_t editing_value = 0;

@@ -14,6 +14,7 @@ find_package(Qt5 COMPONENTS Core Widgets Gui REQUIRED)
 find_package(Threads REQUIRED)
 
 set(WIDGETS_SRC 
+    src/widgets/colors.cpp
     src/widgets/display.cpp 
     src/widgets/keypad.cpp 
     src/widgets/memory_view.cpp 

@@ -25,6 +25,7 @@ struct Settings
     QString breakpointsDir;
     bool clearRamOnLoad;
     bool showBit0DisplayWrites;
+    int heatMapDecay;
 };
 
 Settings load_settings();

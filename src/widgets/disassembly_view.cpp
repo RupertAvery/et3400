@@ -1,4 +1,5 @@
 #include "disassembly_view.h"
+#include "colors.h"
 #include "../util/log.h"
 #include "../common/util.h"
 #include <QStringBuilder>
@@ -108,7 +109,6 @@ void DisassemblyView::bufferDraw()
 	int x = 5;
 	painter.save();
 
-
 	std::vector<DisassemblyLine>::iterator line = lines->begin();
 
 	QColor darkblue = QColor("#00018B");
@@ -116,20 +116,13 @@ void DisassemblyView::bufferDraw()
 	QColor darkred = QColor("#8B0000");
 	QColor green = QColor("#38761D");
 
-	QBrush selected_brush = QBrush(QColor("#0000FF"));
+	QBrush selected_brush = QBrush(selected_bg_color);
 	QBrush selected_nofocus_brush = QBrush(QColor("#c0c0c0"));
 	QBrush breakpoint_brush = QBrush(QColor("#8B0000"));
 	QBrush current_brush = QBrush(QColor("#fff181"));
 	QBrush current_selected_brush = QBrush(QColor("#81ffaf"));
 
 	QColor white = QColor("#FFFFFF");
-
-	bool hasFocus = this->hasFocus();
-
-	if (!hasFocus)
-	{
-		selected_line = -1;
-	}
 
 	// emu_ptr->breakpoints->lock();
 
@@ -142,7 +135,7 @@ void DisassemblyView::bufferDraw()
 		// Default colors
 		QColor address_color = darkblue;
 		QColor opcode_color = black;
-		QColor insgtruction_color = darkblue;
+		QColor instruction_color = darkblue;
 		QColor operand_color = darkred;
 
 		bool is_comment = line[ctr].type == DisassemblyType::Comment;
@@ -215,21 +208,21 @@ void DisassemblyView::bufferDraw()
 		{
 			address_color = black;
 			opcode_color = black;
-			insgtruction_color = black;
+			instruction_color = black;
 			operand_color = black;
 		}
-		else if (is_selected && hasFocus)
+		else if (is_selected)
 		{
-			address_color = white;
-			opcode_color = white;
-			insgtruction_color = white;
-			operand_color = white;
+			address_color = selected_fg_color;
+			opcode_color = selected_fg_color;
+			instruction_color = selected_fg_color;
+			operand_color = selected_fg_color;
 		}
 		else if (has_breakpoint)
 		{
 			address_color = white;
 			opcode_color = white;
-			insgtruction_color = white;
+			instruction_color = white;
 			operand_color = white;
 		}
 
@@ -280,7 +273,7 @@ void DisassemblyView::bufferDraw()
 
 			if (line[ctr].type == DisassemblyType::Assembly)
 			{
-				painter.setPen(insgtruction_color);
+				painter.setPen(instruction_color);
 				painter.drawText(200, y, line[ctr].instruction);
 				painter.setPen(operand_color);
 				painter.drawText(260, y, line[ctr].operand);
@@ -514,6 +507,12 @@ void DisassemblyView::leaveEvent(QEvent *event)
 {
 	hover_row = -1;
 	QFrame::leaveEvent(event);
+}
+
+void DisassemblyView::focusOutEvent(QFocusEvent *event)
+{
+	selected_line = -1;
+	update();
 }
 
 void DisassemblyView::rebuild()
