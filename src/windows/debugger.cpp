@@ -366,7 +366,7 @@ void DebuggerDialog::set_settings(Settings *settings)
 
 	disassembly_groupBox->setVisible(settings->showDasmView);
 	memory_groupBox->setVisible(settings->showMemoryView);
-	memory_view->setHeatMapEnabled(settings->showHeatMap);
+	// memory_view->setHeatMapEnabled(settings->showHeatMap);
 
 	toggle_disassembly_action->setChecked(settings->showDasmView);
 	toggle_autorefresh_disassembly_action->setChecked(settings->autoRefreshDasm);
@@ -391,6 +391,10 @@ void DebuggerDialog::set_settings(Settings *settings)
 		}
 
 		memory_view->setHeatMapDecay(settings->heatMapDecay);
+	}
+	else
+	{
+		set_heat_map_off_action->setChecked(true);
 	}
 
 	// toggle_heat_map_action->setChecked(settings->showHeatMap);

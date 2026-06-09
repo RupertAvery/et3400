@@ -47,6 +47,8 @@ Settings load_settings()
                 settings.showDasmView = value == "true";
             else if (key == "ShowMemoryView")
                 settings.showMemoryView = value == "true";
+            else if (key == "AutoRefreshDasm")
+                settings.autoRefreshDasm = value == "true";
             else if (key == "ShowHeatMap")
                 settings.showHeatMap = value == "true";
             else if (key == "ClockRate")
@@ -113,6 +115,7 @@ void save_settings(Settings *settings)
     out << "ShowTips=" << (settings->showTips ? "true" : "false") << NEWLINE;
     out << "ShowDisassemblerView=" << (settings->showDasmView ? "true" : "false") << NEWLINE;
     out << "ShowMemoryView=" << (settings->showMemoryView ? "true" : "false") << NEWLINE;
+    out << "AutoRefreshDasm=" << (settings->autoRefreshDasm ? "true" : "false")<< NEWLINE;
     out << "ShowHeatMap=" << (settings->showHeatMap ? "true" : "false") << NEWLINE;
     out << "ClockRate=" << settings->clockRate << NEWLINE;
     out << "MainWindowX=" << settings->mainWindowX << NEWLINE;
