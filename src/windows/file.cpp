@@ -87,6 +87,7 @@ void File::load_breakpoint_dialog(QWidget *parent, et3400emu *emu_ptr, QString &
 
     bool success;
     emu_ptr->stop();
+    emu_ptr->breakpoints->clearBreakpoints();
     emu_ptr->breakpoints->loadBreakpoints(fileName, success);
     emu_ptr->start();
 }
