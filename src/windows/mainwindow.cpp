@@ -353,6 +353,8 @@ void MainWindow::init_emu()
   LOG_DEBUG << "Creating emulator instance";
   emu = new et3400emu(keypad->device, display->device);
 
+  keypad->set_emu(emu);
+
   emu->set_clock_rate(settings.clockRate);
 
   LOG_DEBUG << "Loading ROMs";

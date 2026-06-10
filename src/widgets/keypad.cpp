@@ -54,30 +54,58 @@ QPushButton *Keypad::create_button(QString name, QString icon_src, QString icon_
 
     _buttons[key] = button;
     _icons[key] = qMakePair(icon, icon_pressed);
+    _buttons_state[key] = false;
 
     connect(button, &QPushButton::pressed, this, [this, key]
-            { 
-                press_key(key); 
-            });
+            { press_key(key); });
 
     connect(button, &QPushButton::released, this, [this, key]
-            { 
-                release_key(key); 
-            });
+            { release_key(key); });
 
     return button;
 }
 
 void Keypad::press_key(keypad_io::Keys key)
 {
-    device->press_key(key);
-    if (_buttons.contains(key))
-        _buttons[key]->setIcon(_icons[key].second);
+    // for (auto k : _buttons_state.keys())
+    // {
+    //     _buttons_state[k] = false;
+    // }
+
+    if (emu_ptr->get_running())
+    {
+        _buttons_state[key] = true;
+
+        device->press_key(key);
+        if (_buttons.contains(key))
+            _buttons[key]->setIcon(_icons[key].second);
+    }
+    else
+    {
+        if (!_buttons_state[key])
+        {
+            device->press_key(key);
+            if (_buttons.contains(key))
+                _buttons[key]->setIcon(_icons[key].second);
+        }
+        else
+        {
+            device->release_key(key);
+            if (_buttons.contains(key))
+                _buttons[key]->setIcon(_icons[key].first);
+        }
+
+        _buttons_state[key] = !_buttons_state[key];
+    }
 }
 
 void Keypad::release_key(keypad_io::Keys key)
 {
-    device->release_key(key);
-    if (_buttons.contains(key))
-        _buttons[key]->setIcon(_icons[key].first);
+    if (emu_ptr->get_running())
+    {
+        _buttons_state[key] = false;
+        device->release_key(key);
+        if (_buttons.contains(key))
+            _buttons[key]->setIcon(_icons[key].first);
+    }
 }
