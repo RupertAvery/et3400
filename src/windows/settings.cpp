@@ -105,6 +105,7 @@ QWidget *SettingsDialog::createGeneralTab()
 
     verticalLayout->addLayout(horizontalLayout);
     verticalLayout->addWidget(clear_ram_label);
+    verticalLayout->addStretch();
 
     connect(clear_ram_checkbox, &QCheckBox::toggled, [this](bool checked)
             { settings->clearRamOnLoad = checked; });
@@ -126,6 +127,7 @@ QWidget *SettingsDialog::createDisplayTab()
 
     verticalLayout->addLayout(horizontalLayout);
     verticalLayout->addWidget(show_bit0_label);
+    verticalLayout->addStretch();
 
     connect(show_bit0_display_writes_checkbox, &QCheckBox::toggled, [this](bool checked)
             { settings->showBit0DisplayWrites = checked; });
