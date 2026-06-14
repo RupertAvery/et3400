@@ -338,6 +338,13 @@ void DisassemblyView::keyPressEvent(QKeyEvent *event)
 {
 	switch (event->key())
 	{
+	case Qt::Key_Space:
+		if (selected_line > -1)
+			selected_line = -1;
+		else
+			selected_line = last_selected_line;
+		update();
+		break;
 	case Qt::Key_Up:
 		adjustSelected(-1);
 		scrollIntoView();
@@ -455,6 +462,8 @@ void DisassemblyView::adjustSelected(int direction)
 		}
 		selected_line = newSelected;
 	}
+
+	last_selected_line = selected_line;
 }
 
 void DisassemblyView::paintEvent(QPaintEvent *event)
@@ -508,15 +517,17 @@ void DisassemblyView::mousePressEvent(QMouseEvent *event)
 		}
 		else
 		{
-			if (selected_line == line)
+			if (selected_line == line && !gained_focus)
 			{
 				selected_line = -1;
 			}
 			else
 			{
 				selected_line = line;
+				last_selected_line = selected_line;
 			}
 		}
+		gained_focus = false;
 		setFocus();
 	}
 	else if (event->button() == Qt::MouseButton::RightButton)
@@ -527,11 +538,13 @@ void DisassemblyView::mousePressEvent(QMouseEvent *event)
 		if (x > 20)
 		{
 			selected_line = line;
+			last_selected_line = selected_line;
 		}
 		else
 		{
 			selected_line = -1;
 		}
+		gained_focus = false;
 		setFocus();
 	}
 }
@@ -555,14 +568,15 @@ void DisassemblyView::focusInEvent(QFocusEvent *event)
 	if (selected_line == -1)
 	{
 		selected_line = 0;
+		last_selected_line = selected_line;
 	}
+	gained_focus = true;
 	scrollIntoView();
 	update();
 }
 
 void DisassemblyView::focusOutEvent(QFocusEvent *event)
 {
-	// selected_line = -1;
 	update();
 }
 
@@ -629,6 +643,7 @@ void DisassemblyView::setSelected(offs_t address)
 		if (line->address == address)
 		{
 			selected_line = ctr + 1;
+			last_selected_line = selected_line;
 			found = true;
 			break;
 		}

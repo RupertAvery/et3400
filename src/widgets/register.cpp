@@ -1,4 +1,5 @@
 #include "register.h"
+#include <QApplication>
 #include "colors.h"
 
 RegisterView::RegisterView(RegisterType type, QWidget *parent) : QFrame(parent)
@@ -22,6 +23,9 @@ RegisterView::RegisterView(RegisterType type, QWidget *parent) : QFrame(parent)
                     blink_state = (blink_state + 1) % 2;
                     update();
                 } });
+
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, &QFrame::customContextMenuRequested, this, &RegisterView::showContextMenu);
 
     buffer = new QPixmap;
 }
@@ -258,4 +262,17 @@ void RegisterView::stop_editing()
     blink_state = 1;
     editing_nibble = 0;
     editing_value = 0;
+}
+
+void RegisterView::showContextMenu(const QPoint &pos)
+{
+    QMenu contextMenu(tr("Context menu"), this->parentWidget());
+
+    QAction editAction("Edit\tF2", this);
+    connect(&editAction, &QAction::triggered, this, [this]
+            { start_editing(); });
+    editAction.setEnabled(enabled);
+    contextMenu.addAction(&editAction);
+
+    contextMenu.exec(mapToGlobal(pos));
 }

@@ -101,9 +101,12 @@ private:
 	int item_height = 20;
 	int max_vscroll;
 	int selected_line;
+	int last_selected_line = -1;
+
 	int current;
 	int hover_row = -1;
 	bool auto_refresh = false;
+	bool gained_focus = false;
 
 	DisassemblyLine findLine(offs_t address);
 	void addOrRemoveBreakpoint(int line_number);

@@ -11,6 +11,7 @@
 #include <QPixmap>
 #include <QTimer>
 #include <QFrame>
+#include <QMenu>
 #include "../emu/et3400.h"
 
 class RegisterView : public QFrame
@@ -28,16 +29,19 @@ public:
     RegisterView(RegisterType type, QWidget *parent = nullptr);
     ~RegisterView();
 
+    void showContextMenu(const QPoint &pos);
+
     void set_value(uint16_t value);
     void start_editing();
     void stop_editing();
-    void set_enabled(bool enabled) { 
+    void set_enabled(bool enabled)
+    {
         this->enabled = enabled;
-        if(!enabled)
+        if (!enabled)
         {
             stop_editing();
         }
-        update(); 
+        update();
     }
 
 signals:
@@ -56,14 +60,12 @@ private:
     RegisterType m_type;
     QFont m_font;
     QFontMetrics *m_fm = nullptr;
+    QWidget *parent;
 
     uint16_t value;
 
     int item_height;
     void bufferDraw();
-
-
-
 
     QPixmap *buffer;
 
@@ -73,7 +75,7 @@ private:
     int editing_nibble = 0;
     uint16_t editing_value = 0;
     int blink_state = 0;
-    QTimer *blink_timer;    
+    QTimer *blink_timer;
 };
 
 #endif // REGISTER_H

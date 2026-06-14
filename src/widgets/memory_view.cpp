@@ -361,15 +361,29 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 
 	if (!is_editing)
 	{
-		if (event->key() == Qt::Key_Home)
+		if (event->key() == Qt::Key_Space)
+		{
+			if (selected_address > -1)
+			{
+				selected_address = -1;
+			}
+			else
+			{
+				selected_address = last_selected_address;
+			}
+			update();
+		}
+		else if (event->key() == Qt::Key_Home)
 		{
 			selected_address = start;
+			last_selected_address = selected_address;
 			scrollIntoView();
 			update();
 		}
 		else if (event->key() == Qt::Key_End)
 		{
 			selected_address = end;
+			last_selected_address = selected_address;
 			scrollIntoView();
 			update();
 		}
@@ -384,9 +398,11 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 				if (selected_address - 8 >= (int)start)
 				{
 					selected_address -= 8;
-					scrollIntoView();
 					if (selected_address < (int)start)
 						selected_address = start;
+
+					last_selected_address = selected_address;
+					scrollIntoView();
 				}
 
 				update();
@@ -399,9 +415,11 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 				if (selected_address + 8 <= end)
 				{
 					selected_address += 8;
-					scrollIntoView();
 					if (selected_address > end)
 						selected_address = end;
+
+					last_selected_address = selected_address;
+					scrollIntoView();
 				}
 
 				update();
@@ -412,10 +430,11 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 			if (selected_address > (int)start)
 			{
 				selected_address -= 1;
-				scrollIntoView();
 				if (selected_address < (int)start)
 					selected_address = start;
 
+				last_selected_address = selected_address;
+				scrollIntoView();
 				update();
 			}
 		}
@@ -424,10 +443,11 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 			if (selected_address < (int)end)
 			{
 				selected_address += 1;
-				scrollIntoView();
 				if (selected_address > (int)end)
 					selected_address = end;
 
+				last_selected_address = selected_address;
+				scrollIntoView();
 				update();
 			}
 		}
@@ -436,10 +456,11 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 			if (selected_address > (int)start)
 			{
 				selected_address -= visible_items * 8;
-				scrollIntoView();
 				if (selected_address < (int)start)
 					selected_address = start;
 
+				last_selected_address = selected_address;
+				scrollIntoView();
 				update();
 			}
 		}
@@ -448,10 +469,11 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 			if (selected_address < (int)end)
 			{
 				selected_address += visible_items * 8;
-				scrollIntoView();
 				if (selected_address > (int)end)
 					selected_address = end;
 
+				last_selected_address = selected_address;
+				scrollIntoView();
 				update();
 			}
 		}
@@ -519,6 +541,7 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 				{
 					editing_nibble = 0;
 					selected_address = editing_address;
+					last_selected_address = selected_address;
 					editing_value = memory[editing_address - start];
 				}
 			}
@@ -545,6 +568,7 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 					{
 						editing_address += 1;
 						selected_address = editing_address;
+						last_selected_address = selected_address;
 					}
 					editing_value = memory[editing_address - start];
 				}
@@ -591,50 +615,73 @@ void MemoryView::mousePressEvent(QMouseEvent *event)
 {
 	if (is_editing)
 		return;
-	int y = event->y();
-	int x = event->x();
 
-	// ignore the address column
-	if (x < address_col_width || x > (address_col_width + data_cell_width * 8))
-		return;
-
-	int ascent = m_fm->ascent();
-	int line = (y - 1) / item_height;
-	int col = (x - address_col_width) / data_cell_width;
-
-	int address = start + (offset + line) * 8 + col;
-	if (address <= end)
+	if (event->button() == Qt::MouseButton::LeftButton)
 	{
-		selected_address = address;
-		update();
+		int y = event->y();
+		int x = event->x();
+
+		// ignore the address column
+		if (x < address_col_width || x > (address_col_width + data_cell_width * 8))
+			return;
+
+		int ascent = m_fm->ascent();
+		int line = (y - 1) / item_height;
+		int col = (x - address_col_width) / data_cell_width;
+
+		int address = start + (offset + line) * 8 + col;
+		if (address <= end)
+		{
+			if (selected_address == address && !gained_focus)
+			{
+				selected_address = -1;
+			}
+			else
+			{
+				selected_address = address;
+				last_selected_address = selected_address;
+			}
+			update();
+		}
+		gained_focus = false;
 	}
 }
 
 void MemoryView::mouseDoubleClickEvent(QMouseEvent *event)
 {
-	int y = event->y();
-	int x = event->x();
-
-	if (x < address_col_width || x > (address_col_width + data_cell_width * 8))
+	if (is_editing)
 		return;
 
-	int ascent = m_fm->ascent();
-	int line = (y - 1) / item_height;
-	int col = (x - address_col_width) / data_cell_width;
-
-	int address = start + (offset + line) * 8 + col;
-	if (address <= end)
+	if (event->button() == Qt::MouseButton::LeftButton)
 	{
-		start_editing(address);
+		int y = event->y();
+		int x = event->x();
+
+		if (x < address_col_width || x > (address_col_width + data_cell_width * 8))
+			return;
+
+		int ascent = m_fm->ascent();
+		int line = (y - 1) / item_height;
+		int col = (x - address_col_width) / data_cell_width;
+
+		int address = start + (offset + line) * 8 + col;
+		if (address <= end)
+		{
+			selected_address = address;
+			last_selected_address = selected_address;
+			start_editing(address);
+		}
 	}
 }
 
 void MemoryView::focusInEvent(QFocusEvent *event)
 {
 	Q_UNUSED(event);
+	gained_focus = true;
 	if (selected_address == -1)
 	{
 		selected_address = start;
+		last_selected_address = selected_address;
 	}
 	scrollIntoView();
 	update();
@@ -684,7 +731,7 @@ void MemoryView::showContextMenu(const QPoint &pos)
 
 	QMenu contextMenu(tr("Context menu"), this);
 
-	QAction editAction("Edit", this);
+	QAction editAction("Edit\tF2", this);
 	connect(&editAction, &QAction::triggered, this, [this]
 			{ start_editing(selected_address); });
 	editAction.setEnabled(canEdit);

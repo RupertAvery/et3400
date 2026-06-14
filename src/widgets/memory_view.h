@@ -105,10 +105,12 @@ private:
 
     bool is_editing = false;
     int selected_address = -1;
+    int last_selected_address = -1;
     int editing_address = 0;
     int editing_value = 0;
     int editing_nibble = 0;
     int blink_counter = 0;
+    bool gained_focus = false;
 
     void bufferDraw();
     void start_editing(uint16_t address);
