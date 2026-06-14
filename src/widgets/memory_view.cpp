@@ -8,13 +8,6 @@
 MemoryView::MemoryView(QWidget *parent)
 	: QFrame(parent)
 {
-	// setMidLineWidth(0);
-	setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
-	setLineWidth(3);
-	setFocusPolicy(Qt::StrongFocus);
-
-	// setBackgroundRole(QPalette::Base);
-	// setAutoFillBackground(true);
 	running = true;
 	offset = 0;
 
@@ -39,7 +32,8 @@ MemoryView::MemoryView(QWidget *parent)
 	connect(this->m_paintTimer, &QTimer::timeout, this, &MemoryView::redraw);
 
 	buffer = new QPixmap;
-	setLineWidth(3);
+
+	setupUI(parent);
 }
 
 MemoryView::~MemoryView()
@@ -61,6 +55,8 @@ void MemoryView::wheelEvent(QWheelEvent *event)
 	{
 		scroll(steps);
 		emit on_scroll(steps);
+
+		// scrollbar->setValue(scrollbar->value() - steps);
 	}
 	event->accept();
 }
@@ -72,6 +68,9 @@ void MemoryView::scroll(int steps)
 		offset = 0;
 	if (offset > max_vscroll)
 		offset = max_vscroll;
+
+	scrollbar->setValue(offset);
+
 	this->update();
 }
 
@@ -82,6 +81,9 @@ void MemoryView::scrollTo(int value)
 		offset = 0;
 	if (offset > max_vscroll)
 		offset = max_vscroll;
+
+	scrollbar->setValue(offset);
+
 	this->update();
 }
 
@@ -105,6 +107,7 @@ void MemoryView::bufferDraw()
 	QColor darkblue = QColor("#00018B");
 	QColor darkred = QColor("#8B0000");
 	QBrush selected_brush = QBrush(selected_bg_color);
+	QBrush selected_nofocus_brush = QBrush(selected_bg_nofocus_color);
 
 	bool hasFocus = this->hasFocus();
 
@@ -168,10 +171,16 @@ void MemoryView::bufferDraw()
 								 m_heat_colors[heat_map[heat_idx] / 16]);
 			}
 
-			if (hasFocus && !is_editing && selected_address == address + i)
+			if (!is_editing && selected_address == address + i)
 			{
-
-				painter.fillRect(box_x, box_y, box_width, box_height, selected_brush);
+				if (hasFocus)
+				{
+					painter.fillRect(box_x, box_y, box_width, box_height, selected_brush);
+				}
+				else
+				{
+					painter.fillRect(box_x, box_y, box_width, box_height, selected_nofocus_brush);
+				}
 			}
 
 			if (hasFocus && is_editing && address + i == editing_address)
@@ -253,18 +262,43 @@ void MemoryView::resizeEvent(QResizeEvent *event)
 	int x = (end - start) / 8 - visible_items + 2;
 	max_vscroll = x > 0 ? x : 0;
 	emit on_size(max_vscroll);
+	scrollbar->setMinimum(0);
+	scrollbar->setMaximum(max_vscroll);
 }
 
 void MemoryView::paintEvent(QPaintEvent *event)
 {
-	QPainter painter(this);
-	if (is_device_set)
-	{
-		bufferDraw();
-		painter.drawPixmap(0, 0, *buffer, 0, 0, 0, 0);
-		painter.end();
-	}
 	QFrame::paintEvent(event);
+}
+
+bool MemoryView::eventFilter(QObject *obj, QEvent *event)
+{
+	if (obj == frame)
+	{
+		switch (event->type())
+		{
+		case QEvent::Paint:
+			if (is_device_set)
+			{
+				bufferDraw();
+				QPainter painter(frame);
+				painter.drawPixmap(0, 0, *buffer, 0, 0, 0, 0);
+			}
+			return false; // let QFrame draw its border on top
+		case QEvent::MouseButtonPress:
+			mousePressEvent(static_cast<QMouseEvent *>(event));
+			return true;
+		case QEvent::MouseButtonDblClick:
+			mouseDoubleClickEvent(static_cast<QMouseEvent *>(event));
+			return true;
+		case QEvent::Wheel:
+			wheelEvent(static_cast<QWheelEvent *>(event));
+			return true;
+		default:
+			break;
+		}
+	}
+	return QObject::eventFilter(obj, event);
 }
 
 void MemoryView::redraw()
@@ -301,6 +335,7 @@ void MemoryView::set_device(memory_mapped_device *device)
 	resizeEvent(new QResizeEvent(size(), size()));
 	offset = 0;
 	is_device_set = true;
+	scrollbar->setValue(0);
 }
 
 void MemoryView::set_emulator(et3400emu *emu)
@@ -526,6 +561,7 @@ void MemoryView::update_offset()
 			}
 		}
 		emit on_offset_change(offset);
+		scrollbar->setValue(offset);
 	}
 	else if (selected_address > (int)start + (offset + visible_items) * 8 - 1)
 	{
@@ -539,6 +575,7 @@ void MemoryView::update_offset()
 			}
 		}
 		emit on_offset_change(offset);
+		scrollbar->setValue(offset);
 	}
 }
 
@@ -548,9 +585,15 @@ void MemoryView::mousePressEvent(QMouseEvent *event)
 		return;
 	int y = event->y();
 	int x = event->x();
+
+	// ignore the address column
+	if (x < 80)
+		return;
+
 	int ascent = m_fm->ascent();
 	int line = (y - 1) / item_height;
 	int col = (x - 80) / 30;
+
 	int address = start + (offset + line) * 8 + col;
 	if (address <= end)
 	{
@@ -573,10 +616,20 @@ void MemoryView::mouseDoubleClickEvent(QMouseEvent *event)
 	}
 }
 
+void MemoryView::focusInEvent(QFocusEvent *event)
+{
+	Q_UNUSED(event);
+	if (selected_address == -1)
+	{
+		selected_address = 0;
+	}
+	update();
+}
+
 void MemoryView::focusOutEvent(QFocusEvent *event)
 {
 	Q_UNUSED(event);
-	selected_address = -1;
+	// selected_address = -1;
 	stop_editing();
 	update();
 }

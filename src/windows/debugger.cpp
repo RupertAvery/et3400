@@ -240,7 +240,6 @@ DebuggerDialog::~DebuggerDialog()
 {
 	LOG_DEBUG << "DebuggerDialog destroy";
 	delete memory_view;
-	delete memory_scrollbar;
 	delete memory_selector;
 	delete disassembly_view;
 	delete disassembly_selector;
@@ -256,7 +255,6 @@ void DebuggerDialog::select_memory_location(int index)
 		return;
 
 	memory_view->set_device(device);
-	memory_scrollbar->setValue(0);
 }
 
 void DebuggerDialog::select_disassembly_location(int index)
@@ -278,21 +276,21 @@ void DebuggerDialog::select_disassembly_location(int index)
 // 		tab_clear_ram_labels_action->setEnabled(true);
 // }
 
-void DebuggerDialog::update_memory_scrollbar(int value)
-{
-	memory_scrollbar->setValue(memory_scrollbar->value() - value);
-}
+// void DebuggerDialog::update_memory_scrollbar(int value)
+// {
+// 	memory_scrollbar->setValue(memory_scrollbar->value() - value);
+// }
 
-void DebuggerDialog::update_memory_scrollbar_offset(int value)
-{
-	memory_scrollbar->setValue(value);
-}
+// void DebuggerDialog::update_memory_scrollbar_offset(int value)
+// {
+// 	memory_scrollbar->setValue(value);
+// }
 
-void DebuggerDialog::update_memory_scrollbar_max(int value)
-{
-	memory_scrollbar->setMinimum(0);
-	memory_scrollbar->setMaximum(value);
-}
+// void DebuggerDialog::update_memory_scrollbar_max(int value)
+// {
+// 	memory_scrollbar->setMinimum(0);
+// 	memory_scrollbar->setMaximum(value);
+// }
 
 void DebuggerDialog::set_emulator(et3400emu *emu)
 {
@@ -418,10 +416,10 @@ void DebuggerDialog::update_button_state()
 	status_view->set_enabled(!running);
 }
 
-void DebuggerDialog::memory_slider_moved(int value)
-{
-	memory_view->scrollTo(value);
-}
+// void DebuggerDialog::memory_slider_moved(int value)
+// {
+// 	memory_view->scrollTo(value);
+// }
 
 void DebuggerDialog::keyPressEvent(QKeyEvent *event)
 {
@@ -590,20 +588,16 @@ void DebuggerDialog::after_load_rom()
 {
 	refresh();
 	update_button_state();
-	memory_scrollbar->setValue(0);
-
-	QVariant v = disassembly_selector->itemText(disassembly_selector->currentIndex());
-	QString s = v.value<QString>();
+	memory_view->scrollTo(0);
+	disassembly_view->scrollTo(0);
 }
 
 void DebuggerDialog::after_load_ram()
 {
 	refresh();
 	update_button_state();
-	memory_scrollbar->setValue(0);
-
-	QVariant v = disassembly_selector->itemText(disassembly_selector->currentIndex());
-	QString s = v.value<QString>();
+	memory_view->scrollTo(0);
+	disassembly_view->scrollTo(0);
 }
 
 void DebuggerDialog::clear_ram()

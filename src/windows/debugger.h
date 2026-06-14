@@ -190,13 +190,6 @@ private:
 	void reset(bool checked);
 
 	void setupUI();
-	void update_memory_scrollbar(int value);
-
-	void update_memory_scrollbar_max(int value);
-	void update_memory_scrollbar_offset(int value);
-
-	void memory_slider_moved(int value);
-	void disassembly_slider_moved(int value);
 
 	void select_memory_location(int index);
 	void select_disassembly_location(int index);
@@ -240,8 +233,6 @@ private:
 
 	LabelsDialog *labels_dialog = nullptr;
 	BreakpointsDialog *breakpoints_dialog = nullptr;
-
-	QScrollBar *memory_scrollbar = nullptr;
 
 	void show_labels_dialog();
 	void show_breakpoints_dialog();

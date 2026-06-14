@@ -190,9 +190,9 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     connect(set_heat_map_persist_action, &QAction::toggled, this, [this](bool checked)
             { if (checked) set_heat_map_persist(); });
 
-    MakeTriggeredAction(toggle_heat_map_action, "&Toggle",  Qt::CTRL + Qt::Key_H, toggle_heat_map);
+    MakeTriggeredAction(toggle_heat_map_action, "&Toggle", Qt::CTRL + Qt::Key_H, toggle_heat_map);
     MakeTriggeredActionNS(clear_heat_map_action, "&Clear", clear_heat_map);
-    
+
     clear_heat_map_action->setIcon(QIcon(":/buttons/Eraser.png"));
     clear_heat_map_action->setIconVisibleInMenu(false);
     clear_heat_map_action->setToolTip("Clear Heat Map");
@@ -282,19 +282,15 @@ QGroupBox *DebuggerDialog::create_disassembly_group()
 {
     QGroupBox *disassembly_groupBox = new QGroupBox("Disassembly", this);
     disassembly_groupBox->setMinimumWidth(400);
-    disassembly_view = new DisassemblyView(this);
+
+    QVBoxLayout *disassembly_groupBox_layout_v = new QVBoxLayout(disassembly_groupBox);
+
     disassembly_selector = new QComboBox(disassembly_groupBox);
+    disassembly_view = new DisassemblyView(disassembly_groupBox);
 
-    QWidget *inner_disassembly = new QWidget(disassembly_groupBox);
-    QHBoxLayout *disassembly_groupBox_layout = new QHBoxLayout(this);
-
-    disassembly_groupBox_layout->addWidget(disassembly_view);
-    disassembly_groupBox_layout->setMargin(0);
-    inner_disassembly->setLayout(disassembly_groupBox_layout);
-
-    QVBoxLayout *disassembly_groupBox_layout_v = new QVBoxLayout(this);
     disassembly_groupBox_layout_v->addWidget(disassembly_selector);
-    disassembly_groupBox_layout_v->addWidget(inner_disassembly);
+    disassembly_groupBox_layout_v->addWidget(disassembly_view);
+    
     disassembly_groupBox->setLayout(disassembly_groupBox_layout_v);
 
     connect(disassembly_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_disassembly_location);
@@ -309,37 +305,21 @@ QGroupBox *DebuggerDialog::create_disassembly_group()
 
 QGroupBox *DebuggerDialog::create_memory_group()
 {
-    memory_scrollbar = new QScrollBar(Qt::Orientation::Vertical);
-
     QGroupBox *memory_groupBox = new QGroupBox("Memory", this);
     memory_groupBox->setMinimumWidth(360);
 
-    memory_view = new MemoryView(memory_groupBox);
+    QVBoxLayout *memory_groupBox_layout_v = new QVBoxLayout(memory_groupBox);
 
     memory_selector = new QComboBox(memory_groupBox);
+    memory_view = new MemoryView(memory_groupBox);
 
-    QWidget *inner_memory = new QWidget(memory_groupBox);
-
-    QHBoxLayout *memory_groupBox_layout = new QHBoxLayout(inner_memory);
-    memory_groupBox_layout->addWidget(memory_view);
-    memory_groupBox_layout->addWidget(memory_scrollbar);
-    memory_groupBox_layout->setMargin(0);
-    inner_memory->setLayout(memory_groupBox_layout);
-
-    QVBoxLayout *memory_groupBox_layout_v = new QVBoxLayout(memory_groupBox);
     memory_groupBox_layout_v->addWidget(memory_selector);
-    memory_groupBox_layout_v->addWidget(inner_memory);
+    memory_groupBox_layout_v->addWidget(memory_view);
+
     memory_groupBox->setLayout(memory_groupBox_layout_v);
 
     connect(memory_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_memory_location);
-
-    connect(memory_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::memory_slider_moved);
-    connect(memory_scrollbar, &QScrollBar::valueChanged, this, &DebuggerDialog::memory_slider_moved);
-
-    connect(memory_view, &MemoryView::on_scroll, this, &DebuggerDialog::update_memory_scrollbar);
-    connect(memory_view, &MemoryView::on_size, this, &DebuggerDialog::update_memory_scrollbar_max);
-    connect(memory_view, &MemoryView::on_offset_change, this, &DebuggerDialog::update_memory_scrollbar_offset);
-
+ 
     return memory_groupBox;
 }
 
@@ -350,7 +330,6 @@ void DebuggerDialog::goto_address(offs_t address)
         return;
     selectByAddress(device->get_start());
     disassembly_view->setSelected(address);
-
 }
 
 void DebuggerDialog::setupUI()

@@ -53,15 +53,19 @@ public slots:
 
 protected:
     void paintEvent(QPaintEvent *event) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
+    void focusInEvent(QFocusEvent *event) override;
     void focusOutEvent(QFocusEvent *event) override;
 
 private:
-    QScrollBar *scrollbar;
+    QScrollBar *scrollbar = nullptr;
+    QFrame *frame;
+
     QAction *action;
     QPixmap *buffer;
     QTimer *m_paintTimer;
@@ -105,6 +109,30 @@ private:
     void update_offset();
     void start_editing(uint16_t address);
     void stop_editing();
+
+    void setupUI(QWidget *parent)
+    {
+        this->setFocusPolicy(Qt::StrongFocus);
+
+        QHBoxLayout *layout = new QHBoxLayout(parent);
+
+        frame = new QFrame(parent);
+        frame->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+        frame->setLineWidth(3);
+        frame->setMouseTracking(true);
+        frame->installEventFilter(this);
+
+        scrollbar = new QScrollBar(Qt::Orientation::Vertical);
+
+        layout->addWidget(frame);
+        layout->addWidget(scrollbar);
+        layout->setMargin(0);
+
+        this->setLayout(layout);
+
+        connect(scrollbar, &QScrollBar::sliderMoved, this, &MemoryView::scrollTo);
+        connect(scrollbar, &QScrollBar::valueChanged, this, &MemoryView::scrollTo);
+    }
 };
 
 #endif // MEMORY_VIEW_H
