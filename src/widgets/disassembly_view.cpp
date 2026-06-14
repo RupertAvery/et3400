@@ -388,6 +388,8 @@ void DisassemblyView::scrollIntoView()
 				break;
 			}
 		}
+		emit onOffsetUpdated(offset);
+		scrollbar->setValue(offset);
 	}
 
 	if (selected_line < offset)
@@ -401,10 +403,9 @@ void DisassemblyView::scrollIntoView()
 				break;
 			}
 		}
+		emit onOffsetUpdated(offset);
+		scrollbar->setValue(offset);
 	}
-
-	emit onOffsetUpdated(offset);
-	scrollbar->setValue(offset);
 }
 
 void DisassemblyView::adjustSelected(int direction)
@@ -555,6 +556,7 @@ void DisassemblyView::focusInEvent(QFocusEvent *event)
 	{
 		selected_line = 0;
 	}
+	scrollIntoView();
 	update();
 }
 
@@ -685,6 +687,7 @@ void DisassemblyView::set_range(offs_t start, offs_t end, uint8_t *memory)
 	DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
 
 	offset = 0;
+	selected_line = -1;
 	is_memory_set = true;
 	resizeEvent(new QResizeEvent(size(), size()));
 	scrollbar->setValue(offset);

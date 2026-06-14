@@ -16,6 +16,7 @@
 #include <QFont>
 #include <QFontMetrics>
 #include <QWheelEvent>
+#include <QMenu>
 
 #include "../emu/et3400.h"
 #include "../dev/memory_map.h"
@@ -33,6 +34,7 @@ public:
     void update_display();
     void scroll(int steps);
     void scrollTo(int value);
+    void scrollIntoView();
     void set_emulator(et3400emu *emu);
     // void set_range(offs_t start, offs_t end, uint8_t *memory);
     void set_device(memory_mapped_device *device);
@@ -106,9 +108,12 @@ private:
     int blink_counter = 0;
 
     void bufferDraw();
-    void update_offset();
     void start_editing(uint16_t address);
     void stop_editing();
+    void showContextMenu(const QPoint &pos);
+
+    const int address_col_width = 80;
+    const int data_cell_width = 30;
 
     void setupUI(QWidget *parent)
     {

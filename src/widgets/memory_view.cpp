@@ -33,6 +33,8 @@ MemoryView::MemoryView(QWidget *parent)
 
 	buffer = new QPixmap;
 
+	connect(this, &QFrame::customContextMenuRequested, this, &MemoryView::showContextMenu);
+
 	setupUI(parent);
 }
 
@@ -157,7 +159,7 @@ void MemoryView::bufferDraw()
 		while (address + i <= end && i < 8)
 		{
 			int heat_idx = address + i - start;
-			int text_x = 80 + i * 30;
+			int text_x = address_col_width + i * data_cell_width;
 			int box_x = text_x - 4;
 			int box_y = y - ascent - 1;
 			int box_width = 28;
@@ -217,7 +219,7 @@ void MemoryView::bufferDraw()
 		while (i < 8)
 		{
 			painter.setPen(darkred);
-			painter.drawText(80 + i * 30, y, QString("%1").arg(0, 2, 16, QChar('0')).toUpper());
+			painter.drawText(address_col_width + i * data_cell_width, y, QString("%1").arg(0, 2, 16, QChar('0')).toUpper());
 			i++;
 		}
 
@@ -294,6 +296,9 @@ bool MemoryView::eventFilter(QObject *obj, QEvent *event)
 		case QEvent::Wheel:
 			wheelEvent(static_cast<QWheelEvent *>(event));
 			return true;
+		case QEvent::ContextMenu:
+			showContextMenu(static_cast<QContextMenuEvent *>(event)->pos());
+			return true;
 		default:
 			break;
 		}
@@ -332,10 +337,13 @@ void MemoryView::set_device(memory_mapped_device *device)
 	this->shadow_memory = (uint8_t *)calloc(end - start + 1, 1);
 	this->heat_map = (uint8_t *)calloc(end - start + 1, 1);
 
-	resizeEvent(new QResizeEvent(size(), size()));
 	offset = 0;
+	selected_address = -1;
 	is_device_set = true;
+
+	resizeEvent(new QResizeEvent(size(), size()));
 	scrollbar->setValue(0);
+	update();
 }
 
 void MemoryView::set_emulator(et3400emu *emu)
@@ -356,13 +364,13 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 		if (event->key() == Qt::Key_Home)
 		{
 			selected_address = start;
-			update_offset();
+			scrollIntoView();
 			update();
 		}
 		else if (event->key() == Qt::Key_End)
 		{
 			selected_address = end;
-			update_offset();
+			scrollIntoView();
 			update();
 		}
 		else if (event->key() == Qt::Key_F2)
@@ -376,7 +384,7 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 				if (selected_address - 8 >= (int)start)
 				{
 					selected_address -= 8;
-					update_offset();
+					scrollIntoView();
 					if (selected_address < (int)start)
 						selected_address = start;
 				}
@@ -391,7 +399,7 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 				if (selected_address + 8 <= end)
 				{
 					selected_address += 8;
-					update_offset();
+					scrollIntoView();
 					if (selected_address > end)
 						selected_address = end;
 				}
@@ -404,7 +412,7 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 			if (selected_address > (int)start)
 			{
 				selected_address -= 1;
-				update_offset();
+				scrollIntoView();
 				if (selected_address < (int)start)
 					selected_address = start;
 
@@ -416,7 +424,7 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 			if (selected_address < (int)end)
 			{
 				selected_address += 1;
-				update_offset();
+				scrollIntoView();
 				if (selected_address > (int)end)
 					selected_address = end;
 
@@ -428,7 +436,7 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 			if (selected_address > (int)start)
 			{
 				selected_address -= visible_items * 8;
-				update_offset();
+				scrollIntoView();
 				if (selected_address < (int)start)
 					selected_address = start;
 
@@ -440,7 +448,7 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 			if (selected_address < (int)end)
 			{
 				selected_address += visible_items * 8;
-				update_offset();
+				scrollIntoView();
 				if (selected_address > (int)end)
 					selected_address = end;
 
@@ -547,7 +555,7 @@ void MemoryView::keyPressEvent(QKeyEvent *event)
 	}
 }
 
-void MemoryView::update_offset()
+void MemoryView::scrollIntoView()
 {
 	if (selected_address < (int)start + offset * 8)
 	{
@@ -587,12 +595,12 @@ void MemoryView::mousePressEvent(QMouseEvent *event)
 	int x = event->x();
 
 	// ignore the address column
-	if (x < 80)
+	if (x < address_col_width || x > (address_col_width + data_cell_width * 8))
 		return;
 
 	int ascent = m_fm->ascent();
 	int line = (y - 1) / item_height;
-	int col = (x - 80) / 30;
+	int col = (x - address_col_width) / data_cell_width;
 
 	int address = start + (offset + line) * 8 + col;
 	if (address <= end)
@@ -606,9 +614,14 @@ void MemoryView::mouseDoubleClickEvent(QMouseEvent *event)
 {
 	int y = event->y();
 	int x = event->x();
+
+	if (x < address_col_width || x > (address_col_width + data_cell_width * 8))
+		return;
+
 	int ascent = m_fm->ascent();
 	int line = (y - 1) / item_height;
-	int col = (x - 80) / 30;
+	int col = (x - address_col_width) / data_cell_width;
+
 	int address = start + (offset + line) * 8 + col;
 	if (address <= end)
 	{
@@ -621,8 +634,9 @@ void MemoryView::focusInEvent(QFocusEvent *event)
 	Q_UNUSED(event);
 	if (selected_address == -1)
 	{
-		selected_address = 0;
+		selected_address = start;
 	}
+	scrollIntoView();
 	update();
 }
 
@@ -657,4 +671,24 @@ void MemoryView::stop_editing()
 	editing_nibble = 0;
 	editing_value = 0;
 	update();
+}
+
+void MemoryView::showContextMenu(const QPoint &pos)
+{
+	bool canEdit = !is_editing && selected_address > -1;
+
+	if (!canEdit)
+	{
+		return;
+	}
+
+	QMenu contextMenu(tr("Context menu"), this);
+	QAction editAction("Edit", this);
+	connect(&editAction, &QAction::triggered, this, [this]
+			{ start_editing(selected_address); });
+
+	editAction.setEnabled(canEdit);
+	contextMenu.addAction(&editAction);
+
+	contextMenu.exec(mapToGlobal(pos));
 }
