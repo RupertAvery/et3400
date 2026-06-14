@@ -152,7 +152,7 @@ private:
 	QAction *heat_map_action;
 	QAction *set_heat_map_off_action;
 	QAction *set_heat_map_fade_action;
-	QAction *set_heat_map_fade_slow_action;
+	//QAction *set_heat_map_fade_slow_action;
 	QAction *set_heat_map_persist_action;
 	QAction *toggle_heat_map_action;
 	QAction *clear_heat_map_action;

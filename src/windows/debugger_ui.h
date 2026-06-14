@@ -39,12 +39,12 @@ QToolBar *DebuggerDialog::create_shortcuts_toolbar()
     // shortcut_toolbar->addWidget(step_out_button);
     shortcut_toolbar->addWidget(reset_button);
 
-    shortcut_toolbar->addSeparator();
-    shortcut_toolbar->addAction(set_heat_map_off_action);
-    shortcut_toolbar->addAction(set_heat_map_fade_action);
-    shortcut_toolbar->addAction(set_heat_map_fade_slow_action);
-    shortcut_toolbar->addAction(set_heat_map_persist_action);
-    shortcut_toolbar->addAction(clear_heat_map_action);
+    // shortcut_toolbar->addSeparator();
+    // shortcut_toolbar->addAction(set_heat_map_off_action);
+    // shortcut_toolbar->addAction(set_heat_map_fade_action);
+    // shortcut_toolbar->addAction(set_heat_map_fade_slow_action);
+    // shortcut_toolbar->addAction(set_heat_map_persist_action);
+    // shortcut_toolbar->addAction(clear_heat_map_action);
 
     return shortcut_toolbar;
 }
@@ -176,12 +176,12 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     connect(set_heat_map_fade_action, &QAction::toggled, this, [this](bool checked)
             { if (checked) set_heat_map_fade(); });
 
-    set_heat_map_fade_slow_action = new QAction(QIcon(":/buttons/HeatFadeSlow.png"), "&Fade (Slow)", this);
-    set_heat_map_fade_slow_action->setCheckable(true);
-    set_heat_map_fade_slow_action->setIconVisibleInMenu(false);
-    set_heat_map_fade_slow_action->setToolTip("Heat Map - Fade (Slow)");
-    connect(set_heat_map_fade_slow_action, &QAction::toggled, this, [this](bool checked)
-            { if (checked) set_heat_map_fade_slow(); });
+    // set_heat_map_fade_slow_action = new QAction(QIcon(":/buttons/HeatFadeSlow.png"), "&Fade (Slow)", this);
+    // set_heat_map_fade_slow_action->setCheckable(true);
+    // set_heat_map_fade_slow_action->setIconVisibleInMenu(false);
+    // set_heat_map_fade_slow_action->setToolTip("Heat Map - Fade (Slow)");
+    // connect(set_heat_map_fade_slow_action, &QAction::toggled, this, [this](bool checked)
+    //         { if (checked) set_heat_map_fade_slow(); });
 
     set_heat_map_persist_action = new QAction(QIcon(":/buttons/HeatPersist.png"), "&Persist", this);
     set_heat_map_persist_action->setCheckable(true);
@@ -190,7 +190,7 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     connect(set_heat_map_persist_action, &QAction::toggled, this, [this](bool checked)
             { if (checked) set_heat_map_persist(); });
 
-    MakeTriggeredAction(toggle_heat_map_action, "&Toggle", Qt::CTRL + Qt::Key_H, toggle_heat_map);
+    // MakeTriggeredAction(toggle_heat_map_action, "&Toggle", Qt::CTRL + Qt::Key_H, toggle_heat_map);
     MakeTriggeredActionNS(clear_heat_map_action, "&Clear", clear_heat_map);
 
     clear_heat_map_action->setIcon(QIcon(":/buttons/Eraser.png"));
@@ -201,18 +201,14 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     heat_map_group->setExclusive(true);
     heat_map_group->addAction(set_heat_map_off_action);
     heat_map_group->addAction(set_heat_map_fade_action);
-    heat_map_group->addAction(set_heat_map_fade_slow_action);
+    // heat_map_group->addAction(set_heat_map_fade_slow_action);
     heat_map_group->addAction(set_heat_map_persist_action);
-    // set_heat_map_off_action->blockSignals(true);
-    // set_heat_map_off_action->setChecked(true);
-    // set_heat_map_off_action->blockSignals(false);
 
     heat_map_menu->addAction(set_heat_map_off_action);
     heat_map_menu->addAction(set_heat_map_fade_action);
-    heat_map_menu->addAction(set_heat_map_fade_slow_action);
+    // heat_map_menu->addAction(set_heat_map_fade_slow_action);
     heat_map_menu->addAction(set_heat_map_persist_action);
     heat_map_menu->addSeparator();
-    heat_map_menu->addAction(toggle_heat_map_action);
     heat_map_menu->addAction(clear_heat_map_action);
 
     QAction *goto_label_action = new QAction("&Goto Address/Label", this);

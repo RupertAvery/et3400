@@ -34,7 +34,7 @@ void DebuggerDialog::stop(bool checked)
 	{
 		pauseAndUpdateDisassembler();
 		update_button_state();
-		disassembly_view->redraw();		
+		disassembly_view->redraw();
 	}
 }
 
@@ -43,7 +43,7 @@ void DebuggerDialog::step_into(bool checked)
 	if (!emu_ptr->get_running())
 	{
 		stepAndUpdateDisassembler();
-		disassembly_view->redraw();		
+		disassembly_view->redraw();
 	}
 }
 
@@ -178,14 +178,21 @@ void DebuggerDialog::toggle_heat_map()
 		switch (settings->heatMapDecay)
 		{
 		case FADE_SPEED:
-			set_heat_map_fade_slow_action->setChecked(true);
-			break;
-		case FADE_SLOW_SPEED:
 			set_heat_map_persist_action->setChecked(true);
 			break;
 		case PERSIST_SPEED:
 			set_heat_map_off_action->setChecked(true);
 			break;
+
+		// case FADE_SPEED:
+		// 	set_heat_map_fade_slow_action->setChecked(true);
+		// 	break;
+		// case FADE_SLOW_SPEED:
+		// 	set_heat_map_persist_action->setChecked(true);
+		// 	break;
+		// case PERSIST_SPEED:
+		// 	set_heat_map_off_action->setChecked(true);
+		// 	break;
 		}
 	}
 	else
@@ -356,14 +363,14 @@ void DebuggerDialog::set_settings(Settings *settings)
 		case FADE_SPEED:
 			set_heat_map_fade_action->setChecked(true);
 			break;
-		case FADE_SLOW_SPEED:
-			set_heat_map_fade_slow_action->setChecked(true);
-			break;
+		// case FADE_SLOW_SPEED:
+		// 	set_heat_map_fade_slow_action->setChecked(true);
+		// 	break;
 		case PERSIST_SPEED:
 			set_heat_map_persist_action->setChecked(true);
 			break;
 		default:
-			settings->heatMapDecay = PERSIST_SPEED;
+			settings->heatMapDecay = FADE_SPEED;
 			break;
 		}
 
