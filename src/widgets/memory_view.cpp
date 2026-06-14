@@ -683,12 +683,47 @@ void MemoryView::showContextMenu(const QPoint &pos)
 	}
 
 	QMenu contextMenu(tr("Context menu"), this);
+
 	QAction editAction("Edit", this);
 	connect(&editAction, &QAction::triggered, this, [this]
 			{ start_editing(selected_address); });
-
 	editAction.setEnabled(canEdit);
 	contextMenu.addAction(&editAction);
+
+	QMenu *heat_map_menu = new QMenu("&Heat Map", this);
+
+	QAction *set_heat_map_off_action = new QAction("&Off", this);
+	set_heat_map_off_action->setCheckable(true);
+	set_heat_map_off_action->setChecked(!heat_map_enabled);
+	connect(set_heat_map_off_action, &QAction::toggled, this, [this](bool checked)
+			{ if (checked) setHeatMapEnabled(false); emit on_heat_map_enabled_change(false); });
+
+	QAction *set_heat_map_fade_action = new QAction("&Fade", this);
+	set_heat_map_fade_action->setCheckable(true);
+	set_heat_map_fade_action->setChecked(heat_map_enabled && heat_map_decay == FADE_SPEED);
+	connect(set_heat_map_fade_action, &QAction::toggled, this, [this](bool checked)
+			{ if (checked) {setHeatMapEnabled(true); setHeatMapDecay(FADE_SPEED); emit on_heat_map_change(true, FADE_SPEED);} });
+
+	QAction *set_heat_map_persist_action = new QAction("&Persist", this);
+	set_heat_map_persist_action->setCheckable(true);
+	set_heat_map_persist_action->setChecked(heat_map_enabled && heat_map_decay == PERSIST_SPEED);
+
+	connect(set_heat_map_persist_action, &QAction::toggled, this, [this](bool checked)
+			{ if (checked) {setHeatMapEnabled(true); setHeatMapDecay(PERSIST_SPEED); emit on_heat_map_change(true, PERSIST_SPEED);} });
+
+	QAction *clear_heat_map_action = new QAction("&Clear", this);
+	connect(clear_heat_map_action, &QAction::toggled, this, [this]()
+			{ clearHeatMap(); });
+
+	heat_map_menu->addAction(set_heat_map_off_action);
+	heat_map_menu->addAction(set_heat_map_fade_action);
+	// heat_map_menu->addAction(set_heat_map_fade_slow_action);
+	heat_map_menu->addAction(set_heat_map_persist_action);
+	heat_map_menu->addSeparator();
+	heat_map_menu->addAction(clear_heat_map_action);
+
+	contextMenu.addSeparator();
+	contextMenu.addMenu(heat_map_menu);
 
 	contextMenu.exec(mapToGlobal(pos));
 }

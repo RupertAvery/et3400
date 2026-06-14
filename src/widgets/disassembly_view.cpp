@@ -168,7 +168,7 @@ void DisassemblyView::bufferDraw()
 
 		background_brush = Qt::NoBrush;
 
-		if (is_current && is_selected)
+		if (is_current && is_selected && hasFocus)
 		{
 			background_brush = current_selected_brush;
 		}
@@ -798,20 +798,20 @@ void DisassemblyView::removeLabel(DisassemblyLine *line)
 void DisassemblyView::showContextMenu(const QPoint &pos)
 {
 	// int line_number = offset + (pos.y() / item_height);
+	QMenu contextMenu(tr("Context menu"), this);
+
+	QAction addLabelAction("Add label", this);
+	QAction editLabelAction("Edit label", this);
+	QAction removeLabelAction("Remove label", this);
+
+	QAction addBreakpointAction("Add breakpoint", this);
+	QAction removeBreakpointAction("Remove breakpoint", this);
+	QAction disableBreakpointAction("Disable breakpoint", this);
+	QAction enableBreakpointAction("Enable breakpoint", this);
 
 	if (selected_line > -1)
 	{
 		DisassemblyLine *line = &lines->at(selected_line);
-
-		QMenu contextMenu(tr("Context menu"), this);
-		QAction addLabelAction("Add label", this);
-		QAction editLabelAction("Edit label", this);
-		QAction removeLabelAction("Remove label", this);
-
-		QAction addBreakpointAction("Add breakpoint", this);
-		QAction removeBreakpointAction("Remove breakpoint", this);
-		QAction disableBreakpointAction("Disable breakpoint", this);
-		QAction enableBreakpointAction("Enable breakpoint", this);
 
 		bool hasAction = false;
 
@@ -861,29 +861,33 @@ void DisassemblyView::showContextMenu(const QPoint &pos)
 		}
 		else
 		{
-			connect(&addBreakpointAction, &QAction::triggered, this, [this, line]
-					{ emu_ptr->breakpoints->addBreakpoint(line->address); });
-			contextMenu.addAction(&addBreakpointAction);
+			if (line->label != nullptr)
+			{
+				LOG_DEBUG << "type: " << (line->label->type == DATA ? "DATA" : (line->label->type == ASSEMBLY ? "ASSEMBLY" : (line->label->type == COMMENT ? "COMMENT" : "OTHER")));
+			}
+
+			if (line->label == nullptr || line->label->type != DATA)
+			{
+				connect(&addBreakpointAction, &QAction::triggered, this, [this, line]
+						{ emu_ptr->breakpoints->addBreakpoint(line->address); });
+				contextMenu.addAction(&addBreakpointAction);
+			}
 		}
 
-		contextMenu.exec(mapToGlobal(pos));
+		contextMenu.addSeparator();
 	}
 
-	////connect(&action1, &QAction::triggered(), this, SLOT(removeDataPoint()));
-	// QAction action3("Remove Breakpoint", this);
-	// QAction action4("Add Breakpoint", this);
+	QAction refreshAction("&Refresh", this);
+	connect(&refreshAction, &QAction::triggered, this, [this]()
+			{ refresh(); });
+	contextMenu.addAction(&refreshAction);
 
-	// if (line->type == DisassemblyType::Assembly)
-	//{
-	//	if (line->has_breakpoint)
-	//	{
-	//		//connect(&action1, &QAction::triggered(), this, SLOT(removeDataPoint()));
-	//		contextMenu.addAction(&action3);
-	//	}
-	//	else
-	//	{
-	//		//connect(&action1, &QAction::triggered(), this, SLOT(removeDataPoint()));
-	//		contextMenu.addAction(&action4);
-	//	}
-	// }
+	QAction autoRefreshAction("&Auto Refresh", this);
+	autoRefreshAction.setCheckable(true);
+	autoRefreshAction.setChecked(auto_refresh);
+	connect(&autoRefreshAction, &QAction::toggled, this, [this](bool checked)
+			{ setAutoRefresh(checked); emit onAutorefreshChanged(checked); });
+	contextMenu.addAction(&autoRefreshAction);
+
+	contextMenu.exec(mapToGlobal(pos));
 }

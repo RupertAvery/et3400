@@ -16,4 +16,9 @@ struct CpuStatus {
 class et3400emu;
 
 
+const int FADE_SPEED = 12;
+const int FADE_SLOW_SPEED = 1;
+const int PERSIST_SPEED = 0;
+
+
 #endif // COMMON_DEFS_H

@@ -77,10 +77,9 @@ class MainWindow;
 #include <QHeaderView>
 #include <QPushButton>
 #include <QInputDialog>
+#include <QMessageBox>
+#include <QShortcut>
 
-const int FADE_SPEED = 12;
-const int FADE_SLOW_SPEED = 1;
-const int PERSIST_SPEED = 0;
 
 class DebuggerDialog : public QDialog
 {
@@ -160,8 +159,6 @@ private:
 	QAction *refresh_disassembly_action;
 	QAction *toggle_autorefresh_disassembly_action;
 	QAction *clear_ram_action;
-
-	QAction *breakpoint_handler_action;
 
 	QAction *debug_run_action = nullptr;
 	QAction *debug_stop_action = nullptr;

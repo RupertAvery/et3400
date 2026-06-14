@@ -42,6 +42,7 @@ public:
 
 signals:
     void on_value_changed(uint16_t new_value);
+    void on_edit_abort(QString message);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

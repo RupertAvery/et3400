@@ -162,14 +162,14 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     MakeToggledAction(toggle_memory_action, "&Memory", Qt::CTRL + Qt::Key_M, toggle_memory_panel);
 
     QMenu *heat_map_menu = new QMenu("&Heat Map", view_menu);
-    set_heat_map_off_action = new QAction(QIcon(":/buttons/HeatOff.png"), "&Off", this);
+    set_heat_map_off_action = new QAction(QIcon(":/buttons/HeatOff.png"), "&Off\tCtrl+H, O", this);
     set_heat_map_off_action->setCheckable(true);
     set_heat_map_off_action->setIconVisibleInMenu(false);
     set_heat_map_off_action->setToolTip("Heat Map - Off");
     connect(set_heat_map_off_action, &QAction::toggled, this, [this](bool checked)
             { if (checked) set_heat_map_off(); });
 
-    set_heat_map_fade_action = new QAction(QIcon(":/buttons/HeatFade.png"), "&Fade", this);
+    set_heat_map_fade_action = new QAction(QIcon(":/buttons/HeatFade.png"), "&Fade\tCtrl+H, F", this);
     set_heat_map_fade_action->setCheckable(true);
     set_heat_map_fade_action->setIconVisibleInMenu(false);
     set_heat_map_fade_action->setToolTip("Heat Map - Fade");
@@ -183,15 +183,30 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     // connect(set_heat_map_fade_slow_action, &QAction::toggled, this, [this](bool checked)
     //         { if (checked) set_heat_map_fade_slow(); });
 
-    set_heat_map_persist_action = new QAction(QIcon(":/buttons/HeatPersist.png"), "&Persist", this);
+    set_heat_map_persist_action = new QAction(QIcon(":/buttons/HeatPersist.png"), "&Persist\tCtrl+H, P", this);
     set_heat_map_persist_action->setCheckable(true);
     set_heat_map_persist_action->setIconVisibleInMenu(false);
     set_heat_map_persist_action->setToolTip("Heat Map - Persist");
     connect(set_heat_map_persist_action, &QAction::toggled, this, [this](bool checked)
             { if (checked) set_heat_map_persist(); });
 
+    QShortcut *offShortcut = new QShortcut(QKeySequence("Ctrl+H, O"), this);
+    connect(offShortcut, &QShortcut::activated, this, [this]()
+            { this->set_heat_map_off_action->setChecked(true); });
+
+    QShortcut *fadeShortcut = new QShortcut(QKeySequence("Ctrl+H, F"), this);
+    connect(fadeShortcut, &QShortcut::activated, this, [this]()
+            { this->set_heat_map_fade_action->setChecked(true); });
+
+    QShortcut *persistShortcut = new QShortcut(QKeySequence("Ctrl+H, P"), this);
+    connect(persistShortcut, &QShortcut::activated, this, [this]()
+            { this->set_heat_map_persist_action->setChecked(true); });
+
+    QShortcut *clearShortcut = new QShortcut(QKeySequence("Ctrl+H, C"), this);
+    connect(clearShortcut, &QShortcut::activated, this, &DebuggerDialog::clear_heat_map);
+
     // MakeTriggeredAction(toggle_heat_map_action, "&Toggle", Qt::CTRL + Qt::Key_H, toggle_heat_map);
-    MakeTriggeredActionNS(clear_heat_map_action, "&Clear", clear_heat_map);
+    MakeTriggeredActionNS(clear_heat_map_action, "&Clear\tCtrl+H, C", clear_heat_map);
 
     clear_heat_map_action->setIcon(QIcon(":/buttons/Eraser.png"));
     clear_heat_map_action->setIconVisibleInMenu(false);
@@ -271,6 +286,9 @@ QGroupBox *DebuggerDialog::create_status_group()
     status_groupBox->setLayout(status_groupBox_layout);
     status_groupBox->setFixedWidth(200);
 
+    connect(status_view, &StatusView::on_edit_abort, this, [this](QString message)
+            { QMessageBox::warning(this, "Edit Register", message); });
+
     return status_groupBox;
 }
 
@@ -286,7 +304,7 @@ QGroupBox *DebuggerDialog::create_disassembly_group()
 
     disassembly_groupBox_layout_v->addWidget(disassembly_selector);
     disassembly_groupBox_layout_v->addWidget(disassembly_view);
-    
+
     disassembly_groupBox->setLayout(disassembly_groupBox_layout_v);
 
     connect(disassembly_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_disassembly_location);
@@ -295,6 +313,11 @@ QGroupBox *DebuggerDialog::create_disassembly_group()
     connect(disassembly_view, &DisassemblyView::onRemoveBreakpoint, this, &DebuggerDialog::remove_breakpoint);
     connect(disassembly_view, &DisassemblyView::onAddorRemoveBreakpoint, this, &DebuggerDialog::add_or_remove_breakpoint);
     connect(disassembly_view, &DisassemblyView::onBreakpointChanged, this, &DebuggerDialog::populate_breakpoints_table);
+    connect(disassembly_view, &DisassemblyView::onAutorefreshChanged, this, [this](bool value)
+            {
+        toggle_autorefresh_disassembly_action->blockSignals(true);
+        toggle_autorefresh_disassembly_action->setChecked(value);
+        toggle_autorefresh_disassembly_action->blockSignals(false); });
 
     return disassembly_groupBox;
 }
@@ -314,8 +337,44 @@ QGroupBox *DebuggerDialog::create_memory_group()
 
     memory_groupBox->setLayout(memory_groupBox_layout_v);
 
+    connect(memory_view, &MemoryView::on_heat_map_enabled_change, this, [this](bool enabled)
+            {
+                set_heat_map_off_action->blockSignals(true);
+                set_heat_map_fade_action->blockSignals(true);
+                set_heat_map_persist_action->blockSignals(true);
+    
+                set_heat_map_off_action->setChecked(!enabled);
+                set_heat_map_fade_action->setChecked(enabled);
+                set_heat_map_persist_action->setChecked(enabled);
+
+                set_heat_map_off_action->blockSignals(false);
+                set_heat_map_fade_action->blockSignals(false);
+                set_heat_map_persist_action->blockSignals(false);
+
+                settings->showHeatMap = enabled;
+                save_settings(settings); });
+
+    connect(memory_view, &MemoryView::on_heat_map_change, this, [this](bool enabled, int decay)
+            {
+                set_heat_map_off_action->blockSignals(true);
+                set_heat_map_fade_action->blockSignals(true);
+                set_heat_map_persist_action->blockSignals(true);
+
+                set_heat_map_off_action->setChecked(!enabled);
+                set_heat_map_fade_action->setChecked(enabled && (decay == FADE_SPEED));
+                set_heat_map_persist_action->setChecked(enabled && (decay == PERSIST_SPEED));
+
+                set_heat_map_off_action->blockSignals(false);
+                set_heat_map_fade_action->blockSignals(false);
+                set_heat_map_persist_action->blockSignals(false);
+
+                settings->showHeatMap = enabled;
+                settings->heatMapDecay = decay;
+
+                save_settings(settings); });
+
     connect(memory_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_memory_location);
- 
+
     return memory_groupBox;
 }
 
@@ -359,9 +418,6 @@ void DebuggerDialog::setupUI()
     setLayout(mainLayout);
 
     setSizeGripEnabled(true);
-
-    breakpoint_handler_action = new QAction;
-    connect(breakpoint_handler_action, &QAction::triggered, this, &DebuggerDialog::breakpoint_handler);
 
     resize(QSize(985, 721));
 

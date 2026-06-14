@@ -306,8 +306,8 @@ void DebuggerDialog::set_emulator(et3400emu *emu)
 		emu_ptr = emu;
 		emu_ptr->on_breakpoint = [this]
 		{
-			// We cannot update UI items from another thread, so we trigger a QAction breakpoint_handler_action call breakpoint_handler asynchronously
-			breakpoint_handler_action->trigger();
+			QMetaObject::invokeMethod(this, [this]()
+				{ breakpoint_handler(false); }, Qt::QueuedConnection);
 		};
 		emu_set = true;
 		memory_view->set_emulator(emu);
@@ -466,21 +466,10 @@ void DebuggerDialog::pauseAndUpdateDisassembler()
 	emu_ptr->halt();
 	offs_t address = emu_ptr->get_status().pc;
 
-	// memory_mapped_device *device = emu_ptr->get_block_device(address);
-	// int start = 0xFC00;
-
-	// if (device == nullptr)
-	// {
-	// 	address = start;
-	// }
-	// else
-	// {
-	// 	start = device->get_start();
-	// }
-
 	selectByAddress(address);
 
 	disassembly_view->setCurrent(address);
+	disassembly_view->setSelected(address);
 }
 
 void DebuggerDialog::stepAndUpdateDisassembler()
@@ -488,22 +477,10 @@ void DebuggerDialog::stepAndUpdateDisassembler()
 	emu_ptr->step();
 	offs_t address = emu_ptr->get_status().pc;
 
-	// memory_mapped_device *device = emu_ptr->get_block_device(address);
-	// int start = 0xFC00;
-
-	// if (device == nullptr)
-	// {
-	// 	address = start;
-	// }
-	// else
-	// {
-	// 	start = device->get_start();
-	// }
-
 	selectByAddress(address);
 
 	disassembly_view->setCurrent(address);
-	disassembly_view->clearSelected();
+	disassembly_view->setSelected(address);
 }
 
 void DebuggerDialog::selectByAddress(offs_t address)

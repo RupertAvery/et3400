@@ -61,43 +61,55 @@ StatusView::StatusView(QWidget *parent)
     // connect(action, &QAction::triggered, this, &Display::redraw);
 
     // this->setFixedSize(QSize(320, 85));
-    connect(pc_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value) {
+    connect(pc_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value)
+            {
         if (is_emulator_set)
         {
             emu_ptr->set_pc(new_value);
-        }
-    });
-    connect(sp_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value) {
+        } });
+    connect(sp_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value)
+            {
         if (is_emulator_set)
         {
             emu_ptr->set_sp(new_value);
-        }
-    });
-    connect(ix_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value) {
+        } });
+    connect(ix_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value)
+            {
         if (is_emulator_set)
         {
             emu_ptr->set_ix(new_value);
-        }
-    });
-    connect(acca_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value) {
+        } });
+    connect(acca_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value)
+            {
         if (is_emulator_set)
         {
             emu_ptr->set_acca(new_value);
-        }
-    });
-    connect(accb_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value) {
+        } });
+    connect(accb_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value)
+            {
         if (is_emulator_set)
         {
             emu_ptr->set_accb(new_value);
-        }
-    });
-    connect(cc_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value) {
+        } });
+    connect(cc_label, &RegisterView::on_value_changed, this, [this](uint16_t new_value)
+            {
         if (is_emulator_set)
         {
             emu_ptr->set_cc(new_value);
-        }
-    });
+        } });
 
+    connect(pc_label, &RegisterView::on_edit_abort, this, [this](QString message)
+            { emit this->on_edit_abort(message); });
+    connect(sp_label, &RegisterView::on_edit_abort, this, [this](QString message)
+            { emit this->on_edit_abort(message); });
+    connect(ix_label, &RegisterView::on_edit_abort, this, [this](QString message)
+            { emit this->on_edit_abort(message); });
+    connect(acca_label, &RegisterView::on_edit_abort, this, [this](QString message)
+            { emit this->on_edit_abort(message); });
+    connect(accb_label, &RegisterView::on_edit_abort, this, [this](QString message)
+            { emit this->on_edit_abort(message); });
+    connect(cc_label, &RegisterView::on_edit_abort, this, [this](QString message)
+            { emit this->on_edit_abort(message); });
 
     setLayout(mainLayout);
     setLineWidth(3);

@@ -2,7 +2,7 @@
 #define STATUS_VIEW_H
 
 #include "../common/common_defs.h"
-//#include <thread>
+// #include <thread>
 #include <QTimer>
 #include <QWidget>
 #include <QFrame>
@@ -10,7 +10,6 @@
 #include <QAction>
 #include <QLabel>
 #include "register.h"
-
 
 class StatusView : public QFrame
 {
@@ -22,6 +21,9 @@ public:
     ~StatusView();
     void set_emulator(et3400emu *emu);
     void set_enabled(bool enabled);
+
+    signals:
+    void on_edit_abort(QString message);
 
 private:
     QAction *action;

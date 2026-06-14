@@ -60,6 +60,7 @@ signals:
 	void onRemoveBreakpoint(offs_t address);
 	void onAddorRemoveBreakpoint(offs_t address);
 	void onBreakpointChanged();
+	void onAutorefreshChanged(bool value);
 
 public slots:
 	void redraw();

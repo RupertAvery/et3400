@@ -49,6 +49,9 @@ signals:
     void on_scroll(int steps);
     void on_size(int max);
     void on_offset_change(int offset);
+    void on_heat_map_change(bool enabled, int decay);
+    void on_heat_map_enabled_change(bool enabled);
+    void on_heat_map_decay_change(int decay);
 
 public slots:
     void redraw();

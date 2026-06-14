@@ -240,7 +240,10 @@ void RegisterView::focusOutEvent(QFocusEvent *event)
 void RegisterView::start_editing()
 {
     if (!enabled)
+    {
+        emit on_edit_abort("Cannot edit registers while CPU is running.");
         return;
+    }
     blink_timer->start(500);
     blink_state = 1;
     is_editing = true;
