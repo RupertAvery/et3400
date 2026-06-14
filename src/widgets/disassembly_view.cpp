@@ -7,13 +7,6 @@
 DisassemblyView::DisassemblyView(QWidget *parent)
 	: QFrame(parent)
 {
-	// setMidLineWidth(0);
-	setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
-	setLineWidth(3);
-	setFocusPolicy(Qt::StrongFocus);
-
-	// setBackgroundRole(QPalette::Base);
-	// setAutoFillBackground(true);
 	QFont font("Courier", 12);
 	font.setWeight(QFont::Medium);
 	item_height = QFontMetrics(font).lineSpacing();
@@ -40,7 +33,8 @@ DisassemblyView::DisassemblyView(QWidget *parent)
 
 	buffer = new QPixmap;
 	setMouseTracking(true);
-	setLineWidth(3);
+
+	setupUI(parent);
 }
 
 DisassemblyView::~DisassemblyView()
@@ -62,6 +56,9 @@ void DisassemblyView::wheelEvent(QWheelEvent *event)
 		scroll(steps);
 		emit onScroll(steps);
 	}
+
+	// scrollbar->setValue(scrollbar->value() - steps);
+
 	event->accept();
 }
 
@@ -72,6 +69,7 @@ void DisassemblyView::scroll(int steps)
 		offset = 0;
 	if (offset > max_vscroll - 1)
 		offset = max_vscroll - 1;
+	scrollbar->setValue(offset);
 	this->update();
 }
 
@@ -82,6 +80,7 @@ void DisassemblyView::scrollTo(int value)
 		offset = 0;
 	if (offset > max_vscroll)
 		offset = max_vscroll;
+	scrollbar->setValue(offset);
 	this->update();
 }
 
@@ -117,12 +116,14 @@ void DisassemblyView::bufferDraw()
 	QColor green = QColor("#38761D");
 
 	QBrush selected_brush = QBrush(selected_bg_color);
-	QBrush selected_nofocus_brush = QBrush(QColor("#c0c0c0"));
+	QBrush selected_nofocus_brush = QBrush(selected_bg_nofocus_color);
 	QBrush breakpoint_brush = QBrush(QColor("#8B0000"));
 	QBrush current_brush = QBrush(QColor("#fff181"));
 	QBrush current_selected_brush = QBrush(QColor("#81ffaf"));
 
 	QColor white = QColor("#FFFFFF");
+
+	bool hasFocus = this->hasFocus();
 
 	// emu_ptr->breakpoints->lock();
 
@@ -177,15 +178,14 @@ void DisassemblyView::bufferDraw()
 		}
 		else if (is_selected)
 		{
-			background_brush = selected_brush;
-			// if (hasFocus)
-			// {
-			// 	background_brush = selected_brush;
-			// }
-			// else
-			// {
-			// 	background_brush = selected_nofocus_brush;
-			// }
+			if (hasFocus)
+			{
+				background_brush = selected_brush;
+			}
+			else
+			{
+				background_brush = selected_nofocus_brush;
+			}
 		}
 		else if (has_breakpoint)
 		{
@@ -211,7 +211,7 @@ void DisassemblyView::bufferDraw()
 			instruction_color = black;
 			operand_color = black;
 		}
-		else if (is_selected)
+		else if (is_selected && hasFocus)
 		{
 			address_color = selected_fg_color;
 			opcode_color = selected_fg_color;
@@ -300,6 +300,9 @@ void DisassemblyView::resizeEvent(QResizeEvent *event)
 		int x = lines->size() - visible_items + 2;
 		max_vscroll = x > 0 ? x : 0;
 		emit onSize(max_vscroll);
+
+		scrollbar->setMinimum(0);
+		scrollbar->setMaximum(max_vscroll - 1);
 
 		redraw();
 	}
@@ -428,7 +431,8 @@ void DisassemblyView::adjustSelected(int direction)
 		{
 			offset = max_vscroll;
 		}
-		onOffsetUpdated(offset);
+		emit onOffsetUpdated(offset);
+		scrollbar->setValue(offset);
 	}
 
 	if (selected_line < offset)
@@ -438,20 +442,47 @@ void DisassemblyView::adjustSelected(int direction)
 		{
 			offset = 0;
 		}
-		onOffsetUpdated(offset);
+		emit onOffsetUpdated(offset);
+		scrollbar->setValue(offset);
 	}
 }
 
 void DisassemblyView::paintEvent(QPaintEvent *event)
 {
-	QPainter painter(this);
-	if (is_memory_set)
-	{
-		bufferDraw();
-		painter.drawPixmap(0, 0, *buffer, 0, 0, 0, 0);
-		painter.end();
-	}
 	QFrame::paintEvent(event);
+}
+
+bool DisassemblyView::eventFilter(QObject *obj, QEvent *event)
+{
+	if (obj == frame)
+	{
+		switch (event->type())
+		{
+		case QEvent::Paint:
+			if (is_memory_set)
+			{
+				bufferDraw();
+				QPainter painter(frame);
+				painter.drawPixmap(0, 0, *buffer, 0, 0, 0, 0);
+			}
+			return false; // let QFrame draw its border on top
+		case QEvent::MouseButtonPress:
+			mousePressEvent(static_cast<QMouseEvent *>(event));
+			return true;
+		case QEvent::MouseMove:
+			mouseMoveEvent(static_cast<QMouseEvent *>(event));
+			return true;
+		case QEvent::Leave:
+			leaveEvent(event);
+			return true;
+		case QEvent::Wheel:
+			wheelEvent(static_cast<QWheelEvent *>(event));
+			return true;
+		default:
+			break;
+		}
+	}
+	return QObject::eventFilter(obj, event);
 }
 
 void DisassemblyView::mousePressEvent(QMouseEvent *event)
@@ -509,17 +540,26 @@ void DisassemblyView::leaveEvent(QEvent *event)
 	QFrame::leaveEvent(event);
 }
 
+void DisassemblyView::focusInEvent(QFocusEvent *event)
+{
+	if (selected_line == -1)
+	{
+		selected_line = 0;
+	}
+	update();
+}
+
 void DisassemblyView::focusOutEvent(QFocusEvent *event)
 {
-	selected_line = -1;
+	//selected_line = -1;
 	update();
 }
 
 void DisassemblyView::rebuild()
 {
 	DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
-	this->update();
 	resizeEvent(new QResizeEvent(size(), size()));
+	this->update();
 }
 
 void DisassemblyView::redraw()
@@ -564,6 +604,8 @@ void DisassemblyView::ensureVisible(offs_t address)
 		if (offset < 0)
 			offset = 0;
 	}
+
+	scrollbar->setValue(offset);
 }
 
 void DisassemblyView::setSelected(offs_t address)
@@ -636,6 +678,7 @@ void DisassemblyView::set_range(offs_t start, offs_t end, uint8_t *memory)
 	offset = 0;
 	is_memory_set = true;
 	resizeEvent(new QResizeEvent(size(), size()));
+	scrollbar->setValue(offset);
 }
 
 void DisassemblyView::setEmulator(et3400emu *emu)

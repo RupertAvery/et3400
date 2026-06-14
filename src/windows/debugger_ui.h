@@ -280,8 +280,6 @@ QGroupBox *DebuggerDialog::create_status_group()
 
 QGroupBox *DebuggerDialog::create_disassembly_group()
 {
-    disassembly_scrollbar = new QScrollBar(Qt::Orientation::Vertical);
-
     QGroupBox *disassembly_groupBox = new QGroupBox("Disassembly", this);
     disassembly_groupBox->setMinimumWidth(400);
     disassembly_view = new DisassemblyView(this);
@@ -291,7 +289,6 @@ QGroupBox *DebuggerDialog::create_disassembly_group()
     QHBoxLayout *disassembly_groupBox_layout = new QHBoxLayout(this);
 
     disassembly_groupBox_layout->addWidget(disassembly_view);
-    disassembly_groupBox_layout->addWidget(disassembly_scrollbar);
     disassembly_groupBox_layout->setMargin(0);
     inner_disassembly->setLayout(disassembly_groupBox_layout);
 
@@ -302,12 +299,6 @@ QGroupBox *DebuggerDialog::create_disassembly_group()
 
     connect(disassembly_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_disassembly_location);
 
-    connect(disassembly_scrollbar, &QScrollBar::sliderMoved, this, &DebuggerDialog::disassembly_slider_moved);
-    connect(disassembly_scrollbar, &QScrollBar::valueChanged, this, &DebuggerDialog::disassembly_slider_moved);
-
-    connect(disassembly_view, &DisassemblyView::onScroll, this, &DebuggerDialog::adjustDisassemblyScrollbar);
-    connect(disassembly_view, &DisassemblyView::onSize, this, &DebuggerDialog::update_disassembly_scrollbar_max);
-    connect(disassembly_view, &DisassemblyView::onOffsetUpdated, this, &DebuggerDialog::setDisassemblyScrollbar);
     connect(disassembly_view, &DisassemblyView::onAddBreakpoint, this, &DebuggerDialog::add_breakpoint);
     connect(disassembly_view, &DisassemblyView::onRemoveBreakpoint, this, &DebuggerDialog::remove_breakpoint);
     connect(disassembly_view, &DisassemblyView::onAddorRemoveBreakpoint, this, &DebuggerDialog::add_or_remove_breakpoint);
@@ -359,7 +350,7 @@ void DebuggerDialog::goto_address(offs_t address)
         return;
     selectByAddress(device->get_start());
     disassembly_view->setSelected(address);
-    disassembly_scrollbar->setValue(disassembly_view->offset);
+
 }
 
 void DebuggerDialog::setupUI()

@@ -34,7 +34,7 @@ void DebuggerDialog::stop(bool checked)
 	{
 		pauseAndUpdateDisassembler();
 		update_button_state();
-		disassembly_scrollbar->setValue(disassembly_view->offset);
+		disassembly_view->redraw();		
 	}
 }
 
@@ -43,7 +43,7 @@ void DebuggerDialog::step_into(bool checked)
 	if (!emu_ptr->get_running())
 	{
 		stepAndUpdateDisassembler();
-		disassembly_scrollbar->setValue(disassembly_view->offset);
+		disassembly_view->redraw();		
 	}
 }
 
@@ -69,14 +69,12 @@ void DebuggerDialog::step_over(bool checked)
 			disassembly_view->clearCurrent();
 			disassembly_view->clearSelected();
 			update_button_state();
-			// forces a redraw - should we just call rebuild?
-			disassembly_scrollbar->setValue(disassembly_view->offset);
+			disassembly_view->redraw();
 		}
 		else
 		{
 			stepAndUpdateDisassembler();
-			// forces a redraw - should we just call rebuild?
-			disassembly_scrollbar->setValue(disassembly_view->offset);
+			disassembly_view->redraw();
 		}
 	}
 }
@@ -91,8 +89,7 @@ void DebuggerDialog::step_out(bool checked)
 		disassembly_view->clearCurrent();
 		disassembly_view->clearSelected();
 		update_button_state();
-		// forces a redraw - should we just call rebuild?
-		disassembly_scrollbar->setValue(disassembly_view->offset);
+		disassembly_view->redraw();
 	}
 }
 
@@ -246,7 +243,6 @@ DebuggerDialog::~DebuggerDialog()
 	delete memory_scrollbar;
 	delete memory_selector;
 	delete disassembly_view;
-	delete disassembly_scrollbar;
 	delete disassembly_selector;
 	LOG_DEBUG << "DebuggerDialog destroy done";
 }
@@ -272,7 +268,6 @@ void DebuggerDialog::select_disassembly_location(int index)
 		return;
 
 	disassembly_view->set_range(device->get_start(), device->get_end(), device->get_mapped_memory());
-	disassembly_scrollbar->setValue(0);
 	labels_dialog->populate_labels_table();
 	update_clear_ram_labels_state();
 }
@@ -297,22 +292,6 @@ void DebuggerDialog::update_memory_scrollbar_max(int value)
 {
 	memory_scrollbar->setMinimum(0);
 	memory_scrollbar->setMaximum(value);
-}
-
-void DebuggerDialog::adjustDisassemblyScrollbar(int value)
-{
-	disassembly_scrollbar->setValue(disassembly_scrollbar->value() - value);
-}
-
-void DebuggerDialog::setDisassemblyScrollbar(int value)
-{
-	disassembly_scrollbar->setValue(value);
-}
-
-void DebuggerDialog::update_disassembly_scrollbar_max(int value)
-{
-	disassembly_scrollbar->setMinimum(0);
-	disassembly_scrollbar->setMaximum(value - 1);
 }
 
 void DebuggerDialog::set_emulator(et3400emu *emu)
@@ -417,7 +396,6 @@ void DebuggerDialog::breakpoint_handler(bool checked)
 {
 	pauseAndUpdateDisassembler();
 	update_button_state();
-	disassembly_scrollbar->setValue(disassembly_view->offset);
 }
 
 void DebuggerDialog::update_button_state()
@@ -443,11 +421,6 @@ void DebuggerDialog::update_button_state()
 void DebuggerDialog::memory_slider_moved(int value)
 {
 	memory_view->scrollTo(value);
-}
-
-void DebuggerDialog::disassembly_slider_moved(int value)
-{
-	disassembly_view->scrollTo(value);
 }
 
 void DebuggerDialog::keyPressEvent(QKeyEvent *event)
@@ -594,7 +567,6 @@ void DebuggerDialog::reset_disassembly_view()
 	QVariant v = disassembly_selector->itemData(disassembly_selector->currentIndex());
 	memory_mapped_device *device = (memory_mapped_device *)v.value<quintptr>();
 	disassembly_view->set_range(device->get_start(), device->get_end(), device->get_mapped_memory());
-	disassembly_scrollbar->setValue(0);
 }
 
 void DebuggerDialog::save_ram_labels()
@@ -622,11 +594,6 @@ void DebuggerDialog::after_load_rom()
 
 	QVariant v = disassembly_selector->itemText(disassembly_selector->currentIndex());
 	QString s = v.value<QString>();
-
-	if (s == "ROM")
-	{
-		disassembly_scrollbar->setValue(0);
-	}
 }
 
 void DebuggerDialog::after_load_ram()
@@ -637,11 +604,6 @@ void DebuggerDialog::after_load_ram()
 
 	QVariant v = disassembly_selector->itemText(disassembly_selector->currentIndex());
 	QString s = v.value<QString>();
-
-	if (s == "RAM")
-	{
-		disassembly_scrollbar->setValue(0);
-	}
 }
 
 void DebuggerDialog::clear_ram()
@@ -703,7 +665,6 @@ void DebuggerDialog::goto_label()
 		selectByAddress(start);
 
 		disassembly_view->setSelected(address);
-		disassembly_scrollbar->setValue(disassembly_view->offset);
 	}
 }
 

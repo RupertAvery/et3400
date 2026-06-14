@@ -7,7 +7,7 @@
 #include "../dasm/disassembler.h"
 #include "../windows/label.h"
 #include "../windows/remove_label.h"
-//#include <thread>
+// #include <thread>
 #include <vector>
 #include <QTimer>
 #include <QWidget>
@@ -25,7 +25,6 @@
 #include <QWheelEvent>
 #include <QColor>
 
-
 class DisassemblyView : public QFrame
 {
 	Q_OBJECT
@@ -34,12 +33,12 @@ public:
 	int offset;
 
 	DisassemblyView();
-	DisassemblyView(QWidget* parent);
+	DisassemblyView(QWidget *parent);
 	~DisassemblyView();
 	void scroll(int steps);
 	void scrollTo(int value);
-	void setEmulator(et3400emu* emu);
-	void set_range(offs_t start, offs_t end, uint8_t* memory);
+	void setEmulator(et3400emu *emu);
+	void set_range(offs_t start, offs_t end, uint8_t *memory);
 	void setCurrent(offs_t address);
 	void setSelected(offs_t address);
 	void clearCurrent();
@@ -65,28 +64,32 @@ public slots:
 	void redraw();
 
 protected:
-	void paintEvent(QPaintEvent* event) override;
-	void wheelEvent(QWheelEvent* event) override;
-	void resizeEvent(QResizeEvent* event) override;
-	void mousePressEvent(QMouseEvent* event) override;
-	void mouseMoveEvent(QMouseEvent* event) override;
-	void leaveEvent(QEvent* event) override;
-	void keyPressEvent(QKeyEvent* event) override;
+	void paintEvent(QPaintEvent *event) override;
+	bool eventFilter(QObject *obj, QEvent *event) override;
+	void wheelEvent(QWheelEvent *event) override;
+	void resizeEvent(QResizeEvent *event) override;
+	void mousePressEvent(QMouseEvent *event) override;
+	void mouseMoveEvent(QMouseEvent *event) override;
+	void leaveEvent(QEvent *event) override;
+	void keyPressEvent(QKeyEvent *event) override;
+	void focusInEvent(QFocusEvent *event) override;
 	void focusOutEvent(QFocusEvent *event) override;
 
 private:
-	QScrollBar* scrollbar;
-	QAction* action;
-	QPixmap* buffer;
+	QScrollBar *scrollbar = nullptr;
+	QFrame *frame;
+
+	QAction *action;
+	QPixmap *buffer;
 	QPixmap breakpoint_enabled_icon;
 	QPixmap breakpoint_disabled_icon;
 	QPixmap breakpoint_available_icon;
-	QTimer* m_paintTimer;
+	QTimer *m_paintTimer;
 
-	et3400emu* emu_ptr = nullptr;
-	uint8_t* memory;
+	et3400emu *emu_ptr = nullptr;
+	uint8_t *memory;
 
-	std::vector<DisassemblyLine>* lines;
+	std::vector<DisassemblyLine> *lines;
 
 	bool running;
 	bool is_memory_set;
@@ -103,12 +106,38 @@ private:
 	DisassemblyLine findLine(offs_t address);
 	void addOrRemoveBreakpoint(int line_number);
 	void bufferDraw();
-	void showContextMenu(const QPoint& pos);
+	void showContextMenu(const QPoint &pos);
 	void adjustSelected(int direction);
 
-	void addLabel(DisassemblyLine* line);
-	void editLabel(DisassemblyLine* line);
-	void removeLabel(DisassemblyLine* line);
+	void addLabel(DisassemblyLine *line);
+	void editLabel(DisassemblyLine *line);
+	void removeLabel(DisassemblyLine *line);
+
+	void setupUI(QWidget *parent)
+	{
+		this->setFocusPolicy(Qt::StrongFocus);
+
+		QHBoxLayout *layout = new QHBoxLayout(parent);
+
+		frame = new QFrame(parent);
+		frame->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+		frame->setLineWidth(3);
+		frame->setMouseTracking(true);
+		frame->setContextMenuPolicy(Qt::CustomContextMenu);
+		frame->installEventFilter(this);
+
+		scrollbar = new QScrollBar(Qt::Orientation::Vertical);
+
+		layout->addWidget(frame);
+		layout->addWidget(scrollbar);
+		layout->setMargin(0);
+
+		this->setLayout(layout);
+
+		connect(scrollbar, &QScrollBar::sliderMoved, this, &DisassemblyView::scrollTo);
+		connect(scrollbar, &QScrollBar::valueChanged, this, &DisassemblyView::scrollTo);
+		connect(frame, &QFrame::customContextMenuRequested, this, &DisassemblyView::showContextMenu);
+	}
 };
 
 #endif // DISASSEMBLYVIEW_H
