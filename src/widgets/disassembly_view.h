@@ -37,6 +37,7 @@ public:
 	~DisassemblyView();
 	void scroll(int steps);
 	void scrollTo(int value);
+	void scrollIntoView();
 	void setEmulator(et3400emu *emu);
 	void set_range(offs_t start, offs_t end, uint8_t *memory);
 	void setCurrent(offs_t address);

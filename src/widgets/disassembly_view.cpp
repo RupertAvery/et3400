@@ -340,15 +340,19 @@ void DisassemblyView::keyPressEvent(QKeyEvent *event)
 	{
 	case Qt::Key_Up:
 		adjustSelected(-1);
+		scrollIntoView();
 		break;
 	case Qt::Key_Down:
 		adjustSelected(1);
+		scrollIntoView();
 		break;
 	case Qt::Key_PageUp:
 		adjustSelected(-visible_items);
+		scrollIntoView();
 		break;
 	case Qt::Key_PageDown:
 		adjustSelected(visible_items);
+		scrollIntoView();
 		break;
 	case Qt::Key_F9:
 		addOrRemoveBreakpoint(selected_line);
@@ -359,19 +363,52 @@ void DisassemblyView::keyPressEvent(QKeyEvent *event)
 	}
 }
 
-void DisassemblyView::adjustSelected(int direction)
+void DisassemblyView::scrollIntoView()
 {
+	// if (selected_line > visible_items + offset - 1)
+	// {
+	// 	selected_line = visible_items + offset - 1;
+	// 	return;
+	// }
+
+	// if (selected_line < offset)
+	// {
+	// 	selected_line = offset;
+	// 	return;
+	// }
+
 	if (selected_line > visible_items + offset - 1)
 	{
-		selected_line = visible_items + offset - 1;
-		return;
+		while (selected_line > visible_items + offset - 1)
+		{
+			offset++;
+			if (offset > max_vscroll)
+			{
+				offset = max_vscroll;
+				break;
+			}
+		}
 	}
 
 	if (selected_line < offset)
 	{
-		selected_line = offset;
-		return;
+		while (selected_line < offset)
+		{
+			offset--;
+			if (offset < 0)
+			{
+				offset = 0;
+				break;
+			}
+		}
 	}
+
+	emit onOffsetUpdated(offset);
+	scrollbar->setValue(offset);
+}
+
+void DisassemblyView::adjustSelected(int direction)
+{
 
 	int oldselected = selected_line;
 	int newSelected = selected_line + direction;
@@ -416,34 +453,6 @@ void DisassemblyView::adjustSelected(int direction)
 			newSelected += 1;
 		}
 		selected_line = newSelected;
-	}
-
-	// if (newSelected < 0)
-	//	newSelected = 0;
-
-	// if (newSelected > lines->size())
-	//	newSelected = lines->size();
-
-	if (selected_line > visible_items + offset - 1)
-	{
-		offset += newSelected - oldselected;
-		if (offset > max_vscroll)
-		{
-			offset = max_vscroll;
-		}
-		emit onOffsetUpdated(offset);
-		scrollbar->setValue(offset);
-	}
-
-	if (selected_line < offset)
-	{
-		offset += newSelected - oldselected;
-		if (offset < 0)
-		{
-			offset = 0;
-		}
-		emit onOffsetUpdated(offset);
-		scrollbar->setValue(offset);
 	}
 }
 
@@ -551,7 +560,7 @@ void DisassemblyView::focusInEvent(QFocusEvent *event)
 
 void DisassemblyView::focusOutEvent(QFocusEvent *event)
 {
-	//selected_line = -1;
+	// selected_line = -1;
 	update();
 }
 
