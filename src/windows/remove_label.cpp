@@ -25,7 +25,6 @@ void RemoveLabelDialog::setupUi(QDialog *Dialog)
     buttonBox->setStandardButtons(QDialogButtonBox::Yes | QDialogButtonBox::No);
     buttonBox->button(QDialogButtonBox::No)->setDefault(true);
 
-
     mainLayout->addWidget(text_label);
     mainLayout->addWidget(buttonBox);
 

@@ -13,6 +13,7 @@
 #include <QFrame>
 #include <QMenu>
 #include "../emu/et3400.h"
+#include "../common/common_defs.h"
 
 class RegisterView : public QFrame
 {
@@ -46,7 +47,7 @@ public:
 
 signals:
     void on_value_changed(uint16_t new_value);
-    void on_edit_abort(QString message);
+    void on_edit_abort(int reason);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

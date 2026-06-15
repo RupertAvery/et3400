@@ -98,18 +98,18 @@ StatusView::StatusView(QWidget *parent)
             emu_ptr->set_cc(new_value);
         } });
 
-    connect(pc_label, &RegisterView::on_edit_abort, this, [this](QString message)
-            { emit this->on_edit_abort(message); });
-    connect(sp_label, &RegisterView::on_edit_abort, this, [this](QString message)
-            { emit this->on_edit_abort(message); });
-    connect(ix_label, &RegisterView::on_edit_abort, this, [this](QString message)
-            { emit this->on_edit_abort(message); });
-    connect(acca_label, &RegisterView::on_edit_abort, this, [this](QString message)
-            { emit this->on_edit_abort(message); });
-    connect(accb_label, &RegisterView::on_edit_abort, this, [this](QString message)
-            { emit this->on_edit_abort(message); });
-    connect(cc_label, &RegisterView::on_edit_abort, this, [this](QString message)
-            { emit this->on_edit_abort(message); });
+    connect(pc_label, &RegisterView::on_edit_abort, this, [this](int reason)
+            { emit this->on_edit_abort(reason); });
+    connect(sp_label, &RegisterView::on_edit_abort, this, [this](int reason)
+            { emit this->on_edit_abort(reason); });
+    connect(ix_label, &RegisterView::on_edit_abort, this, [this](int reason)
+            { emit this->on_edit_abort(reason); });
+    connect(acca_label, &RegisterView::on_edit_abort, this, [this](int reason)
+            { emit this->on_edit_abort(reason); });
+    connect(accb_label, &RegisterView::on_edit_abort, this, [this](int reason)
+            { emit this->on_edit_abort(reason); });
+    connect(cc_label, &RegisterView::on_edit_abort, this, [this](int reason)
+            { emit this->on_edit_abort(reason); });
 
     setLayout(mainLayout);
     setLineWidth(3);

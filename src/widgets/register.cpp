@@ -245,7 +245,7 @@ void RegisterView::start_editing()
 {
     if (!enabled)
     {
-        emit on_edit_abort("Cannot edit registers while CPU is running.");
+        emit on_edit_abort(REGISTER_DISABLED);
         return;
     }
     blink_timer->start(500);
@@ -271,7 +271,7 @@ void RegisterView::showContextMenu(const QPoint &pos)
     QAction editAction("Edit\tF2", this);
     connect(&editAction, &QAction::triggered, this, [this]
             { start_editing(); });
-    editAction.setEnabled(enabled);
+
     contextMenu.addAction(&editAction);
 
     contextMenu.exec(mapToGlobal(pos));

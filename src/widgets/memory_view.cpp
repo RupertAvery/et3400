@@ -684,8 +684,14 @@ void MemoryView::mouseDoubleClickEvent(QMouseEvent *event)
 
 void MemoryView::focusInEvent(QFocusEvent *event)
 {
-	Q_UNUSED(event);
-	gained_focus = true;
+	Qt::FocusReason reason = event->reason();
+
+	if (reason == Qt::MouseFocusReason)
+		gained_focus = true;
+
+	if (reason == Qt::ActiveWindowFocusReason || reason == Qt::PopupFocusReason || reason == Qt::MouseFocusReason)
+		return;
+
 	if (selected_address == -1)
 	{
 		selected_address = start;
@@ -698,6 +704,7 @@ void MemoryView::focusInEvent(QFocusEvent *event)
 void MemoryView::focusOutEvent(QFocusEvent *event)
 {
 	Q_UNUSED(event);
+	gained_focus = false;
 	// selected_address = -1;
 	stop_editing();
 	update();
@@ -714,7 +721,10 @@ void MemoryView::start_editing(uint16_t address)
 	LOG_DEBUG << "Device name:" << QString::fromStdString(device->name);
 	LOG_DEBUG << "Device flags:" << device->get_flags();
 	if ((device->get_flags() & DEVICE_WRITE) != DEVICE_WRITE)
+	{
+		emit on_edit_abort(MEMORY_READ_ONLY);
 		return;
+	}
 
 	is_editing = true;
 	editing_address = address;

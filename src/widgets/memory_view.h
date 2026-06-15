@@ -55,7 +55,8 @@ signals:
     void on_heat_map_enabled_change(bool enabled);
     void on_heat_map_decay_change(int decay);
     void on_show_in_disassembly(offs_t adddress);
-
+    void on_edit_abort(int reason);
+    
 public slots:
     void redraw();
 

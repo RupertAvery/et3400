@@ -284,6 +284,21 @@ QToolButton *DebuggerDialog::create_settings_menu(QToolBar *toolbar)
     return settings_button;
 }
 
+QString DebuggerDialog::get_error_message(int reason)
+{
+    switch (reason)
+    {
+    case REGISTER_DISABLED:
+        return "Cannot edit registers while CPU is running.";
+        break;
+    case MEMORY_READ_ONLY:
+        return "Cannot edit read-only memory";
+        break;
+    }
+
+    return "Unknown error";
+}
+
 QGroupBox *DebuggerDialog::create_status_group()
 {
     QGroupBox *status_groupBox = new QGroupBox("Status", this);
@@ -297,8 +312,8 @@ QGroupBox *DebuggerDialog::create_status_group()
     status_groupBox->setLayout(status_groupBox_layout);
     status_groupBox->setFixedWidth(200);
 
-    connect(status_view, &StatusView::on_edit_abort, this, [this](QString message)
-            { QMessageBox::warning(this, "Edit Register", message); });
+    connect(status_view, &StatusView::on_edit_abort, this, [this](int reason)
+            { QMessageBox::warning(this, "Edit Register", get_error_message(reason)); });
 
     return status_groupBox;
 }
@@ -308,7 +323,7 @@ QGroupBox *DebuggerDialog::create_disassembly_group()
     QGroupBox *disassembly_groupBox = new QGroupBox("Disassembly", this);
     disassembly_groupBox->setMinimumWidth(400);
 
-    QVBoxLayout *disassembly_groupBox_layout_v = new QVBoxLayout(disassembly_groupBox);
+    QVBoxLayout *disassembly_groupBox_layout_v = new QVBoxLayout(this);
 
     disassembly_selector = new QComboBox(disassembly_groupBox);
     disassembly_view = new DisassemblyView(disassembly_groupBox);
@@ -345,7 +360,7 @@ QGroupBox *DebuggerDialog::create_memory_group()
     QGroupBox *memory_groupBox = new QGroupBox("Memory", this);
     memory_groupBox->setMinimumWidth(360);
 
-    QVBoxLayout *memory_groupBox_layout_v = new QVBoxLayout(memory_groupBox);
+    QVBoxLayout *memory_groupBox_layout_v = new QVBoxLayout(this);
 
     memory_selector = new QComboBox(memory_groupBox);
     memory_view = new MemoryView(memory_groupBox);
@@ -399,6 +414,9 @@ QGroupBox *DebuggerDialog::create_memory_group()
                 } });
 
     connect(memory_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_memory_location);
+
+    connect(memory_view, &MemoryView::on_edit_abort, this, [this](int reason)
+            { QMessageBox::warning(this, "Edit Memory", get_error_message(reason)); });
 
     return memory_groupBox;
 }

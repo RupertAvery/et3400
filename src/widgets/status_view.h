@@ -22,8 +22,8 @@ public:
     void set_emulator(et3400emu *emu);
     void set_enabled(bool enabled);
 
-    signals:
-    void on_edit_abort(QString message);
+signals:
+    void on_edit_abort(int reason);
 
 private:
     QAction *action;

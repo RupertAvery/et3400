@@ -361,6 +361,14 @@ void DisassemblyView::keyPressEvent(QKeyEvent *event)
 		adjustSelected(visible_items);
 		scrollIntoView();
 		break;
+	case Qt::Key_Home:
+		setSelected(start);
+		scrollIntoView();
+		break;
+	case Qt::Key_End:
+		setSelected(end);
+		scrollIntoView();
+		break;
 	case Qt::Key_F2:
 		if (selected_line > -1)
 		{
@@ -581,18 +589,28 @@ void DisassemblyView::leaveEvent(QEvent *event)
 
 void DisassemblyView::focusInEvent(QFocusEvent *event)
 {
+	LOG_DEBUG << "Reason: " << event->reason();
+
+	Qt::FocusReason reason = event->reason();
+
+	if (reason == Qt::MouseFocusReason)
+		gained_focus = true;
+
+	if (reason == Qt::ActiveWindowFocusReason || reason == Qt::PopupFocusReason || reason == Qt::MouseFocusReason)
+		return;
+
 	if (selected_line == -1)
 	{
 		selected_line = 0;
 		last_selected_line = selected_line;
 	}
-	gained_focus = true;
 	scrollIntoView();
 	update();
 }
 
 void DisassemblyView::focusOutEvent(QFocusEvent *event)
 {
+	gained_focus = false;
 	update();
 }
 

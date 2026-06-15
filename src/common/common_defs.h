@@ -20,5 +20,7 @@ const int FADE_SPEED = 12;
 const int FADE_SLOW_SPEED = 1;
 const int PERSIST_SPEED = 0;
 
+const int REGISTER_DISABLED = 1;
+const int MEMORY_READ_ONLY = 2;
 
 #endif // COMMON_DEFS_H
