@@ -207,6 +207,8 @@ private:
 	void set_heat_map_persist();
 	void clear_heat_map();
 
+	void swap_views();
+
 	void toggle_auto_refresh_disassembly_panel(bool checked);
 	void toggle_load_default_labels(bool checked);
 

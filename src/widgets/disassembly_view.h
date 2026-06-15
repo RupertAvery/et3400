@@ -42,6 +42,8 @@ public:
 	void set_range(offs_t start, offs_t end, uint8_t *memory);
 	void setCurrent(offs_t address);
 	void setSelected(offs_t address);
+	int getSelectedAddress(); 
+
 	void clearCurrent();
 	void clearSelected();
 

@@ -633,6 +633,24 @@ void DisassemblyView::ensureVisible(offs_t address)
 	scrollbar->setValue(offset);
 }
 
+int DisassemblyView::getSelectedAddress()
+{
+	if (selected_line == -1)
+		return -1;
+
+	int ctr = 0;
+	std::vector<DisassemblyLine>::iterator line = lines->begin();
+	while (line != lines->end())
+	{
+		if (selected_line == ctr)
+			return line->address;
+		ctr++;
+		line++;
+	}
+
+	return -1;
+}
+
 void DisassemblyView::setSelected(offs_t address)
 {
 	int ctr = 0;

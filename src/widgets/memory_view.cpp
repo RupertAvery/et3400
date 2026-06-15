@@ -703,6 +703,11 @@ void MemoryView::focusOutEvent(QFocusEvent *event)
 	update();
 }
 
+int MemoryView::getSelectedAddress()
+{
+	return selected_address;
+}
+
 void MemoryView::start_editing(uint16_t address)
 {
 	LOG_DEBUG << "Start editing address" << toHex(address);

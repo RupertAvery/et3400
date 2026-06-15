@@ -3,6 +3,8 @@
 
 #include "debugger.h"
 #include "label.h"
+#include "../common/util.h"
+#include "../util/log.h"
 
 QToolBar *DebuggerDialog::create_menu_toolbar()
 {
@@ -241,6 +243,13 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     QAction *save_view_action = new QAction("&Save Views as Text", this);
     connect(save_view_action, &QAction::triggered, this, &DebuggerDialog::show_save_view_dialog);
 
+    QShortcut *swapShortcut = new QShortcut(QKeySequence("F8"), this);
+    connect(swapShortcut, &QShortcut::activated, this, &DebuggerDialog::swap_views);
+
+    // QAction *swap_view_action = new QAction("&Swap Views", this);
+    // swap_view_action->setShortcut(QKeySequence(Qt::Key_F8));
+    // connect(swap_view_action, &QAction::triggered, this, &DebuggerDialog::swap_views);
+
     view_menu->addAction(show_labels_action);
     view_menu->addAction(show_breakpoints_action);
     view_menu->addAction(goto_label_action);
@@ -251,6 +260,8 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     view_menu->addSeparator();
     view_menu->addAction(toggle_memory_action);
     view_menu->addMenu(heat_map_menu);
+    // view_menu->addSeparator();
+    // view_menu->addAction(swap_view_action);
     view_menu->addSeparator();
     view_menu->addAction(save_view_action);
 
@@ -386,6 +397,28 @@ QGroupBox *DebuggerDialog::create_memory_group()
     connect(memory_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_memory_location);
 
     return memory_groupBox;
+}
+
+void DebuggerDialog::swap_views()
+{
+    if (memory_view->hasFocus())
+    {
+        int address = memory_view->getSelectedAddress();
+        if (address > -1)
+        {
+            disassembly_view->setSelected(address);
+            disassembly_view->setFocus();
+        }
+    }
+    else if (disassembly_view->hasFocus())
+    {
+        int address = disassembly_view->getSelectedAddress();
+        if (address > -1)
+        {
+            memory_view->goToAddress(address);
+            memory_view->setFocus();
+        }
+    }
 }
 
 void DebuggerDialog::goto_address(offs_t address)
