@@ -40,6 +40,7 @@ private:
 	void labels_table_selection_changed();
 
     void load_labels();
+    void save_labels();
 };
 
 #endif // LABELS_H

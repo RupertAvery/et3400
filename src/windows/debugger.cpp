@@ -184,15 +184,15 @@ void DebuggerDialog::toggle_heat_map()
 			set_heat_map_off_action->setChecked(true);
 			break;
 
-		// case FADE_SPEED:
-		// 	set_heat_map_fade_slow_action->setChecked(true);
-		// 	break;
-		// case FADE_SLOW_SPEED:
-		// 	set_heat_map_persist_action->setChecked(true);
-		// 	break;
-		// case PERSIST_SPEED:
-		// 	set_heat_map_off_action->setChecked(true);
-		// 	break;
+			// case FADE_SPEED:
+			// 	set_heat_map_fade_slow_action->setChecked(true);
+			// 	break;
+			// case FADE_SLOW_SPEED:
+			// 	set_heat_map_persist_action->setChecked(true);
+			// 	break;
+			// case PERSIST_SPEED:
+			// 	set_heat_map_off_action->setChecked(true);
+			// 	break;
 		}
 	}
 	else
@@ -307,7 +307,7 @@ void DebuggerDialog::set_emulator(et3400emu *emu)
 		emu_ptr->on_breakpoint = [this]
 		{
 			QMetaObject::invokeMethod(this, [this]()
-				{ breakpoint_handler(false); }, Qt::QueuedConnection);
+									  { breakpoint_handler(false); }, Qt::QueuedConnection);
 		};
 		emu_set = true;
 		memory_view->set_emulator(emu);
@@ -661,8 +661,12 @@ void DebuggerDialog::goto_label()
 
 void DebuggerDialog::load_labels()
 {
-	File::load_labels_dialog(this, emu_ptr, settings->labelsDir);
+	memory_mapped_device *device = emu_ptr->memory_map->try_get_block_device("RAM");
+
+	File::load_labels_dialog(this, emu_ptr, device->get_start(), device->get_end(), settings->labelsDir);
+
 	reset_disassembly_view();
+
 	if (labels_dialog)
 		labels_dialog->populate_labels_table();
 }

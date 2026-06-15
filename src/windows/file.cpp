@@ -21,7 +21,7 @@ QString BreakpointFileExtensions = "Breakpoint Files (*.brk)";
 QString TextFileExtensions = "Text Files (*.txt)";
 QString AllFiles = "All files (*)";
 
-void File::load_labels_dialog(QWidget *parent, et3400emu *emu_ptr, QString &dir)
+void File::load_labels_dialog(QWidget *parent, et3400emu *emu_ptr, offs_t start, offs_t end, QString &dir)
 {
     QString fileName = QFileDialog::getOpenFileName(parent, "Load Labels", dir, LabelFileExtensions + ";;" + AllFiles);
 
@@ -31,7 +31,7 @@ void File::load_labels_dialog(QWidget *parent, et3400emu *emu_ptr, QString &dir)
     dir = QFileInfo(fileName).absolutePath();
 
     bool success;
-    load_labels(fileName, emu_ptr, success);
+    clear_and_load_labels(fileName, emu_ptr, start, end, success);
 
     if (!success)
         QMessageBox::critical(parent, "Error loading Labels", error);
@@ -44,7 +44,41 @@ void File::load_labels(QString fileName, et3400emu *emu_ptr, bool &success)
 
     if (success)
     {
-        emu_ptr->labels->clearLabels();
+        emu_ptr->labels->addLabels(labels);
+
+        delete labels;
+    }
+    else
+    {
+        error = "Invalid Label file";
+    }
+}
+
+void File::clear_and_load_labels(QString fileName, et3400emu *emu_ptr, offs_t start, offs_t end, bool &success)
+{
+    LOG_DEBUG << "Loading labels from file:" << fileName;
+    std::vector<Label> *labels = LabelReader::Read(fileName, success);
+
+    if (success)
+    {
+        for (const Label &label : *labels)
+        {
+            if (label.start < start || label.end > end)
+            {
+                success = false;
+                error = QString("Label address %1 is outside the range %2-%3")
+                            .arg(toHex(label.start))
+                            .arg(toHex(start))
+                            .arg(toHex(end));
+                delete labels;
+                return;
+            }
+        }
+    }
+
+    if (success)
+    {
+        emu_ptr->labels->clearLabels(start, end);
         emu_ptr->labels->addLabels(labels);
 
         delete labels;

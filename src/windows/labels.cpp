@@ -63,9 +63,9 @@ void LabelsDialog::setupUi()
     connect(tab_goto_label_action, &QAction::triggered, this, [this]()
             { this->debugger->goto_label(); });
     connect(load_labels_action, &QAction::triggered, this, [this]()
-            { this->debugger->load_labels(); });
+            { this->load_labels(); });
     connect(save_labels_action, &QAction::triggered, this, [this]()
-            { this->debugger->save_labels(); });
+            { this->save_labels(); });
     connect(load_default_labels_action, &QAction::triggered, this, [this]()
             { this->debugger->load_default_labels(); });
     connect(tab_clear_ram_labels_action, &QAction::triggered, this, &LabelsDialog::clear_labels);
@@ -209,57 +209,63 @@ void LabelsDialog::delete_label_from_table()
     debugger->reset_disassembly_view();
 }
 
-
 void LabelsDialog::load_default_labels()
 {
-	memory_mapped_device *device = debugger->get_disassembly_device();
+    memory_mapped_device *device = debugger->get_disassembly_device();
 
     if (!device)
-		return;
+        return;
 
-	QString name = QString::fromStdString(device->name).toLower();
-	QString mapPath;
-	if (name.contains("ram"))
-		mapPath = ":/ram/default.map";
-	else if (name.contains("monitor"))
-		mapPath = ":/rom/monitor.map";
-	else
-		return;
+    QString name = QString::fromStdString(device->name).toLower();
+    QString mapPath;
+    if (name.contains("ram"))
+        mapPath = ":/ram/default.map";
+    else if (name.contains("monitor"))
+        mapPath = ":/rom/monitor.map";
+    else
+        return;
 
-	auto reply = QMessageBox::question(this, "Load Default Labels",
-									   QString("Clear existing labels and load defaults for %1?").arg(QString::fromStdString(device->name)));
-	if (reply != QMessageBox::Yes)
-		return;
-
-	debugger->emu_ptr->labels->clearLabels(device->get_start(), device->get_end());
+    auto reply = QMessageBox::question(this, "Load Default Labels",
+                                       QString("Clear existing labels and load defaults for %1?").arg(QString::fromStdString(device->name)));
+    if (reply != QMessageBox::Yes)
+        return;
 
     bool success;
-	File::load_labels(mapPath, debugger->emu_ptr, success);
-	debugger->reset_disassembly_view();
-	populate_labels_table();
+    File::clear_and_load_labels(mapPath, debugger->emu_ptr, device->get_start(), device->get_end(), success);
+    debugger->reset_disassembly_view();
+    populate_labels_table();
 }
-
 
 void LabelsDialog::clear_labels()
 {
-	memory_mapped_device *device = debugger->get_disassembly_device();
+    memory_mapped_device *device = debugger->get_disassembly_device();
 
     if (!device)
-		return;
+        return;
 
-	auto reply = QMessageBox::question(this, "Clear Labels",
-									   QString("Clear all labels for %1?").arg(QString::fromStdString(device->name)));
-	if (reply != QMessageBox::Yes)
-		return;
+    auto reply = QMessageBox::question(this, "Clear Labels",
+                                       QString("Clear all labels for %1?").arg(QString::fromStdString(device->name)));
+    if (reply != QMessageBox::Yes)
+        return;
 
-	debugger->emu_ptr->labels->clearLabels(device->get_start(), device->get_end());
-	debugger->reset_disassembly_view();
-	populate_labels_table();
+    debugger->emu_ptr->labels->clearLabels(device->get_start(), device->get_end());
+    debugger->reset_disassembly_view();
+    populate_labels_table();
 }
 
 void LabelsDialog::load_labels()
 {
-    File::load_labels_dialog(this, debugger->emu_ptr, debugger->get_settings()->labelsDir);
+    memory_mapped_device *device = debugger->get_disassembly_device();
+
+    File::load_labels_dialog(this, debugger->emu_ptr, device->get_start(), device->get_end(), debugger->get_settings()->labelsDir);
+
     debugger->reset_disassembly_view();
     populate_labels_table();
+}
+
+void LabelsDialog::save_labels()
+{
+    memory_mapped_device *device = debugger->get_disassembly_device();
+
+    File::save_labels_dialog(this, debugger->emu_ptr, device->get_start(), device->get_end(), debugger->get_settings()->labelsDir);
 }
