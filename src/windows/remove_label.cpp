@@ -23,6 +23,8 @@ void RemoveLabelDialog::setupUi(QDialog *Dialog)
     buttonBox = new QDialogButtonBox(this);
     buttonBox->setOrientation(Qt::Horizontal);
     buttonBox->setStandardButtons(QDialogButtonBox::Yes | QDialogButtonBox::No);
+    buttonBox->button(QDialogButtonBox::No)->setDefault(true);
+
 
     mainLayout->addWidget(text_label);
     mainLayout->addWidget(buttonBox);

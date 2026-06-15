@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QPushButton>
 
 class RemoveLabelDialog : public QDialog
 {

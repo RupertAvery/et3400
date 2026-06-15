@@ -361,6 +361,22 @@ void DisassemblyView::keyPressEvent(QKeyEvent *event)
 		adjustSelected(visible_items);
 		scrollIntoView();
 		break;
+	case Qt::Key_F2:
+		if (selected_line > -1)
+		{
+			try
+			{
+				DisassemblyLine *line = &lines->at(selected_line);
+				if (line->label != nullptr)
+				{
+					editLabel(line);
+				}
+			}
+			catch (const std::out_of_range &e)
+			{
+			}
+		}
+		break;
 	case Qt::Key_F9:
 		addOrRemoveBreakpoint(selected_line);
 		break;
@@ -783,7 +799,7 @@ void DisassemblyView::addLabel(DisassemblyLine *line)
 
 		DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
 
-		clearSelected();
+		// clearSelected();
 
 		resizeEvent(new QResizeEvent(size(), size()));
 	}
@@ -806,7 +822,7 @@ void DisassemblyView::editLabel(DisassemblyLine *line)
 
 		DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
 
-		clearSelected();
+		// clearSelected();
 
 		resizeEvent(new QResizeEvent(size(), size()));
 	}
@@ -825,7 +841,7 @@ void DisassemblyView::removeLabel(DisassemblyLine *line)
 
 		DisassemblyBuilder::build(lines, start, end, memory, emu_ptr->labels->getLabels());
 
-		clearSelected();
+		// clearSelected();
 
 		resizeEvent(new QResizeEvent(size(), size()));
 	}
@@ -836,14 +852,14 @@ void DisassemblyView::showContextMenu(const QPoint &pos)
 	// int line_number = offset + (pos.y() / item_height);
 	QMenu contextMenu(tr("Context menu"), this);
 
-	QAction addLabelAction("Add label", this);
-	QAction editLabelAction("Edit label", this);
-	QAction removeLabelAction("Remove label", this);
+	QAction addLabelAction("Add label\tIns", this);
+	QAction editLabelAction("Edit label\tF2", this);
+	QAction removeLabelAction("Remove label\tDel", this);
 
-	QAction addBreakpointAction("Add breakpoint", this);
-	QAction removeBreakpointAction("Remove breakpoint", this);
-	QAction disableBreakpointAction("Disable breakpoint", this);
-	QAction enableBreakpointAction("Enable breakpoint", this);
+	QAction addBreakpointAction("Add breakpoint\tF9", this);
+	QAction removeBreakpointAction("Remove breakpoint\tF9", this);
+	QAction disableBreakpointAction("Disable breakpoint\tCtrl+F9", this);
+	QAction enableBreakpointAction("Enable breakpoint\tCtrl+F9", this);
 
 	QAction showInMemoryAction("Show in &Memory", this);
 
@@ -899,11 +915,6 @@ void DisassemblyView::showContextMenu(const QPoint &pos)
 		}
 		else
 		{
-			if (line->label != nullptr)
-			{
-				LOG_DEBUG << "type: " << (line->label->type == DATA ? "DATA" : (line->label->type == ASSEMBLY ? "ASSEMBLY" : (line->label->type == COMMENT ? "COMMENT" : "OTHER")));
-			}
-
 			if (line->label == nullptr || line->label->type != DATA)
 			{
 				connect(&addBreakpointAction, &QAction::triggered, this, [this, line]

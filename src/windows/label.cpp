@@ -170,6 +170,9 @@ void LabelDialog::setLabel(LabelInfo label, LabelDialogMode mode)
     comment_radio->setChecked(label.type == LabelType::COMMENT);
     start_edit->setText(toHex(label.start));
     end_edit->setText(toHex(label.end));
+
+    text_edit->setFocus();
+    text_edit->setSelection(0, label.text.length());
 }
 
 void LabelDialog::validate()

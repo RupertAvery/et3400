@@ -24,6 +24,7 @@
 #include <QFont>
 #include <QWheelEvent>
 #include <QColor>
+#include <QShortcut>
 
 class DisassemblyView : public QFrame
 {
@@ -42,7 +43,7 @@ public:
 	void set_range(offs_t start, offs_t end, uint8_t *memory);
 	void setCurrent(offs_t address);
 	void setSelected(offs_t address);
-	int getSelectedAddress(); 
+	int getSelectedAddress();
 
 	void clearCurrent();
 	void clearSelected();
@@ -113,6 +114,7 @@ private:
 
 	DisassemblyLine findLine(offs_t address);
 	void addOrRemoveBreakpoint(int line_number);
+
 	void bufferDraw();
 	void showContextMenu(const QPoint &pos);
 	void adjustSelected(int direction);
@@ -145,6 +147,49 @@ private:
 		connect(scrollbar, &QScrollBar::sliderMoved, this, &DisassemblyView::scrollTo);
 		connect(scrollbar, &QScrollBar::valueChanged, this, &DisassemblyView::scrollTo);
 		connect(frame, &QFrame::customContextMenuRequested, this, &DisassemblyView::showContextMenu);
+
+		QShortcut *toggleBreakpointEnableShortcut = new QShortcut(QKeySequence("Ctrl+F9"), this);
+		connect(toggleBreakpointEnableShortcut, &QShortcut::activated, this, [this]()
+				{ 
+			if (selected_line > -1)
+			{
+				DisassemblyLine *line = &lines->at(selected_line);
+				Breakpoint breakpoint;
+
+				if (emu_ptr->breakpoints->tryGetBreakpoint(line->address, breakpoint))
+					{
+						if (breakpoint.is_enabled)
+						{
+							emu_ptr->breakpoints->disableBreakpoint(line->address); redraw(); emit onBreakpointChanged(); 
+						}
+						else
+						{
+							emu_ptr->breakpoints->enableBreakpoint(line->address); redraw(); emit onBreakpointChanged(); 
+						}
+					}
+			} });
+
+		QShortcut *addLabelshortcut = new QShortcut(QKeySequence(Qt::Key_Insert), this);
+		connect(addLabelshortcut, &QShortcut::activated, this, [this]()
+				{ 
+			if (selected_line > -1)
+			{
+				DisassemblyLine *line = &lines->at(selected_line);
+				if(line->label == nullptr){
+					DisassemblyView::addLabel(line);
+				}
+			} });
+
+		QShortcut *removeLabelShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+		connect(removeLabelShortcut, &QShortcut::activated, this, [this]()
+				{
+			if (selected_line > -1)
+			{
+				DisassemblyLine *line = &lines->at(selected_line);
+				if(line->label != nullptr){
+					DisassemblyView::removeLabel(line);
+				}
+			} });
 	}
 };
 

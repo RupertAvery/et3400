@@ -243,12 +243,12 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     QAction *save_view_action = new QAction("&Save Views as Text", this);
     connect(save_view_action, &QAction::triggered, this, &DebuggerDialog::show_save_view_dialog);
 
-    QShortcut *swapShortcut = new QShortcut(QKeySequence("F8"), this);
-    connect(swapShortcut, &QShortcut::activated, this, &DebuggerDialog::swap_views);
+    // QShortcut *swapShortcut = new QShortcut(QKeySequence("F8"), this);
+    // connect(swapShortcut, &QShortcut::activated, this, &DebuggerDialog::swap_views);
 
-    // QAction *swap_view_action = new QAction("&Swap Views", this);
-    // swap_view_action->setShortcut(QKeySequence(Qt::Key_F8));
-    // connect(swap_view_action, &QAction::triggered, this, &DebuggerDialog::swap_views);
+    QAction *swap_view_action = new QAction("Switch &Views at Current Address", this);
+    swap_view_action->setShortcut(QKeySequence(Qt::Key_F8));
+    connect(swap_view_action, &QAction::triggered, this, &DebuggerDialog::swap_views);
 
     view_menu->addAction(show_labels_action);
     view_menu->addAction(show_breakpoints_action);
@@ -260,8 +260,8 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     view_menu->addSeparator();
     view_menu->addAction(toggle_memory_action);
     view_menu->addMenu(heat_map_menu);
-    // view_menu->addSeparator();
-    // view_menu->addAction(swap_view_action);
+    view_menu->addSeparator();
+    view_menu->addAction(swap_view_action);
     view_menu->addSeparator();
     view_menu->addAction(save_view_action);
 
@@ -332,8 +332,10 @@ QGroupBox *DebuggerDialog::create_disassembly_group()
 
     connect(disassembly_view, &DisassemblyView::onShowInMemory, this, [this](offs_t address)
             {
-                selectMemoryDeviceByAddress(address);
-                memory_view->goToAddress(address); });
+                if(selectMemoryDeviceByAddress(address))
+                {
+                    memory_view->goToAddress(address); 
+                } });
 
     return disassembly_groupBox;
 }
@@ -391,8 +393,10 @@ QGroupBox *DebuggerDialog::create_memory_group()
 
     connect(memory_view, &MemoryView::on_show_in_disassembly, this, [this](offs_t address)
             {
-                selectDisassemblyDeviceByAddress(address);
-                disassembly_view->setSelected(address); });
+                if(selectDisassemblyDeviceByAddress(address))
+                {
+                    disassembly_view->setSelected(address); 
+                } });
 
     connect(memory_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_memory_location);
 
@@ -406,8 +410,11 @@ void DebuggerDialog::swap_views()
         int address = memory_view->getSelectedAddress();
         if (address > -1)
         {
-            disassembly_view->setSelected(address);
-            disassembly_view->setFocus();
+            if (selectDisassemblyDeviceByAddress(address))
+            {
+                disassembly_view->setSelected(address);
+                disassembly_view->setFocus();
+            }
         }
     }
     else if (disassembly_view->hasFocus())
@@ -415,8 +422,11 @@ void DebuggerDialog::swap_views()
         int address = disassembly_view->getSelectedAddress();
         if (address > -1)
         {
-            memory_view->goToAddress(address);
-            memory_view->setFocus();
+            if (selectMemoryDeviceByAddress(address))
+            {
+                memory_view->goToAddress(address);
+                memory_view->setFocus();
+            }
         }
     }
 }

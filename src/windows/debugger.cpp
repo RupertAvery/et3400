@@ -483,7 +483,7 @@ void DebuggerDialog::stepAndUpdateDisassembler()
 	disassembly_view->setSelected(address);
 }
 
-void DebuggerDialog::selectDisassemblyDeviceByAddress(offs_t address)
+bool DebuggerDialog::selectDisassemblyDeviceByAddress(offs_t address)
 {
 	for (int i = 0; i < disassembly_selector->count(); ++i)
 	{
@@ -491,12 +491,13 @@ void DebuggerDialog::selectDisassemblyDeviceByAddress(offs_t address)
 		if (device && address >= device->get_start() && address <= device->get_end())
 		{
 			disassembly_selector->setCurrentIndex(i);
-			return;
+			return true;
 		}
 	}
+	return false;
 }
 
-void DebuggerDialog::selectMemoryDeviceByAddress(offs_t address)
+bool DebuggerDialog::selectMemoryDeviceByAddress(offs_t address)
 {
 	for (int i = 0; i < memory_selector->count(); ++i)
 	{
@@ -504,9 +505,10 @@ void DebuggerDialog::selectMemoryDeviceByAddress(offs_t address)
 		if (device && address >= device->get_start() && address <= device->get_end())
 		{
 			memory_selector->setCurrentIndex(i);
-			return;
+			return true;
 		}
 	}
+	return false;
 }
 
 void DebuggerDialog::keyReleaseEvent(QKeyEvent *event) {

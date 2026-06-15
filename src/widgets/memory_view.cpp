@@ -777,7 +777,7 @@ void MemoryView::showContextMenu(const QPoint &pos)
 			{ if (checked) {setHeatMapEnabled(true); setHeatMapDecay(PERSIST_SPEED); emit on_heat_map_change(true, PERSIST_SPEED);} });
 
 	QAction *clear_heat_map_action = new QAction("&Clear", this);
-	connect(clear_heat_map_action, &QAction::toggled, this, [this]()
+	connect(clear_heat_map_action, &QAction::triggered, this, [this]()
 			{ clearHeatMap(); });
 
 	heat_map_menu->addAction(set_heat_map_off_action);
