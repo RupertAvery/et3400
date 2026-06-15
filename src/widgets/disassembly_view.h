@@ -61,6 +61,7 @@ signals:
 	void onAddorRemoveBreakpoint(offs_t address);
 	void onBreakpointChanged();
 	void onAutorefreshChanged(bool value);
+	void onShowInMemory(offs_t address);
 
 public slots:
 	void redraw();

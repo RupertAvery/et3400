@@ -26,12 +26,13 @@ bool DisassemblyBuilder::try_disassemble(std::vector<DisassemblyLine> *lines, ui
 	{
 		opcodes = opcodes.arg(memory[ptr + i], 2, 16, QChar('0')).toUpper();
 	}
+	int lasti = i;
 	for (; i < 3; i++)
 	{
 		opcodes = opcodes.arg("  ");
 	}
 
-	lines->push_back(DisassemblyLine{address, DisassemblyType::Assembly, opcodes, QString(result.instruction), result.operand, nullptr});
+	lines->push_back(DisassemblyLine{address, DisassemblyType::Assembly, opcodes, QString(result.instruction), result.operand, nullptr, lasti});
 	ptr += result.byteLength;
 	address += result.byteLength;
 
@@ -47,11 +48,12 @@ void DisassemblyBuilder::disassemble(std::vector<DisassemblyLine> *lines, uint8_
 	{
 		opcodes = opcodes.arg(memory[ptr + i], 2, 16, QChar('0')).toUpper();
 	}
+	int lasti = i;
 	for (; i < 3; i++)
 	{
 		opcodes = opcodes.arg("  ");
 	}
-	lines->push_back(DisassemblyLine{address, DisassemblyType::Assembly, opcodes, QString(result.instruction), result.operand, label});
+	lines->push_back(DisassemblyLine{address, DisassemblyType::Assembly, opcodes, QString(result.instruction), result.operand, label, lasti});
 	ptr += result.byteLength;
 	address += result.byteLength;
 }
@@ -100,13 +102,15 @@ void DisassemblyBuilder::build(std::vector<DisassemblyLine> *lines, offs_t start
 						address++;
 						ptr++;
 					}
+					
+					int lasti = i;
 
 					for (; i < 8; i++)
 					{
 						data = data.arg(" ");
 					}
 
-					lines->push_back(DisassemblyLine{save_address, DisassemblyType::Data, data, NULL, NULL, &(*label), i});
+					lines->push_back(DisassemblyLine{save_address, DisassemblyType::Data, data, NULL, NULL, &(*label), lasti});
 					line_count++;
 				}
 				break;

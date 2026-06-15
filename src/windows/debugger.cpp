@@ -466,7 +466,7 @@ void DebuggerDialog::pauseAndUpdateDisassembler()
 	emu_ptr->halt();
 	offs_t address = emu_ptr->get_status().pc;
 
-	selectByAddress(address);
+	selectDisassemblyDeviceByAddress(address);
 
 	disassembly_view->setCurrent(address);
 	disassembly_view->setSelected(address);
@@ -477,13 +477,13 @@ void DebuggerDialog::stepAndUpdateDisassembler()
 	emu_ptr->step();
 	offs_t address = emu_ptr->get_status().pc;
 
-	selectByAddress(address);
+	selectDisassemblyDeviceByAddress(address);
 
 	disassembly_view->setCurrent(address);
 	disassembly_view->setSelected(address);
 }
 
-void DebuggerDialog::selectByAddress(offs_t address)
+void DebuggerDialog::selectDisassemblyDeviceByAddress(offs_t address)
 {
 	for (int i = 0; i < disassembly_selector->count(); ++i)
 	{
@@ -491,6 +491,19 @@ void DebuggerDialog::selectByAddress(offs_t address)
 		if (device && address >= device->get_start() && address <= device->get_end())
 		{
 			disassembly_selector->setCurrentIndex(i);
+			return;
+		}
+	}
+}
+
+void DebuggerDialog::selectMemoryDeviceByAddress(offs_t address)
+{
+	for (int i = 0; i < memory_selector->count(); ++i)
+	{
+		memory_mapped_device *device = (memory_mapped_device *)(quintptr)memory_selector->itemData(i).toULongLong();
+		if (device && address >= device->get_start() && address <= device->get_end())
+		{
+			memory_selector->setCurrentIndex(i);
 			return;
 		}
 	}
@@ -640,7 +653,7 @@ void DebuggerDialog::goto_label()
 		memory_mapped_device *device = emu_ptr->get_block_device(address);
 		int start = device->get_start();
 
-		selectByAddress(start);
+		selectDisassemblyDeviceByAddress(start);
 
 		disassembly_view->setSelected(address);
 	}

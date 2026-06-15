@@ -635,17 +635,20 @@ void DisassemblyView::ensureVisible(offs_t address)
 
 void DisassemblyView::setSelected(offs_t address)
 {
-	int ctr = -1;
+	int ctr = 0;
 	bool found = false;
 	std::vector<DisassemblyLine>::iterator line = lines->begin();
 	while (line != lines->end())
 	{
-		if (line->address == address)
+		if (line->type != DisassemblyType::Comment)
 		{
-			selected_line = ctr + 1;
-			last_selected_line = selected_line;
-			found = true;
-			break;
+			if ((address >= line->address) && (address <= (line->address + line->bytes - 1)))
+			{
+				selected_line = ctr;
+				last_selected_line = selected_line;
+				found = true;
+				break;
+			}
 		}
 		ctr++;
 		line++;
@@ -824,6 +827,8 @@ void DisassemblyView::showContextMenu(const QPoint &pos)
 	QAction disableBreakpointAction("Disable breakpoint", this);
 	QAction enableBreakpointAction("Enable breakpoint", this);
 
+	QAction showInMemoryAction("Show in &Memory", this);
+
 	if (selected_line > -1)
 	{
 		DisassemblyLine *line = &lines->at(selected_line);
@@ -888,6 +893,12 @@ void DisassemblyView::showContextMenu(const QPoint &pos)
 				contextMenu.addAction(&addBreakpointAction);
 			}
 		}
+
+		contextMenu.addSeparator();
+
+		connect(&showInMemoryAction, &QAction::triggered, this, [this, line]()
+				{ emit onShowInMemory(line->address); });
+		contextMenu.addAction(&showInMemoryAction);
 
 		contextMenu.addSeparator();
 	}

@@ -177,7 +177,8 @@ private:
 
 	bool emu_set;
 
-	void selectByAddress(offs_t address);
+	void selectDisassemblyDeviceByAddress(offs_t address);
+	void selectMemoryDeviceByAddress(offs_t address);
 
 	void start(bool checked);
 	void stop(bool checked);

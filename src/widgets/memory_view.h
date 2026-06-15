@@ -34,6 +34,7 @@ public:
     void update_display();
     void scroll(int steps);
     void scrollTo(int value);
+    void goToAddress(offs_t address);
     void scrollIntoView();
     void set_emulator(et3400emu *emu);
     // void set_range(offs_t start, offs_t end, uint8_t *memory);
@@ -52,6 +53,7 @@ signals:
     void on_heat_map_change(bool enabled, int decay);
     void on_heat_map_enabled_change(bool enabled);
     void on_heat_map_decay_change(int decay);
+    void on_show_in_disassembly(offs_t adddress);
 
 public slots:
     void redraw();

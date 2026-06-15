@@ -319,6 +319,11 @@ QGroupBox *DebuggerDialog::create_disassembly_group()
         toggle_autorefresh_disassembly_action->setChecked(value);
         toggle_autorefresh_disassembly_action->blockSignals(false); });
 
+    connect(disassembly_view, &DisassemblyView::onShowInMemory, this, [this](offs_t address)
+            {
+                selectMemoryDeviceByAddress(address);
+                memory_view->goToAddress(address); });
+
     return disassembly_groupBox;
 }
 
@@ -373,6 +378,11 @@ QGroupBox *DebuggerDialog::create_memory_group()
 
                 save_settings(settings); });
 
+    connect(memory_view, &MemoryView::on_show_in_disassembly, this, [this](offs_t address)
+            {
+                selectDisassemblyDeviceByAddress(address);
+                disassembly_view->setSelected(address); });
+
     connect(memory_selector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DebuggerDialog::select_memory_location);
 
     return memory_groupBox;
@@ -383,7 +393,7 @@ void DebuggerDialog::goto_address(offs_t address)
     memory_mapped_device *device = emu_ptr->get_block_device(address);
     if (!device)
         return;
-    selectByAddress(device->get_start());
+    selectDisassemblyDeviceByAddress(device->get_start());
     disassembly_view->setSelected(address);
 }
 

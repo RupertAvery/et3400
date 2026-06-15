@@ -63,6 +63,14 @@ void MemoryView::wheelEvent(QWheelEvent *event)
 	event->accept();
 }
 
+void MemoryView::goToAddress(offs_t address)
+{
+	selected_address = address;
+	last_selected_address = selected_address;
+	scrollIntoView();
+	update();
+}
+
 void MemoryView::scroll(int steps)
 {
 	offset -= steps;
@@ -736,6 +744,11 @@ void MemoryView::showContextMenu(const QPoint &pos)
 			{ start_editing(selected_address); });
 	editAction.setEnabled(canEdit);
 	contextMenu.addAction(&editAction);
+
+	QAction showInDisassemblyAction("Show in &Disassembly", this);
+	connect(&showInDisassemblyAction, &QAction::triggered, this, [this]
+			{ emit on_show_in_disassembly(selected_address); });
+	contextMenu.addAction(&showInDisassemblyAction);
 
 	QMenu *heat_map_menu = new QMenu("&Heat Map", this);
 
