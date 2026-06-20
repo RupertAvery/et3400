@@ -950,7 +950,7 @@ void DisassemblyView::showContextMenu(const QPoint &pos)
 		contextMenu.addSeparator();
 	}
 
-	QAction refreshAction("&Refresh", this);
+	QAction refreshAction("&Refresh\tCtrl+R", this);
 	connect(&refreshAction, &QAction::triggered, this, [this]()
 			{ refresh(); });
 	contextMenu.addAction(&refreshAction);

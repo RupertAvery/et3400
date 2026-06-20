@@ -624,41 +624,38 @@ void MemoryView::mousePressEvent(QMouseEvent *event)
 	if (is_editing)
 		return;
 
-	if (event->button() == Qt::MouseButton::LeftButton)
+	int y = event->y();
+	int x = event->x();
+
+	// ignore the address column
+	if (x < address_col_width || x > (address_col_width + data_cell_width * 8))
+		return;
+
+	int ascent = m_fm->ascent();
+	int line = (y - 1) / item_height;
+	int col = (x - address_col_width) / data_cell_width;
+
+	int address = start + (offset + line) * 8 + col;
+	if (address <= end)
 	{
-		int y = event->y();
-		int x = event->x();
-
-		// ignore the address column
-		if (x < address_col_width || x > (address_col_width + data_cell_width * 8))
-			return;
-
-		int ascent = m_fm->ascent();
-		int line = (y - 1) / item_height;
-		int col = (x - address_col_width) / data_cell_width;
-
-		int address = start + (offset + line) * 8 + col;
-		if (address <= end)
+		if (selected_address == address && !gained_focus)
 		{
-			if (selected_address == address && !gained_focus)
-			{
-				selected_address = -1;
-			}
-			else
-			{
-				selected_address = address;
-				last_selected_address = selected_address;
-			}
-			update();
+			selected_address = -1;
 		}
-		gained_focus = false;
+		else
+		{
+			selected_address = address;
+			last_selected_address = selected_address;
+		}
+		update();
 	}
+	gained_focus = false;
 }
 
 void MemoryView::mouseDoubleClickEvent(QMouseEvent *event)
 {
 	if (is_editing)
-		return;
+		stop_editing();
 
 	if (event->button() == Qt::MouseButton::LeftButton)
 	{
@@ -745,48 +742,52 @@ void MemoryView::stop_editing()
 
 void MemoryView::showContextMenu(const QPoint &pos)
 {
-	bool canEdit = !is_editing && selected_address > -1;
-
-	if (!canEdit)
+	if (is_editing)
 	{
 		return;
 	}
 
+	bool hasSelected = selected_address > -1;
+
 	QMenu contextMenu(tr("Context menu"), this);
 
 	QAction editAction("Edit\tF2", this);
-	connect(&editAction, &QAction::triggered, this, [this]
-			{ start_editing(selected_address); });
-	editAction.setEnabled(canEdit);
-	contextMenu.addAction(&editAction);
-
 	QAction showInDisassemblyAction("Show in &Disassembly", this);
-	connect(&showInDisassemblyAction, &QAction::triggered, this, [this]
-			{ emit on_show_in_disassembly(selected_address); });
-	contextMenu.addAction(&showInDisassemblyAction);
-
 	QMenu *heat_map_menu = new QMenu("&Heat Map", this);
 
-	QAction *set_heat_map_off_action = new QAction("&Off", this);
+	if (hasSelected)
+	{
+		connect(&editAction, &QAction::triggered, this, [this]
+				{ start_editing(selected_address); });
+		contextMenu.addAction(&editAction);
+
+		connect(&showInDisassemblyAction, &QAction::triggered, this, [this]
+				{ emit on_show_in_disassembly(selected_address); });
+		contextMenu.addAction(&showInDisassemblyAction);
+
+		contextMenu.addSeparator();
+	}
+
+	QAction *set_heat_map_off_action = new QAction("&Off\tCtrl+H, O", this);
 	set_heat_map_off_action->setCheckable(true);
 	set_heat_map_off_action->setChecked(!heat_map_enabled);
 	connect(set_heat_map_off_action, &QAction::toggled, this, [this](bool checked)
 			{ if (checked) setHeatMapEnabled(false); emit on_heat_map_enabled_change(false); });
 
-	QAction *set_heat_map_fade_action = new QAction("&Fade", this);
+	QAction *set_heat_map_fade_action = new QAction("&Fade\tCtrl+H, F", this);
 	set_heat_map_fade_action->setCheckable(true);
 	set_heat_map_fade_action->setChecked(heat_map_enabled && heat_map_decay == FADE_SPEED);
 	connect(set_heat_map_fade_action, &QAction::toggled, this, [this](bool checked)
 			{ if (checked) {setHeatMapEnabled(true); setHeatMapDecay(FADE_SPEED); emit on_heat_map_change(true, FADE_SPEED);} });
 
-	QAction *set_heat_map_persist_action = new QAction("&Persist", this);
+	QAction *set_heat_map_persist_action = new QAction("&Persist\tCtrl+H, P", this);
 	set_heat_map_persist_action->setCheckable(true);
 	set_heat_map_persist_action->setChecked(heat_map_enabled && heat_map_decay == PERSIST_SPEED);
 
 	connect(set_heat_map_persist_action, &QAction::toggled, this, [this](bool checked)
 			{ if (checked) {setHeatMapEnabled(true); setHeatMapDecay(PERSIST_SPEED); emit on_heat_map_change(true, PERSIST_SPEED);} });
 
-	QAction *clear_heat_map_action = new QAction("&Clear", this);
+	QAction *clear_heat_map_action = new QAction("&Clear\tCtrl+H, C", this);
 	connect(clear_heat_map_action, &QAction::triggered, this, [this]()
 			{ clearHeatMap(); });
 
@@ -797,7 +798,6 @@ void MemoryView::showContextMenu(const QPoint &pos)
 	heat_map_menu->addSeparator();
 	heat_map_menu->addAction(clear_heat_map_action);
 
-	contextMenu.addSeparator();
 	contextMenu.addMenu(heat_map_menu);
 
 	contextMenu.exec(mapToGlobal(pos));
