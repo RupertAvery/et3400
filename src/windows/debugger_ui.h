@@ -250,6 +250,9 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     swap_view_action->setShortcut(QKeySequence(Qt::Key_F8));
     connect(swap_view_action, &QAction::triggered, this, &DebuggerDialog::swap_views);
 
+    QAction *show_devices_action = new QAction("&Custom Devices", this);
+    connect(show_devices_action, &QAction::triggered, this, &DebuggerDialog::show_devices_dialog);
+
     view_menu->addAction(show_labels_action);
     view_menu->addAction(show_breakpoints_action);
     view_menu->addAction(goto_label_action);
@@ -264,6 +267,8 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     view_menu->addAction(swap_view_action);
     view_menu->addSeparator();
     view_menu->addAction(save_view_action);
+    view_menu->addSeparator();
+    view_menu->addAction(show_devices_action);
 
     view_button->setMenu(view_menu);
 
@@ -385,7 +390,7 @@ QGroupBox *DebuggerDialog::create_memory_group()
                 set_heat_map_persist_action->blockSignals(false);
 
                 settings->showHeatMap = enabled;
-                save_settings(settings); });
+                save_settings(); });
 
     connect(memory_view, &MemoryView::on_heat_map_change, this, [this](bool enabled, int decay)
             {
@@ -404,7 +409,7 @@ QGroupBox *DebuggerDialog::create_memory_group()
                 settings->showHeatMap = enabled;
                 settings->heatMapDecay = decay;
 
-                save_settings(settings); });
+                save_settings(); });
 
     connect(memory_view, &MemoryView::on_show_in_disassembly, this, [this](offs_t address)
             {
@@ -478,6 +483,7 @@ void DebuggerDialog::setupUI()
 
     labels_dialog = new LabelsDialog(this);
     breakpoints_dialog = new BreakpointsDialog(this);
+    devices_dialog = new DevicesDialog(this);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(toolbar);

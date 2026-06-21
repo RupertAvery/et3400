@@ -28,6 +28,8 @@ set(WINDOWS_SRC
     src/windows/mainwindow.cpp 
     src/windows/about.cpp 
     src/windows/breakpoints.cpp 
+    src/windows/device.cpp 
+    src/windows/devices.cpp 
     src/windows/save.cpp  
     src/windows/load.cpp  
     src/windows/clear_ram.cpp  
@@ -42,7 +44,9 @@ set(WINDOWS_SRC
     )
 
 set(DEVSRC 
-    src/dev/memory_map.cpp 
+    src/dev/address_decoder.cpp
+    src/dev/memory_map.cpp
+    src/dev/custom_dev.cpp
     src/dev/memory_dev.cpp 
     src/dev/keypad_dev.cpp 
     src/dev/display_dev.cpp

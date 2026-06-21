@@ -1,5 +1,6 @@
 #include "settings.h"
 #include "log.h"
+#include "../emu/et3400.h"
 #include <QString>
 #include <QDir>
 #include <QFile>
@@ -30,6 +31,10 @@ Settings load_settings()
             return settings;
 
         QTextStream in(&file);
+
+        int device_state = 0;
+        int deviceIndex = -1;
+        int lastDeviceNo = -1;
 
         while (!in.atEnd())
         {
@@ -81,7 +86,28 @@ Settings load_settings()
                 settings.showBit0DisplayWrites = value == "true";
             else if (key == "HeatMapDecay")
                 settings.heatMapDecay = value.toInt();
+            else if (key == "DeviceCount")
+            {
+                settings.devices.resize(value.toInt());
             }
+            else if (key.startsWith("Device["))
+            {
+                int indexer = key.indexOf(QLatin1Char(']'));
+                int deviceNo = key.mid(7, indexer - 7).toInt();
+                if (deviceNo != lastDeviceNo)
+                {
+                    deviceIndex++;
+                }
+                QString subKey = key.mid(indexer + 2);
+
+                if (subKey == "Name")
+                    settings.devices[deviceIndex].name = value;
+                else if (subKey == "BitPattern")
+                    settings.devices[deviceIndex].bit_pattern = value;
+
+                lastDeviceNo = deviceNo;
+            }
+        }
 
         file.close();
     }
@@ -115,7 +141,7 @@ void save_settings(Settings *settings)
     out << "ShowTips=" << (settings->showTips ? "true" : "false") << NEWLINE;
     out << "ShowDisassemblerView=" << (settings->showDasmView ? "true" : "false") << NEWLINE;
     out << "ShowMemoryView=" << (settings->showMemoryView ? "true" : "false") << NEWLINE;
-    out << "AutoRefreshDasm=" << (settings->autoRefreshDasm ? "true" : "false")<< NEWLINE;
+    out << "AutoRefreshDasm=" << (settings->autoRefreshDasm ? "true" : "false") << NEWLINE;
     out << "ShowHeatMap=" << (settings->showHeatMap ? "true" : "false") << NEWLINE;
     out << "ClockRate=" << settings->clockRate << NEWLINE;
     out << "MainWindowX=" << settings->mainWindowX << NEWLINE;
@@ -133,8 +159,34 @@ void save_settings(Settings *settings)
     out << "ShowBit0DisplayWrites=" << (settings->showBit0DisplayWrites ? "true" : "false") << NEWLINE;
     out << "HeatMapDecay=" << settings->heatMapDecay << NEWLINE;
 
+    out << "DeviceCount=" << settings->devices.size() << NEWLINE;
+
+    for (size_t i = 0; i < settings->devices.size(); i++)
+    {
+        out << "Device[" << i << "].Name=" << settings->devices[i].name << NEWLINE;
+        out << "Device[" << i << "].BitPattern=" << settings->devices[i].bit_pattern << NEWLINE;
+    }
+
     out.flush();
     file.close();
 
     LOG_DEBUG << "Saved settings";
 };
+
+void build_and_save_settings(Settings *settings, et3400emu *emu_ptr)
+{
+    auto devices = emu_ptr->memory_map->get_custom_devices();
+
+    settings->devices.clear();
+    settings->devices.reserve(devices.size());
+
+    for (const auto &device : devices)
+    {
+        DeviceSetting setting;
+        setting.name = QString::fromStdString(device->name);
+        setting.bit_pattern = device->get_pattern();
+        settings->devices.push_back(setting);
+    }
+
+    save_settings(settings);
+}

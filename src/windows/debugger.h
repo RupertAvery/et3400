@@ -47,6 +47,7 @@
 #include "clear_ram.h"
 #include "labels.h"
 #include "breakpoints.h"
+#include "devices.h"
 
 class MainWindow;
 
@@ -111,6 +112,8 @@ public:
 	void load_breakpoints();
 	void save_breakpoints();
 
+	void update_devices();
+
 	void exit();
 
 	void reset_disassembly_view();
@@ -121,6 +124,11 @@ public:
 
 	et3400emu *emu_ptr = nullptr;
 	DisassemblyView *disassembly_view = nullptr;
+
+	void save_settings()
+	{
+		build_and_save_settings(settings, emu_ptr);
+	}
 
 protected:
 	void keyPressEvent(QKeyEvent *event) override;
@@ -232,10 +240,12 @@ private:
 
 	LabelsDialog *labels_dialog = nullptr;
 	BreakpointsDialog *breakpoints_dialog = nullptr;
+	DevicesDialog *devices_dialog = nullptr;
 
 	void show_labels_dialog();
 	void show_breakpoints_dialog();
 	void show_save_view_dialog();
+	void show_devices_dialog();
 
 	QToolBar *create_menu_toolbar();
 	QToolBar *create_shortcuts_toolbar();

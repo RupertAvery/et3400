@@ -3,6 +3,8 @@
 #include <filesystem>
 #include "../common/default.h"
 #include "../common/util.h"
+#include "../dev/custom_dev.h"
+#include "../dev/address_decoder.h"
 
 using namespace std;
 
@@ -206,7 +208,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
   if (emu)
     emu->stop();
 
-  save_settings(&settings);
+  build_and_save_settings(&settings, emu);
 }
 
 MainWindow::~MainWindow()
@@ -362,6 +364,8 @@ void MainWindow::init_emu()
   emu->memory_map->map(new memory_device("Monitor ROM", MONITOR_ADDR, MONITOR_SIZE, true));
 
   bool success;
+  QString error;
+
   File::load_memory(":/rom/monitor.bin", "Monitor ROM", emu, MONITOR_ADDR, success);
   // File::load_memory(":/rom/fantomii.bin", "Fantom II", emu, FANTOMII_ADDR);
   // File::load_memory(":/rom/tinybasic.bin", "Tiny BASIC", emu, TINYBASIC_ADDR);
@@ -371,6 +375,32 @@ void MainWindow::init_emu()
   // emu->load_labels(":/rom/fantomii.map");
 
   File::load_labels(":/ram/default.map", emu, success);
+
+  load_devices();
+}
+
+void MainWindow::load_devices()
+{
+  for (auto device : settings.devices)
+  {
+    if (is_pattern_valid(device.bit_pattern.toUtf8().constData()))
+    {
+      BitPattern bp = parse_pattern(device.bit_pattern.toUtf8().constData());
+
+      if (!emu->memory_map->has_collision(bp.start, bp.end))
+      {
+        emu->memory_map->map(new custom_device(device.name.toUtf8().constData(), bp, false));
+      }
+      else
+      {
+        QMessageBox::critical(this, "Initialization Error", "The device \"" + device.name + "\" overlaps with an existing device.", QMessageBox::StandardButton::Ok);
+      }
+    }
+    else
+    {
+      QMessageBox::critical(this, "Initialization Error", "The address pattern for device \"" + device.name + "\" is invalid.", QMessageBox::StandardButton::Ok);
+    }
+  }
 }
 
 void MainWindow::execute_emu()

@@ -82,6 +82,7 @@ private:
   void updatecps();
   void fps();
   void autostart_sequence();
+  void load_devices();
 
 };
 

@@ -110,26 +110,12 @@ void DebuggerDialog::reset(bool checked)
 	emu_ptr->reset();
 }
 
-int DebuggerDialog::count_open_panels()
-{
-	return 1;
-	// return (toggle_memory_action->isChecked() ? 1 : 0) +
-	// 	   (toggle_disassembly_action->isChecked() ? 1 : 0) +
-	// 	   (toggle_status_action->isChecked() ? 1 : 0);
-}
-
 void DebuggerDialog::toggle_memory_panel(bool checked)
 {
-	// if (count_open_panels() == 0)
-	// {
-	// 	toggle_memory_action->setChecked(true);
-	// 	return;
-	// }
-	LOG_DEBUG << "toggle memory";
 	memory_groupBox->setVisible(checked);
 	settings->showMemoryView = checked;
 	resize(sizeHint().width(), height());
-	save_settings(settings);
+	save_settings();
 }
 
 void DebuggerDialog::set_heat_map_off()
@@ -137,8 +123,7 @@ void DebuggerDialog::set_heat_map_off()
 	memory_view->setHeatMapEnabled(false);
 	settings->showHeatMap = false;
 
-	LOG_DEBUG << "toggle heat";
-	save_settings(settings);
+	save_settings();
 }
 
 void DebuggerDialog::set_heat_map_fade()
@@ -148,7 +133,7 @@ void DebuggerDialog::set_heat_map_fade()
 	settings->showHeatMap = true;
 	settings->heatMapDecay = FADE_SPEED;
 
-	save_settings(settings);
+	save_settings();
 }
 
 void DebuggerDialog::set_heat_map_fade_slow()
@@ -158,7 +143,7 @@ void DebuggerDialog::set_heat_map_fade_slow()
 	settings->showHeatMap = true;
 	settings->heatMapDecay = FADE_SLOW_SPEED;
 
-	save_settings(settings);
+	save_settings();
 }
 
 void DebuggerDialog::set_heat_map_persist()
@@ -168,7 +153,7 @@ void DebuggerDialog::set_heat_map_persist()
 	settings->showHeatMap = true;
 	settings->heatMapDecay = PERSIST_SPEED;
 
-	save_settings(settings);
+	save_settings();
 }
 
 void DebuggerDialog::toggle_heat_map()
@@ -183,16 +168,6 @@ void DebuggerDialog::toggle_heat_map()
 		case PERSIST_SPEED:
 			set_heat_map_off_action->setChecked(true);
 			break;
-
-			// case FADE_SPEED:
-			// 	set_heat_map_fade_slow_action->setChecked(true);
-			// 	break;
-			// case FADE_SLOW_SPEED:
-			// 	set_heat_map_persist_action->setChecked(true);
-			// 	break;
-			// case PERSIST_SPEED:
-			// 	set_heat_map_off_action->setChecked(true);
-			// 	break;
 		}
 	}
 	else
@@ -208,38 +183,23 @@ void DebuggerDialog::clear_heat_map()
 
 void DebuggerDialog::toggle_disassembly_panel(bool checked)
 {
-	// if (count_open_panels() == 0)
-	// {
-	// 	toggle_disassembly_action->setChecked(true);
-	// 	return;
-	// }
 	disassembly_groupBox->setVisible(checked);
 	settings->showDasmView = checked;
 	resize(sizeHint().width(), height());
 
 	LOG_DEBUG << "toggle dasm";
-	save_settings(settings);
+	save_settings();
 }
 
 void DebuggerDialog::toggle_auto_refresh_disassembly_panel(bool checked)
 {
-	// if (count_open_panels() == 0)
-	// {
-	// 	toggle_disassembly_action->setChecked(true);
-	// 	return;
-	// }
 	disassembly_view->setAutoRefresh(checked);
 	settings->autoRefreshDasm = checked;
-	save_settings(settings);
+	save_settings();
 }
 
 void DebuggerDialog::toggle_status_panel(bool checked)
 {
-	// if (count_open_panels() == 0)
-	// {
-	// 	toggle_status_action->setChecked(true);
-	// 	return;
-	// }
 	status_groupBox->setVisible(checked);
 }
 
@@ -277,27 +237,20 @@ void DebuggerDialog::select_disassembly_location(int index)
 	update_clear_ram_labels_state();
 }
 
-// void DebuggerDialog::update_clear_ram_labels_state()
-// {
-// 	if (tab_clear_ram_labels_action)
-// 		tab_clear_ram_labels_action->setEnabled(true);
-// }
-
-// void DebuggerDialog::update_memory_scrollbar(int value)
-// {
-// 	memory_scrollbar->setValue(memory_scrollbar->value() - value);
-// }
-
-// void DebuggerDialog::update_memory_scrollbar_offset(int value)
-// {
-// 	memory_scrollbar->setValue(value);
-// }
-
-// void DebuggerDialog::update_memory_scrollbar_max(int value)
-// {
-// 	memory_scrollbar->setMinimum(0);
-// 	memory_scrollbar->setMaximum(value);
-// }
+void DebuggerDialog::update_devices()
+{
+	disassembly_selector->clear();
+	memory_selector->clear();
+	auto devices = emu_ptr->memory_map->get_block_devices();
+	for (auto *device : devices)
+	{
+		if (device->can_disassemble)
+		{
+			disassembly_selector->addItem(QString::fromStdString(device->name), QVariant::fromValue((quintptr)device));
+		}
+		memory_selector->addItem(QString::fromStdString(device->name), QVariant::fromValue((quintptr)device));
+	}
+}
 
 void DebuggerDialog::set_emulator(et3400emu *emu)
 {
@@ -314,32 +267,14 @@ void DebuggerDialog::set_emulator(et3400emu *emu)
 		disassembly_view->setEmulator(emu);
 		status_view->set_emulator(emu);
 
-		auto devices = emu->memory_map->get_block_devices();
-		for (auto *device : devices)
-		{
-			if (device->can_disassemble)
-			{
-				disassembly_selector->addItem(QString::fromStdString(device->name), QVariant::fromValue((quintptr)device));
-			}
-			memory_selector->addItem(QString::fromStdString(device->name), QVariant::fromValue((quintptr)device));
-		}
-
-		// memory_selector->addItem("RAM", 0x0000);
-		// memory_selector->addItem("Keypad", 0xC003);
-		// memory_selector->addItem("Display", 0xC110);
-		// memory_selector->addItem("Fantom II ROM", 0x1400);
-		// memory_selector->addItem("TinyBasic ROM", 0x1C00);
-		// memory_selector->addItem("Monitor ROM", 0xFC00);
-
-		// disassembly_selector->addItem("RAM", 0x0000);
-		// disassembly_selector->addItem("Fantom II ROM", 0x1400);
-		// disassembly_selector->addItem("TinyBasic ROM", 0x1C00);
-		// disassembly_selector->addItem("Monitor ROM", 0xFC00);
+		update_devices();
 
 		memory_selector->setCurrentIndex(0);
 		disassembly_selector->setCurrentIndex(0);
 
 		select_memory_location(0);
+
+		devices_dialog->populate_devices_table();
 	}
 	update_button_state();
 }
@@ -350,7 +285,6 @@ void DebuggerDialog::set_settings(Settings *settings)
 
 	disassembly_groupBox->setVisible(settings->showDasmView);
 	memory_groupBox->setVisible(settings->showMemoryView);
-	// memory_view->setHeatMapEnabled(settings->showHeatMap);
 
 	toggle_disassembly_action->setChecked(settings->showDasmView);
 	toggle_autorefresh_disassembly_action->setChecked(settings->autoRefreshDasm);
@@ -363,9 +297,6 @@ void DebuggerDialog::set_settings(Settings *settings)
 		case FADE_SPEED:
 			set_heat_map_fade_action->setChecked(true);
 			break;
-		// case FADE_SLOW_SPEED:
-		// 	set_heat_map_fade_slow_action->setChecked(true);
-		// 	break;
 		case PERSIST_SPEED:
 			set_heat_map_persist_action->setChecked(true);
 			break;
@@ -380,8 +311,6 @@ void DebuggerDialog::set_settings(Settings *settings)
 	{
 		set_heat_map_off_action->setChecked(true);
 	}
-
-	// toggle_heat_map_action->setChecked(settings->showHeatMap);
 
 	if (settings->debuggerWidth > 0 && settings->debuggerHeight > 0)
 		resize(settings->debuggerWidth, settings->debuggerHeight);
@@ -410,54 +339,19 @@ void DebuggerDialog::update_button_state()
 	stop_button->setEnabled(running);
 	step_into_button->setEnabled(!running);
 	step_over_button->setEnabled(!running);
-	// step_out_button->setEnabled(!running);
 	reset_button->setEnabled(running);
 
 	debug_run_action->setEnabled(!running);
 	debug_stop_action->setEnabled(running);
 	debug_step_into_action->setEnabled(!running);
 	debug_step_over_action->setEnabled(!running);
-	// debug_step_out_action->setEnabled(!running);
 	debug_reset_action->setEnabled(running);
 
 	status_view->set_enabled(!running);
 }
 
-// void DebuggerDialog::memory_slider_moved(int value)
-// {
-// 	memory_view->scrollTo(value);
-// }
-
 void DebuggerDialog::keyPressEvent(QKeyEvent *event)
 {
-	// These are now handled by the toolbar actions
-	// switch (event->key())
-	//{
-	// case Qt::Key_F4:
-	//	if (emu_ptr->get_running())
-	//	{
-	//		pauseAndUpdateDisassembler();
-	//		update_button_state();
-	//	}
-	//	break;
-	// case Qt::Key_F5:
-	//	if (!emu_ptr->get_running())
-	//	{
-	//		emu_ptr->resume();
-	//		disassembly_view->clear_current();
-	//		update_button_state();
-	//	}
-	//	break;
-	// case Qt::Key_F10:
-	//	if (!emu_ptr->get_running())
-	//	{
-	//		stepAndUpdateDisassembler();
-	//	}
-	//	break;
-	// case Qt::Key_Escape:
-	//	emu_ptr->reset();
-	//	break;
-	//}
 	event->ignore();
 };
 
@@ -763,6 +657,13 @@ void DebuggerDialog::set_breakpoint_enabled(offs_t address, bool enabled)
 {
 	emu_ptr->breakpoints->setEnabled(address, enabled);
 	populate_breakpoints_table();
+}
+
+void DebuggerDialog::show_devices_dialog()
+{
+	devices_dialog->show();
+	devices_dialog->raise();
+	devices_dialog->activateWindow();
 }
 
 void DebuggerDialog::exit()
