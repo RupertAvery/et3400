@@ -4,18 +4,22 @@
 
 Tips::Tips(QWidget *parent) : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout;
+    setupUi(this);
+}
 
-    QLabel *didYouKnow = new QLabel("Did you know?");
-    didYouKnow->setStyleSheet("font-size: 20px; font-weight: 500");
+void Tips::setupUi(QDialog *Dialog)
+{
+    QVBoxLayout *mainLayout = new QVBoxLayout;
 
     QWidget *container = new QWidget;
     QVBoxLayout *containerLayout = new QVBoxLayout;
-    QLabel *label = new QLabel;
+    label = new QLabel;
     label->setTextFormat(Qt::RichText);
     label->setWordWrap(true);
     label->setStyleSheet("font-size: 14px;");
     label->setMinimumWidth(340);
+    label->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    label->setOpenExternalLinks(true);
 
     // TODO: ScrollAreaa does not show scrollbar when label is too large
 
@@ -28,6 +32,7 @@ Tips::Tips(QWidget *parent) : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSy
 
     QScrollArea *scrollArea = new QScrollArea;
     scrollArea->setBackgroundRole(QPalette::Light);
+    scrollArea->setWidgetResizable(true);
     scrollArea->setWidget(container);
 
     QPushButton *previous_button = new QPushButton("Previous");
@@ -38,25 +43,25 @@ Tips::Tips(QWidget *parent) : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSy
 
     show_tip_checkbox = new QCheckBox("Show &tips on startup");
 
-    connect(show_tip_checkbox, &QCheckBox::clicked, this, [this, label](bool checked) {
+    connect(show_tip_checkbox, &QCheckBox::clicked, this, [this](bool checked)
+            {
         settings->showTips = checked;
-        save_settings(settings);
-    });
+        save_settings(settings); });
 
-    connect(previous_button, &QPushButton::clicked, this, [this, label](bool checked) {
+    connect(previous_button, &QPushButton::clicked, this, [this](bool checked)
+            {
         tip--;
         if (tip < 0)
             tip = TIPCOUNT - 1;
-        label->setText(tips[tip]);
-    });
+        label->setText(tips[tip]); });
 
     connect(
-        next_button, &QPushButton::clicked, this, [this, label](bool checked) {
+        next_button, &QPushButton::clicked, this, [this](bool checked)
+        {
             tip++;
             if (tip > TIPCOUNT - 1)
                 tip = 0;
-            label->setText(tips[tip]);
-        });
+            label->setText(tips[tip]); });
 
     QWidget *buttons = new QWidget;
     QHBoxLayout *buttonLayout = new QHBoxLayout;
@@ -66,22 +71,30 @@ Tips::Tips(QWidget *parent) : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSy
     buttonLayout->addStretch(1);
     buttons->setLayout(buttonLayout);
 
-    mainLayout->addWidget(didYouKnow);
     mainLayout->addWidget(scrollArea);
-    //mainLayout->addStretch(1);
+    // mainLayout->addStretch(1);
     mainLayout->addWidget(buttons);
     mainLayout->addWidget(show_tip_checkbox);
     mainLayout->setMargin(20);
     setLayout(mainLayout);
 
-    tip = rand() % TIPCOUNT;
-
-    label->setText(tips[tip]);
-
-    setFixedWidth(400);
+    setFixedWidth(500);
     setMinimumHeight(200);
 
     setWindowTitle("Tips");
+}
+
+void Tips::random_tip()
+{
+    tip = rand() % TIPCOUNT;
+
+    label->setText(tips[tip]);
+}
+
+void Tips::set_tip(int index)
+{
+    tip = index;
+    label->setText(tips[tip]);
 }
 
 void Tips::set_settings(Settings *settings)

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
-project(et3400 VERSION 1.00.0)
+project(et3400 VERSION 1.0.0)
 
 
 set(CMAKE_CXX_STANDARD 17)
@@ -27,8 +27,9 @@ set(WINDOWS_SRC
     ${WIDGETS_SRC} 
     src/windows/mainwindow.cpp 
     src/windows/about.cpp 
-    src/windows/breakpoints.cpp 
-    src/windows/save.cpp  
+    src/windows/breakpoints.cpp
+    src/windows/breakpoint.cpp
+    src/windows/save.cpp
     src/windows/load.cpp  
     src/windows/clear_ram.cpp  
     src/windows/settings.cpp  

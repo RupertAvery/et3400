@@ -111,6 +111,7 @@ void MainWindow::show_tips()
 {
   Tips *tips = new Tips(this);
   tips->set_settings(&settings);
+  tips->random_tip();
   tips->show();
 }
 
@@ -143,6 +144,13 @@ void MainWindow::show_debugger()
             { debugger_dialog = nullptr; });
     debugger_dialog->set_settings(&settings);
     debugger_dialog->show();
+
+    if (!settings.firstDebuggerOpen)
+    {
+      debugger_dialog->show_tip();
+      settings.firstDebuggerOpen = true;
+      save_settings(&settings);
+    }
   }
   else if (debugger_dialog->isVisible())
   {

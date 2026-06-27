@@ -17,12 +17,6 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-enum LabelDialogMode
-{
-    Add,
-    Edit
-};
-
 struct LabelInfo
 {
     QString text;

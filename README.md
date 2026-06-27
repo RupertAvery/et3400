@@ -399,18 +399,23 @@ These files can be loaded directly into the emulator
 
 # Emulation Quirks
 
-## Hardware breakpoints at the start address entered in DO command are not hit on first execution
+## Debugger breakpoints at the same address entered in DO command are not hit on first execution
 
-If you set an emulator breakpoint at a program's start address and launch it with `DO`, the breakpoint will not be hit.
+If you set an debugger breakpoint at an address and execute the  `DO` command with the same address, the breakpoint will not be hit on the first execution.
 
-The monitor ROM's `DO` command does not jump directly to the entered address. Instead, it performs a [software single-step](documentation/rom_analysis.md#single-stepping-step-sstep) in order to catch a possible software breakpoint. This involves in some cases copying the instruction into the stack, and executing it from there.
+For example, if you set a debugger breakpoint at `$0000` and then press `DO` then `0000`, the emulator will not break at that address.
 
-Because execution doesn't pass through the original start address, any hardware breakpoint set there will not be hit by the hardware debugger on the first execution, although if the program branches to the start address at any point 
+This is due to how the Monitor ROM handles its own software breakpoints.
 
-The reason that the ROM does this is to trap its own breakpoints. When you enter breakpoints in the ET-3400, the ROM will patch the address with a `3F` - the software vector interrupt - so that it can handle the instruction itself.
+The ET-3400 ROM contains routines for montitoring execution and displaying registers, and one of its features is a breakpoint handler that supports up to 4 breakpoints.
+
+When you enter breakpoints using ET-3400 ROM by pressing the `BR` button, the ROM saves the addresses you enter in its reserved RAM for breakpoint addresses. When you execute a program with `DO`, the ROM will patch the addresses with a `3F` - the software vector interrupt - so that it can handle the instruction itself.
+
+The Monitor ROM's `DO` command does not jump directly to the entered address. Instead, it performs a [software single-step](documentation/rom_analysis.md#single-stepping-step-sstep) in order to catch and handle a possible software breakpoint. 
+
+Because execution doesn't pass through the original start address, any debugger breakpoint set there will not be hit on first execution, although if the program branches to the address afterwards the emulator will break at that address.  
 
 The relevant routine is `SSTEP` in the Monitor ROM at `$FE6B`.
-
 
 ## ET-3400 EXAM and Debugger Disassembly / Memory values disagree when examining stack addresses
 

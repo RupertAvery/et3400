@@ -113,6 +113,8 @@ public:
 
 	void exit();
 
+	void show_tip();
+
 	void reset_disassembly_view();
 	memory_mapped_device *get_disassembly_device();
 	memory_mapped_device *get_memory_device();

@@ -26,6 +26,7 @@ struct Settings
     bool clearRamOnLoad;
     bool showBit0DisplayWrites;
     int heatMapDecay;
+    bool firstDebuggerOpen;
 };
 
 Settings load_settings();

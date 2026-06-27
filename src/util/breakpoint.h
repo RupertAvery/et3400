@@ -1,5 +1,5 @@
-#ifndef BREAKPOINT_H
-#define BREAKPOINT_H
+#ifndef BREAKPOINT_READER_H
+#define BREAKPOINT_READER_H
 
 #include "../common/common_defs.h"
 #include <vector>
@@ -24,4 +24,4 @@ public:
     static void Write(QString path, std::vector<Breakpoint> *breakpoints, bool &success);
 };
 
-#endif // BREAKPOINT_H
+#endif // BREAKPOINT_READER_H

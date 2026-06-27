@@ -22,16 +22,19 @@ void LabelManager::addLabels(std::vector<Label> *labels)
 
 	while (current != labels->end())
 	{
-		addLabel(*current);
+		if (isValid(current->comment, current->start, current->end) && !hasCollision(&(*current), current->start, current->end))
+		{
+			addLabel(*current);
+		}
 		current++;
 	}
 
 	_isDirty = true;
 }
 
-bool LabelManager::isValid(offs_t start, offs_t end)
+bool LabelManager::isValid(QString text, offs_t start, offs_t end)
 {
-	return end >= start;
+	return text.length() > 0 && end >= start;
 }
 
 bool LabelManager::hasCollision(Label *label, offs_t start, offs_t end)
