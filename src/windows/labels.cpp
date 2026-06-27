@@ -155,11 +155,14 @@ void LabelsDialog::goto_label_from_table()
 void LabelsDialog::add_label_from_table()
 {
     LabelDialog labelDialog;
-    labelDialog.setLabel(LabelInfo{"", LabelType::COMMENT, 0, 0}, LabelDialogMode::Add);
+    labelDialog.hasCollision = [this](Label *label, offs_t start, offs_t end)
+    { return debugger->emu_ptr->labels->hasCollision(label, start, end); };
+    labelDialog.addLabel("", 0);
 
     if (labelDialog.exec() == QDialog::Accepted)
     {
         LabelInfo info = labelDialog.getLabel();
+
         debugger->emu_ptr->labels->addLabel(Label{info.start, info.end, info.type, info.text});
         populate_labels_table();
         debugger->reset_disassembly_view();
@@ -177,9 +180,11 @@ void LabelsDialog::edit_label_from_table()
     if (idx >= (int)labels->size())
         return;
 
-    Label &label = labels->at(idx);
+    Label label = labels->at(idx);
     LabelDialog labelDialog;
-    labelDialog.setLabel(LabelInfo{label.comment, label.type, label.start, label.end}, LabelDialogMode::Edit);
+    labelDialog.hasCollision = [this](Label *label, offs_t start, offs_t end)
+    { return debugger->emu_ptr->labels->hasCollision(label, start, end); };
+    labelDialog.editLabel(&label);
 
     if (labelDialog.exec() == QDialog::Accepted)
     {

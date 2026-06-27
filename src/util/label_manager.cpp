@@ -22,12 +22,42 @@ void LabelManager::addLabels(std::vector<Label> *labels)
 
 	while (current != labels->end())
 	{
-		// LOG_DEBUG << "Label: " << (*current).comment << "type:" << (*current).type << "start:" << (*current).start << "end:" << (*current).end;
 		addLabel(*current);
 		current++;
 	}
-	
+
 	_isDirty = true;
+}
+
+bool LabelManager::isValid(offs_t start, offs_t end)
+{
+	return end >= start;
+}
+
+bool LabelManager::hasCollision(Label *label, offs_t start, offs_t end)
+{
+	std::vector<Label>::iterator current = _labels->begin();
+
+	while (current != _labels->end())
+	{
+		if (start <= current->end && end >= current->start)
+		{
+			if (label == nullptr)
+			{
+				return true;
+			}
+			else
+			{
+				if (&(*current) != label)
+				{
+					return true;
+				}
+			}
+		}
+		current++;
+	}
+
+	return false;
 }
 
 void LabelManager::addLabel(Label label)
@@ -109,7 +139,6 @@ void LabelManager::removeLabel(Label *label)
 
 	_isDirty = true;
 }
-
 
 std::vector<Label> LabelManager::getLabels(uint32_t start, uint32_t end)
 {

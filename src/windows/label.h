@@ -38,8 +38,12 @@ class LabelDialog : public QDialog
 public:
     LabelDialog();
 
-    void setLabel(LabelInfo label, LabelDialogMode mode);
+    // void setLabel(LabelInfo label, LabelDialogMode mode);
+    void addLabel(QString text, offs_t address);
+    void editLabel(Label *label);
+
     LabelInfo getLabel();
+    std::function<bool(Label *label, offs_t start, offs_t end)> hasCollision;
 
 private:
     QVBoxLayout *mainLayout;
@@ -57,6 +61,8 @@ private:
     QLineEdit *end_edit;
     QLabel *description_label;
     QDialogButtonBox *buttonBox;
+
+    Label *ref_label;
 
     void setupUi(QDialog *Dialog);
     void set_comment(bool checked = false);
