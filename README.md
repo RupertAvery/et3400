@@ -257,7 +257,7 @@ This is important when you have a section of memory that does not contain code a
 
 Below is a view of a section of RAM before and after adding labels.
 
-<img alt="image" src="documentation/ET-3400-labels.png" />
+<img alt="image" src="documentation/et3400-labels.png" />
 
 ### Adding Labels
 
