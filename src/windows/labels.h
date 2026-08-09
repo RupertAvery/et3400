@@ -22,8 +22,8 @@ public:
 
 private:
     DebuggerDialog *debugger;
-    QAction *tab_edit_label_action;
-    QAction *tab_remove_label_action;
+    QAction *edit_action;
+    QAction *remove_action;
     QAction *tab_clear_ram_labels_action;
     QAction *tab_goto_label_action;
     QTableWidget *labels_table;
@@ -33,11 +33,11 @@ private:
 
     void clear_labels();
 
-	void add_label_from_table();
-	void edit_label_from_table();
-	void delete_label_from_table();
-	void goto_label_from_table();
-	void labels_table_selection_changed();
+	void add_label();
+	void edit_label();
+	void delete_label();
+	void goto_label();
+	void table_selection_changed();
 
     void load_labels();
     void save_labels();

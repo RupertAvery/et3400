@@ -1,8 +1,8 @@
 # ET-3400 Emulator
 
-This is an emulator for the [Heathkit ET-3400 Trainer](http://www.oldcomputermuseum.com/heathkit_ET-3400.html) built in C++.
+This is an emulator for the Heathkit ET-3400 Trainer built in C++.
 
-This is a port of my emulator built in C# (https://github.com/RupertAvery/ET-3400-emu) with the goal of better performance and speed accuracy, as well as portability, with Windows and Linux targets.
+This is a port of my emulator built in C# ([https://github.com/RupertAvery/ET-3400-emu](https://github.com/RupertAvery/ET-3400-emu)) with the goal of better performance and speed accuracy, as well as portability, with Windows and Linux targets.
 
 The Heathkit ET-3400 Trainer is a basic computer intended to teach microprocessor basics and assembly programming. The trainer was sold in kit form, requiring the user to build the device from the parts included in the kit.
 
@@ -20,10 +20,12 @@ Here are the optional command line arguments:
 Usage: ET-3400.exe [options] [file]
 
 Options:
-  -m <path>            Load alternate monitor ROM from file (.s19, .hex, .bin)
-  -s <speed>           Set clock speed 
+  -a <address>         Execute DO with specified hex address on startup 
   -d                   Show debugger on startup
+  -m <path>            Load alternate monitor ROM from file (.s19, .hex, .bin)
   -l <path>            Load labels from file (.lbl) (see note 1)
+  -s <speed>           Set clock speed 
+
 
   <file>               Load RAM contents from file (.s19, .obj)
 ```
@@ -41,7 +43,7 @@ Notes:
 
 1. See [Labels](#labels) for a description of this feature 
 
-2. The default clock speed of 471kHz was suggested by Rick Nungester from tests on an actual ET-3400.
+2. The default clock speed of 471 kHz was suggested by Rick Nungester from his analysis of the ET-3400 schematic diagram.
 
 # What's emulated
 
@@ -257,7 +259,7 @@ This is important when you have a section of memory that does not contain code a
 
 Below is a view of a section of RAM before and after adding labels.
 
-<img alt="image" src="documentation/ET-3400-labels.png" />
+<img alt="image" src="documentation/et3400-labels.png" />
 
 ### Adding Labels
 
@@ -295,7 +297,7 @@ It is a 1024 byte (1KB) ROM chip that is address decoded at `FC00`.
 
 # Manual
 
-The original manual for this trainer is available in pdf format here: https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer
+The original manual for this trainer is available in pdf format here: [https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer](https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer)
 
 The manual describes assembling the kit, discusses basic operation and troubleshooting and includes sample program listings as well as an listing of the monitor ROM program.
 
@@ -322,7 +324,7 @@ FC46-FC7D - BKSET and DOPMT routines
 FF2A-FF2F - Start of SPECIAL HANDLERS
 ```
 
-For the complete source code of the Monitor ROM, I recommend visiting https://groups.io/g/ET-3400/files/3.%20ROM%20Info/6.%20ET-3400%20Monitor%20source%20code and looking at ET-3400.LST
+For the complete source code of the Monitor ROM, I recommend visiting [https://groups.io/g/ET-3400/files/3.%20ROM%20Info/6.%20ET-3400%20Monitor%20source%20code](https://groups.io/g/ET-3400/files/3.%20ROM%20Info/6.%20ET-3400%20Monitor%20source%20code) and looking at `ET-3400.LST`
 
 ## Basic Usage
 
@@ -393,24 +395,29 @@ Addr Instr     Label    Disassembly        Comments
 
 NOTE: The labels `REDIS`, `DIGADD`, and `OUTCH` refer to subroutines in the Monitor ROM that perform certain functions.
 
-The sample programs source code are available in Motorola S-record and Intel HEX format here https://groups.io/g/ET-3400/files/9.%20Sample%20Programs/Sample%20Programs%20Hex
+The sample programs source code are available in Motorola S-record and Intel HEX format here [https://groups.io/g/ET-3400/files/9.%20Sample%20Programs/Sample%20Programs%20Hex](https://groups.io/g/ET-3400/files/9.%20Sample%20Programs/Sample%20Programs%20Hex)
 
 These files can be loaded directly into the emulator
 
 # Emulation Quirks
 
-## Hardware breakpoints at the start address entered in DO command are not hit on first execution
+## Debugger breakpoints at the same address entered in DO command are not hit on first execution
 
-If you set an emulator breakpoint at a program's start address and launch it with `DO`, the breakpoint will not be hit.
+If you set an debugger breakpoint at an address and execute the  `DO` command with the same address, the breakpoint will not be hit on the first execution.
 
-The monitor ROM's `DO` command does not jump directly to the entered address. Instead, it performs a [software single-step](documentation/rom_analysis.md#single-stepping-step-sstep) in order to catch a possible software breakpoint. This involves in some cases copying the instruction into the stack, and executing it from there.
+For example, if you set a debugger breakpoint at `$0000` and then press `DO` then `0000`, the emulator will not break at that address.
 
-Because execution doesn't pass through the original start address, any hardware breakpoint set there will not be hit by the hardware debugger on the first execution, although if the program branches to the start address at any point 
+This is due to how the Monitor ROM handles its own software breakpoints.
 
-The reason that the ROM does this is to trap its own breakpoints. When you enter breakpoints in the ET-3400, the ROM will patch the address with a `3F` - the software vector interrupt - so that it can handle the instruction itself.
+The ET-3400 ROM contains routines for montitoring execution and displaying registers, and one of its features is a breakpoint handler that supports up to 4 breakpoints.
+
+When you enter breakpoints using ET-3400 ROM by pressing the `BR` button, the ROM saves the addresses you enter in its reserved RAM for breakpoint addresses. When you execute a program with `DO`, the ROM will patch the addresses with a `3F` - the software vector interrupt - so that it can handle the instruction itself.
+
+The Monitor ROM's `DO` command does not jump directly to the entered address. Instead, it performs a [software single-step](documentation/rom_analysis.md#single-stepping-step-sstep) in order to catch and handle a possible software breakpoint. 
+
+Because execution doesn't pass through the original start address, any debugger breakpoint set there will not be hit on first execution, although if the program branches to the address afterwards the emulator will break at that address.  
 
 The relevant routine is `SSTEP` in the Monitor ROM at `$FE6B`.
-
 
 ## ET-3400 EXAM and Debugger Disassembly / Memory values disagree when examining stack addresses
 
@@ -448,7 +455,7 @@ The code is cross-platofrm and can be compiled and executed on Windows and Linux
 
 * Visual Studio 2017 or later
 * git
-* CMake (https://cmake.org/download/)
+* CMake ([https://cmake.org/download/](https://cmake.org/download/))
 * vcpkg (see below)
 * Qt libraries
 
@@ -462,7 +469,7 @@ git clone https://github.com/RupertAvery/ET-3400.git
 
 `vcpkg` is a tool from Microsoft to install C++ libraries from source.
 
-Install vcpkg (https://github.com/microsoft/vcpkg)
+Install vcpkg ([https://github.com/microsoft/vcpkg](https://github.com/microsoft/vcpkg))
 
 ```
 git clone https://github.com/microsoft/vcpkg
@@ -545,7 +552,7 @@ sudo apt-get update
 sudo apt install git build-essential cmake qt5-base qt5-multimedia
 ```
 
-If this does not work, you might want to try the following (from https://github.com/RupertAvery/ET-3400/issues/13)
+If this does not work, you might want to try the following (from [https://github.com/RupertAvery/ET-3400/issues/13](https://github.com/RupertAvery/ET-3400/issues/13))
 
 ```
 apt-get install cmake-dbgsym cmake-qt-gui-dbgsym cmake

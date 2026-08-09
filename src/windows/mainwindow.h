@@ -41,6 +41,8 @@ public:
   void keyPressEvent(QKeyEvent *event) override;
   void keyReleaseEvent(QKeyEvent *event) override;
   void closeEvent(QCloseEvent *event) override;
+  void changeEvent(QEvent *event) override;
+  bool eventFilter(QObject *obj, QEvent *event) override;
 
   void start();
 

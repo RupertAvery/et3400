@@ -86,6 +86,8 @@ Settings load_settings()
                 settings.showBit0DisplayWrites = value == "true";
             else if (key == "HeatMapDecay")
                 settings.heatMapDecay = value.toInt();
+            else if (key == "FirstDebuggerOpen")
+                settings.firstDebuggerOpen = value == "true";
             else if (key == "DeviceCount")
             {
                 settings.devices.resize(value.toInt());
@@ -158,6 +160,7 @@ void save_settings(Settings *settings)
     out << "ClearRamOnLoad=" << (settings->clearRamOnLoad ? "true" : "false") << NEWLINE;
     out << "ShowBit0DisplayWrites=" << (settings->showBit0DisplayWrites ? "true" : "false") << NEWLINE;
     out << "HeatMapDecay=" << settings->heatMapDecay << NEWLINE;
+    out << "FirstDebuggerOpen=" << (settings->firstDebuggerOpen ? "true" : "false") << NEWLINE;
 
     out << "DeviceCount=" << settings->devices.size() << NEWLINE;
 

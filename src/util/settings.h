@@ -35,6 +35,7 @@ struct Settings
     bool clearRamOnLoad;
     bool showBit0DisplayWrites;
     int heatMapDecay;
+    bool firstDebuggerOpen;
     std::vector<DeviceSetting> devices;
 };
 

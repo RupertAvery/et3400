@@ -11,9 +11,9 @@ QString getVersion()
 {
     if (VERSION_PATCH > 0)
     {
-        return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
+        return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR, 2, 10, QChar('0')).arg(VERSION_PATCH);
     }
-    return QString("%1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR);
+    return QString("%1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR, 2, 10, QChar('0'));
 }
 
 QString toHex(int value, int width)

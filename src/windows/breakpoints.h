@@ -26,16 +26,18 @@ private:
     void load_breakpoints();
     void save_breakpoints();
 
-    void add_breakpoint_from_table();
-	void remove_breakpoint_from_table();
+    void add_breakpoint();
+    void edit_breakpoint();
+	void remove_breakpoint();
 	void clear_breakpoints();
-    void breakpoints_table_selection_changed();
+    void table_selection_changed();
     void breakpoint_item_changed(QTableWidgetItem *item);
     
     DebuggerDialog *debugger;
 
 	QTableWidget *breakpoints_table = nullptr;
-	QAction *tab_remove_breakpoint_action = nullptr;
+	QAction *edit_action = nullptr;
+	QAction *remove_action = nullptr;
 
 };
 

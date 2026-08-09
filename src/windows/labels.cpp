@@ -27,10 +27,13 @@ void LabelsDialog::setupUi()
     toolbar->setMovable(false);
 
     QAction *add_action = toolbar->addAction(QIcon(":/buttons/Add.png"), "Add");
-    tab_edit_label_action = toolbar->addAction(QIcon(":/buttons/Edit.png"), "Edit");
-    tab_remove_label_action = toolbar->addAction(QIcon(":/buttons/Remove.png"), "Remove");
-    tab_edit_label_action->setEnabled(false);
-    tab_remove_label_action->setEnabled(false);
+    edit_action = toolbar->addAction(QIcon(":/buttons/Edit.png"), "Edit");
+	edit_action->setShortcut(Qt::Key_F2);
+    remove_action = toolbar->addAction(QIcon(":/buttons/Remove.png"), "Remove");
+	remove_action->setShortcut(Qt::Key_Delete);
+
+    edit_action->setEnabled(false);
+    remove_action->setEnabled(false);
 
     toolbar->addSeparator();
 
@@ -57,9 +60,9 @@ void LabelsDialog::setupUi()
     layout->addWidget(labels_table);
     this->setLayout(layout);
 
-    connect(add_action, &QAction::triggered, this, &LabelsDialog::add_label_from_table);
-    connect(tab_edit_label_action, &QAction::triggered, this, &LabelsDialog::edit_label_from_table);
-    connect(tab_remove_label_action, &QAction::triggered, this, &LabelsDialog::delete_label_from_table);
+    connect(add_action, &QAction::triggered, this, &LabelsDialog::add_label);
+    connect(edit_action, &QAction::triggered, this, &LabelsDialog::edit_label);
+    connect(remove_action, &QAction::triggered, this, &LabelsDialog::delete_label);
     connect(tab_goto_label_action, &QAction::triggered, this, [this]()
             { this->debugger->goto_label(); });
     connect(load_labels_action, &QAction::triggered, this, [this]()
@@ -69,8 +72,8 @@ void LabelsDialog::setupUi()
     connect(load_default_labels_action, &QAction::triggered, this, [this]()
             { this->debugger->load_default_labels(); });
     connect(tab_clear_ram_labels_action, &QAction::triggered, this, &LabelsDialog::clear_labels);
-    connect(labels_table, &QTableWidget::itemSelectionChanged, this, &LabelsDialog::labels_table_selection_changed);
-    connect(labels_table, &QTableWidget::cellDoubleClicked, this, &LabelsDialog::goto_label_from_table);
+    connect(labels_table, &QTableWidget::itemSelectionChanged, this, &LabelsDialog::table_selection_changed);
+    connect(labels_table, &QTableWidget::cellDoubleClicked, this, &LabelsDialog::goto_label);
 
     labels_table->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(labels_table, &QTableWidget::customContextMenuRequested, this, [this](const QPoint &pos)
@@ -78,8 +81,8 @@ void LabelsDialog::setupUi()
         if (labels_table->selectedItems().isEmpty())
             return;
         QMenu menu(this);
-        menu.addAction(tab_edit_label_action);
-        menu.addAction(tab_remove_label_action);
+        menu.addAction(edit_action);
+        menu.addAction(remove_action);
         menu.exec(labels_table->viewport()->mapToGlobal(pos)); });
 }
 
@@ -127,14 +130,14 @@ void LabelsDialog::populate_labels_table()
     }
 }
 
-void LabelsDialog::labels_table_selection_changed()
+void LabelsDialog::table_selection_changed()
 {
     bool has_selection = !labels_table->selectedItems().isEmpty();
-    tab_edit_label_action->setEnabled(has_selection);
-    tab_remove_label_action->setEnabled(has_selection);
+    edit_action->setEnabled(has_selection);
+    remove_action->setEnabled(has_selection);
 }
 
-void LabelsDialog::goto_label_from_table()
+void LabelsDialog::goto_label()
 {
     int row = labels_table->currentRow();
     if (row < 0)
@@ -152,21 +155,24 @@ void LabelsDialog::goto_label_from_table()
     debugger->goto_address(address);
 }
 
-void LabelsDialog::add_label_from_table()
+void LabelsDialog::add_label()
 {
     LabelDialog labelDialog;
-    labelDialog.setLabel(LabelInfo{"", LabelType::COMMENT, 0, 0}, LabelDialogMode::Add);
+    labelDialog.hasCollision = [this](Label *label, offs_t start, offs_t end)
+    { return debugger->emu_ptr->labels->hasCollision(label, start, end); };
+    labelDialog.addLabel("", 0);
 
     if (labelDialog.exec() == QDialog::Accepted)
     {
         LabelInfo info = labelDialog.getLabel();
+
         debugger->emu_ptr->labels->addLabel(Label{info.start, info.end, info.type, info.text});
         populate_labels_table();
         debugger->reset_disassembly_view();
     }
 }
 
-void LabelsDialog::edit_label_from_table()
+void LabelsDialog::edit_label()
 {
     int row = labels_table->currentRow();
     if (row < 0)
@@ -177,9 +183,11 @@ void LabelsDialog::edit_label_from_table()
     if (idx >= (int)labels->size())
         return;
 
-    Label &label = labels->at(idx);
+    Label label = labels->at(idx);
     LabelDialog labelDialog;
-    labelDialog.setLabel(LabelInfo{label.comment, label.type, label.start, label.end}, LabelDialogMode::Edit);
+    labelDialog.hasCollision = [this](Label *label, offs_t start, offs_t end)
+    { return debugger->emu_ptr->labels->hasCollision(label, start, end); };
+    labelDialog.editLabel(&label);
 
     if (labelDialog.exec() == QDialog::Accepted)
     {
@@ -193,7 +201,7 @@ void LabelsDialog::edit_label_from_table()
     }
 }
 
-void LabelsDialog::delete_label_from_table()
+void LabelsDialog::delete_label()
 {
     int row = labels_table->currentRow();
     if (row < 0)

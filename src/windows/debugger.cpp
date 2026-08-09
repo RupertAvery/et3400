@@ -18,6 +18,14 @@ DebuggerDialog::DebuggerDialog(QWidget *parent) : QDialog(parent, Qt::WindowTitl
 {
 }
 
+void DebuggerDialog::show_tip()
+{
+	Tips *tips = new Tips(this);
+	tips->set_settings(settings);
+	tips->set_tip(DEBUGGER_BREAKPOINT_TIP);
+	tips->show();
+}
+
 void DebuggerDialog::start(bool checked)
 {
 	if (!emu_ptr->get_running())

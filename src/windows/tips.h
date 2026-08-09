@@ -13,6 +13,8 @@
 #include <QSpacerItem>
 #include <QCheckBox>
 
+static const int DEBUGGER_BREAKPOINT_TIP = 16;
+
 class Tips : public QDialog
 {
     Q_OBJECT
@@ -20,13 +22,18 @@ class Tips : public QDialog
 public:
     Tips(QWidget *parent);
     void set_settings(Settings *settings);
+    void set_tip(int index);
+    void random_tip();
 
 private:
     int tip;
     Settings *settings;
     QCheckBox *show_tip_checkbox;
+    QLabel *label;
 
-    static const int TIPCOUNT = 16;
+    void setupUi(QDialog *Dialog);
+
+    static const int TIPCOUNT = 17;
 
     QString tips[TIPCOUNT] = {
         // 0
@@ -49,7 +56,8 @@ private:
         QString("You can resize the Debugger by dragging the bottom-right corner of the window."),
         // 15
         QString("<p>To remove a Comment label, right-click on the label, or on the instruction under the label, and select <b>Remove Label</b></p><p>To remove a Data label, right-click on the label, or on the range included in the label, and select <b>Remove Label</b></p>"),
-        };
+
+        QString("<p>Due to the way the Monitor ROM operates, a debugger breakpoint placed on the same address as the address entered in a DO command will not be hit.</p><p>The DO command does not actually start execution at the entered address, instead copying the instructions to the stack. This is done so that the Monitor ROM can handle its own software breakpoints.</p><p>For more information, look for the <a href=\"https://github.com/RupertAvery/et3400/blob/master/README.md#emulation-quirks\">Emulation Quirks</a> topic in the README</p>")};
 };
 
 #endif // TIPS_H

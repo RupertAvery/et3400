@@ -1,6 +1,6 @@
 #include "label.h"
 #include "../common/util.h"
-
+#include <QMessageBox>
 
 LabelDialog::LabelDialog() : QDialog(0, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
@@ -145,43 +145,121 @@ void LabelDialog::retranslateUi(QDialog *Dialog)
 
 } // retranslateUi
 
-void LabelDialog::setLabel(LabelInfo label, LabelDialogMode mode)
+void LabelDialog::addLabel(QString text, offs_t address)
 {
-    if (mode == LabelDialogMode::Edit)
+    set_comment();
+
+    text_edit->setText(text);
+
+    data_radio->setChecked(false);
+    comment_radio->setChecked(true);
+
+    start_edit->setText(toHex(address));
+    end_edit->setText(toHex(address));
+
+    text_edit->setFocus();
+    text_edit->setSelection(0, text.length());
+
+    ref_label = nullptr;
+}
+
+void LabelDialog::editLabel(Label *label)
+{
+    if (label->type == LabelType::DATA)
     {
-        setWindowTitle("Edit Label");
-        if (label.type == LabelType::DATA)
-        {
-            set_data();
-        }
-        else
-        {
-            set_comment();
-        }
+        set_data();
     }
     else
     {
-        label.type = LabelType::COMMENT;
         set_comment();
     }
-    text_edit->setText(label.text);
 
-    data_radio->setChecked(label.type == LabelType::DATA);
-    comment_radio->setChecked(label.type == LabelType::COMMENT);
-    start_edit->setText(toHex(label.start));
-    end_edit->setText(toHex(label.end));
+    text_edit->setText(label->comment);
+
+    data_radio->setChecked(label->type == LabelType::DATA);
+    comment_radio->setChecked(label->type == LabelType::COMMENT);
+
+    start_edit->setText(toHex(label->start));
+    end_edit->setText(toHex(label->end));
 
     text_edit->setFocus();
-    text_edit->setSelection(0, label.text.length());
+    text_edit->setSelection(0, label->comment.length());
+
+    ref_label = label;
 }
+
+// void LabelDialog::setLabel(LabelInfo label, LabelDialogMode mode)
+// {
+//     if (mode == LabelDialogMode::Edit)
+//     {
+//         setWindowTitle("Edit Label");
+//         if (label.type == LabelType::DATA)
+//         {
+//             set_data();
+//         }
+//         else
+//         {
+//             set_comment();
+//         }
+//     }
+//     else
+//     {
+//         label.type = LabelType::COMMENT;
+//         set_comment();
+//     }
+//     text_edit->setText(label.text);
+
+//     data_radio->setChecked(label.type == LabelType::DATA);
+//     comment_radio->setChecked(label.type == LabelType::COMMENT);
+//     start_edit->setText(toHex(label.start));
+//     end_edit->setText(toHex(label.end));
+
+//     text_edit->setFocus();
+//     text_edit->setSelection(0, label.text.length());
+// }
 
 void LabelDialog::validate()
 {
-    bool ok1;
-    bool ok2;
+    bool ok1 = true;
+    bool ok2 = true;
 
-    toInt(start_edit, ok1);
-    toInt(end_edit, ok2);
+    int start = toInt(start_edit, ok1);
+    int end = start;
+
+    if (data_radio->isChecked())
+    {
+        end = toInt(end_edit, ok2);
+    }
+
+    if (text_edit->text().length() == 0)
+    {
+        QMessageBox::critical(this, "Label Error", "Label text cannot be empty", QMessageBox::Ok);
+        return;
+    }
+
+    if (!ok1 || !ok2)
+    {
+        QMessageBox::critical(this, "Label Error", "Invalid address", QMessageBox::Ok);
+        return;
+    }
+
+    if (end < start)
+    {
+        QMessageBox::critical(this, "Label Error", "The specified address range is invalid", QMessageBox::Ok);
+        return;
+    }
+
+    if (start > 0xFFFF || end > 0xFFFF)
+    {
+        QMessageBox::critical(this, "Label Error", "Address is out of bounds", QMessageBox::Ok);
+        return;
+    }
+
+    if (hasCollision(ref_label, start, end))
+    {
+        QMessageBox::critical(this, "Label Error", "The specified address range overlaps with an existing label.", QMessageBox::Ok);
+        return;
+    }
 
     if (ok1 && (!data_radio->isChecked() || (data_radio->isChecked() && ok2)))
     {
@@ -191,11 +269,19 @@ void LabelDialog::validate()
 
 LabelInfo LabelDialog::getLabel()
 {
-    bool ok;
+    bool ok = true;
+    int start = toInt(start_edit, ok);
+    int end = start;
+
+    if (data_radio->isChecked())
+    {
+        end = toInt(end_edit, ok);
+    }
+
     return LabelInfo{
         text_edit->text(),
         data_radio->isChecked() ? LabelType::DATA : LabelType::COMMENT,
-        (offs_t)toInt(start_edit, ok),
-        (offs_t)toInt(end_edit, ok),
+        (offs_t)start,
+        (offs_t)end,
     };
 }

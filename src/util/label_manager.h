@@ -1,6 +1,7 @@
 #ifndef LABEL_MANAGER_H
 #define LABEL_MANAGER_H
 
+#include "../common/common_defs.h"
 #include "label.h"
 #include <vector>
 
@@ -18,6 +19,8 @@ public:
     void clearLabels();
     void clearLabels(uint32_t start, uint32_t end);
     bool getIsDirty();
+    bool isValid(QString string, offs_t start, offs_t end);
+    bool hasCollision(Label *label, offs_t start, offs_t end);
 
 private:
     std::vector<Label> *_labels;

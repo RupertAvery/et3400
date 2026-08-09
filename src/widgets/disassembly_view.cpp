@@ -3,6 +3,7 @@
 #include "../util/log.h"
 #include "../common/util.h"
 #include <QStringBuilder>
+#include <QMessageBox>
 
 DisassemblyView::DisassemblyView(QWidget *parent)
 	: QFrame(parent)
@@ -777,6 +778,8 @@ void DisassemblyView::clearLabels()
 void DisassemblyView::addLabel()
 {
 	LabelDialog labelDialog;
+	labelDialog.hasCollision = [this](Label *label, offs_t start, offs_t end)
+	{ return emu_ptr->labels->hasCollision(label, start, end); };
 
 	offs_t address = 0;
 	if (selected_line > -1)
@@ -784,7 +787,7 @@ void DisassemblyView::addLabel()
 		address = lines->at(selected_line).address;
 	}
 
-	labelDialog.setLabel(LabelInfo{QString("New Label"), LabelType::COMMENT, address, address}, LabelDialogMode::Add);
+	labelDialog.addLabel("New Label", address);
 
 	QDialog::DialogCode result = (QDialog::DialogCode)labelDialog.exec();
 
@@ -805,7 +808,10 @@ void DisassemblyView::addLabel()
 void DisassemblyView::addLabel(DisassemblyLine *line)
 {
 	LabelDialog labelDialog;
-	labelDialog.setLabel(LabelInfo{QString("New Label"), LabelType::DATA, line->address, line->address}, LabelDialogMode::Add);
+
+	labelDialog.hasCollision = [this](Label *label, offs_t start, offs_t end)
+	{ return emu_ptr->labels->hasCollision(label, start, end); };
+	labelDialog.addLabel("New Label", line->address);
 
 	QDialog::DialogCode result = (QDialog::DialogCode)labelDialog.exec();
 
@@ -826,7 +832,9 @@ void DisassemblyView::addLabel(DisassemblyLine *line)
 void DisassemblyView::editLabel(DisassemblyLine *line)
 {
 	LabelDialog labelDialog;
-	labelDialog.setLabel(LabelInfo{line->label->comment, line->label->type, line->label->start, line->label->end}, LabelDialogMode::Edit);
+	labelDialog.hasCollision = [this](Label *label, offs_t start, offs_t end)
+	{ return emu_ptr->labels->hasCollision(label, start, end); };
+	labelDialog.editLabel(line->label);
 
 	QDialog::DialogCode result = (QDialog::DialogCode)labelDialog.exec();
 

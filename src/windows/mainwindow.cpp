@@ -113,6 +113,7 @@ void MainWindow::show_tips()
 {
   Tips *tips = new Tips(this);
   tips->set_settings(&settings);
+  tips->random_tip();
   tips->show();
 }
 
@@ -144,7 +145,15 @@ void MainWindow::show_debugger()
     connect(debugger_dialog, &QObject::destroyed, this, [this]()
             { debugger_dialog = nullptr; });
     debugger_dialog->set_settings(&settings);
+    debugger_dialog->installEventFilter(this);
     debugger_dialog->show();
+
+    if (!settings.firstDebuggerOpen)
+    {
+      debugger_dialog->show_tip();
+      settings.firstDebuggerOpen = true;
+      save_settings(&settings);
+    }
   }
   else if (debugger_dialog->isVisible())
   {
@@ -194,6 +203,28 @@ void MainWindow::updatecps()
   int cps = emu->get_cycles() - last_cycles;
   last_cycles = emu->get_cycles();
   cout << cps << endl;
+}
+
+void MainWindow::changeEvent(QEvent *event)
+{
+  if (event->type() == QEvent::WindowStateChange && debugger_dialog)
+  {
+    if (windowState() & Qt::WindowMinimized)
+      debugger_dialog->showMinimized();
+    else
+      debugger_dialog->showNormal();
+  }
+  QMainWindow::changeEvent(event);
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+  if (obj == debugger_dialog && event->type() == QEvent::WindowStateChange)
+  {
+    if (!(debugger_dialog->windowState() & Qt::WindowMinimized) && (windowState() & Qt::WindowMinimized))
+      showNormal();
+  }
+  return QMainWindow::eventFilter(obj, event);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
