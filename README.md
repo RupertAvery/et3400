@@ -1,8 +1,8 @@
 # ET-3400 Emulator
 
-This is an emulator for the [Heathkit ET-3400 Trainer](http://www.oldcomputermuseum.com/heathkit_ET-3400.html) built in C++.
+This is an emulator for the Heathkit ET-3400 Trainer built in C++.
 
-This is a port of my emulator built in C# (https://github.com/RupertAvery/ET-3400-emu) with the goal of better performance and speed accuracy, as well as portability, with Windows and Linux targets.
+This is a port of my emulator built in C# ([https://github.com/RupertAvery/ET-3400-emu](https://github.com/RupertAvery/ET-3400-emu)) with the goal of better performance and speed accuracy, as well as portability, with Windows and Linux targets.
 
 The Heathkit ET-3400 Trainer is a basic computer intended to teach microprocessor basics and assembly programming. The trainer was sold in kit form, requiring the user to build the device from the parts included in the kit.
 
@@ -20,10 +20,12 @@ Here are the optional command line arguments:
 Usage: ET-3400.exe [options] [file]
 
 Options:
-  -m <path>            Load alternate monitor ROM from file (.s19, .hex, .bin)
-  -s <speed>           Set clock speed 
+  -a <address>         Execute DO with specified hex address on startup 
   -d                   Show debugger on startup
+  -m <path>            Load alternate monitor ROM from file (.s19, .hex, .bin)
   -l <path>            Load labels from file (.lbl) (see note 1)
+  -s <speed>           Set clock speed 
+
 
   <file>               Load RAM contents from file (.s19, .obj)
 ```
@@ -41,7 +43,7 @@ Notes:
 
 1. See [Labels](#labels) for a description of this feature 
 
-2. The default clock speed of 471kHz was suggested by Rick Nungester from tests on an actual ET-3400.
+2. The default clock speed of 471 kHz was suggested by Rick Nungester from his analysis of the ET-3400 schematic diagram.
 
 # What's emulated
 
@@ -295,7 +297,7 @@ It is a 1024 byte (1KB) ROM chip that is address decoded at `FC00`.
 
 # Manual
 
-The original manual for this trainer is available in pdf format here: https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer
+The original manual for this trainer is available in pdf format here: [https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer](https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer)
 
 The manual describes assembling the kit, discusses basic operation and troubleshooting and includes sample program listings as well as an listing of the monitor ROM program.
 
@@ -322,7 +324,7 @@ FC46-FC7D - BKSET and DOPMT routines
 FF2A-FF2F - Start of SPECIAL HANDLERS
 ```
 
-For the complete source code of the Monitor ROM, I recommend visiting https://groups.io/g/ET-3400/files/3.%20ROM%20Info/6.%20ET-3400%20Monitor%20source%20code and looking at ET-3400.LST
+For the complete source code of the Monitor ROM, I recommend visiting [https://groups.io/g/ET-3400/files/3.%20ROM%20Info/6.%20ET-3400%20Monitor%20source%20code](https://groups.io/g/ET-3400/files/3.%20ROM%20Info/6.%20ET-3400%20Monitor%20source%20code) and looking at `ET-3400.LST`
 
 ## Basic Usage
 
@@ -393,7 +395,7 @@ Addr Instr     Label    Disassembly        Comments
 
 NOTE: The labels `REDIS`, `DIGADD`, and `OUTCH` refer to subroutines in the Monitor ROM that perform certain functions.
 
-The sample programs source code are available in Motorola S-record and Intel HEX format here https://groups.io/g/ET-3400/files/9.%20Sample%20Programs/Sample%20Programs%20Hex
+The sample programs source code are available in Motorola S-record and Intel HEX format here [https://groups.io/g/ET-3400/files/9.%20Sample%20Programs/Sample%20Programs%20Hex](https://groups.io/g/ET-3400/files/9.%20Sample%20Programs/Sample%20Programs%20Hex)
 
 These files can be loaded directly into the emulator
 
@@ -453,7 +455,7 @@ The code is cross-platofrm and can be compiled and executed on Windows and Linux
 
 * Visual Studio 2017 or later
 * git
-* CMake (https://cmake.org/download/)
+* CMake ([https://cmake.org/download/](https://cmake.org/download/))
 * vcpkg (see below)
 * Qt libraries
 
@@ -467,7 +469,7 @@ git clone https://github.com/RupertAvery/ET-3400.git
 
 `vcpkg` is a tool from Microsoft to install C++ libraries from source.
 
-Install vcpkg (https://github.com/microsoft/vcpkg)
+Install vcpkg ([https://github.com/microsoft/vcpkg](https://github.com/microsoft/vcpkg))
 
 ```
 git clone https://github.com/microsoft/vcpkg
@@ -550,7 +552,7 @@ sudo apt-get update
 sudo apt install git build-essential cmake qt5-base qt5-multimedia
 ```
 
-If this does not work, you might want to try the following (from https://github.com/RupertAvery/ET-3400/issues/13)
+If this does not work, you might want to try the following (from [https://github.com/RupertAvery/ET-3400/issues/13](https://github.com/RupertAvery/ET-3400/issues/13))
 
 ```
 apt-get install cmake-dbgsym cmake-qt-gui-dbgsym cmake

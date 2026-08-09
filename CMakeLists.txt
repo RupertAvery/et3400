@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
-project(et3400 VERSION 1.0.0)
+project(et3400 VERSION 1.0.1)
 
 
 set(CMAKE_CXX_STANDARD 17)
@@ -95,6 +95,9 @@ add_custom_command(TARGET et3400 POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${CMAKE_SOURCE_DIR}/README.md
         $<TARGET_FILE_DIR:et3400>/README.md
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/readme.pdf
+        $<TARGET_FILE_DIR:et3400>/readme.pdf
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${CMAKE_SOURCE_DIR}/LICENSE
         $<TARGET_FILE_DIR:et3400>/LICENSE

@@ -1,11 +1,10 @@
 <h1 id="et-3400-emulator">ET-3400 Emulator</h1>
-<p>This is an emulator for the <a
-href="http://www.oldcomputermuseum.com/heathkit_ET-3400.html">Heathkit
-ET-3400 Trainer</a> built in C++.</p>
-<p>This is a port of my emulator built in C#
-(https://github.com/RupertAvery/ET-3400-emu) with the goal of better
-performance and speed accuracy, as well as portability, with Windows and
-Linux targets.</p>
+<p>This is an emulator for the Heathkit ET-3400 Trainer built in
+C++.</p>
+<p>This is a port of my emulator built in C# (<a
+href="https://github.com/RupertAvery/ET-3400-emu">https://github.com/RupertAvery/ET-3400-emu</a>)
+with the goal of better performance and speed accuracy, as well as
+portability, with Windows and Linux targets.</p>
 <p>The Heathkit ET-3400 Trainer is a basic computer intended to teach
 microprocessor basics and assembly programming. The trainer was sold in
 kit form, requiring the user to build the device from the parts included
@@ -23,10 +22,12 @@ group.</p>
 <pre><code>Usage: ET-3400.exe [options] [file]
 
 Options:
-  -m &lt;path&gt;            Load alternate monitor ROM from file (.s19, .hex, .bin)
-  -s &lt;speed&gt;           Set clock speed 
+  -a &lt;address&gt;         Execute DO with specified hex address on startup 
   -d                   Show debugger on startup
+  -m &lt;path&gt;            Load alternate monitor ROM from file (.s19, .hex, .bin)
   -l &lt;path&gt;            Load labels from file (.lbl) (see note 1)
+  -s &lt;speed&gt;           Set clock speed 
+
 
   &lt;file&gt;               Load RAM contents from file (.s19, .obj)</code></pre>
 <p>The speed argument accepts the following formats:</p>
@@ -38,8 +39,8 @@ n[k|M]Hz      - the speed of the clock specified in Hz, kHz or MHz (case insensi
 <ol type="1">
 <li><p>See <a href="#labels">Labels</a> for a description of this
 feature</p></li>
-<li><p>The default clock speed of 471kHz was suggested by Rick Nungester
-from tests on an actual ET-3400.</p></li>
+<li><p>The default clock speed of 471 kHz was suggested by Rick
+Nungester from his analysis of the ET-3400 schematic diagram.</p></li>
 </ol>
 <h1 id="whats-emulated">What’s emulated</h1>
 <ul>
@@ -358,7 +359,8 @@ inspection of the CPU status registers and entry of programs.</p>
 </ul>
 <h1 id="manual">Manual</h1>
 <p>The original manual for this trainer is available in pdf format here:
-https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer</p>
+<a
+href="https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer">https://archive.org/details/HeathkitManualForTheEt-3400MicroprocessorTrainer</a></p>
 <p>The manual describes assembling the kit, discusses basic operation
 and troubleshooting and includes sample program listings as well as an
 listing of the monitor ROM program.</p>
@@ -436,8 +438,9 @@ incomplete as it is missing several bytes, likely due to a misprint:</p>
 <pre><code>FC46-FC7D - BKSET and DOPMT routines
 FF2A-FF2F - Start of SPECIAL HANDLERS</code></pre>
 <p>For the complete source code of the Monitor ROM, I recommend visiting
-https://groups.io/g/ET-3400/files/3.%20ROM%20Info/6.%20ET-3400%20Monitor%20source%20code
-and looking at ET-3400.LST</p>
+<a
+href="https://groups.io/g/ET-3400/files/3.%20ROM%20Info/6.%20ET-3400%20Monitor%20source%20code">https://groups.io/g/ET-3400/files/3.%20ROM%20Info/6.%20ET-3400%20Monitor%20source%20code</a>
+and looking at <code>ET-3400.LST</code></p>
 <h2 id="basic-usage">Basic Usage</h2>
 <p>On startup, the display will read <code>CPU UP</code>.</p>
 <p>Pressing one of the buttons will execute one of the built-in commands
@@ -590,8 +593,8 @@ value at the current address.</p>
 <code>OUTCH</code> refer to subroutines in the Monitor ROM that perform
 certain functions.</p>
 <p>The sample programs source code are available in Motorola S-record
-and Intel HEX format here
-https://groups.io/g/ET-3400/files/9.%20Sample%20Programs/Sample%20Programs%20Hex</p>
+and Intel HEX format here <a
+href="https://groups.io/g/ET-3400/files/9.%20Sample%20Programs/Sample%20Programs%20Hex">https://groups.io/g/ET-3400/files/9.%20Sample%20Programs/Sample%20Programs%20Hex</a></p>
 <p>These files can be loaded directly into the emulator</p>
 <h1 id="emulation-quirks">Emulation Quirks</h1>
 <h2
@@ -698,7 +701,8 @@ tested it.</p>
 <ul>
 <li>Visual Studio 2017 or later</li>
 <li>git</li>
-<li>CMake (https://cmake.org/download/)</li>
+<li>CMake (<a
+href="https://cmake.org/download/">https://cmake.org/download/</a>)</li>
 <li>vcpkg (see below)</li>
 <li>Qt libraries</li>
 </ul>
@@ -707,7 +711,8 @@ tested it.</p>
 <h3 id="installing-vcpkg">Installing vcpkg</h3>
 <p><code>vcpkg</code> is a tool from Microsoft to install C++ libraries
 from source.</p>
-<p>Install vcpkg (https://github.com/microsoft/vcpkg)</p>
+<p>Install vcpkg (<a
+href="https://github.com/microsoft/vcpkg">https://github.com/microsoft/vcpkg</a>)</p>
 <pre><code>git clone https://github.com/microsoft/vcpkg
 cd vcpkg
 bootstrap-vcpkg.bat</code></pre>
@@ -753,8 +758,8 @@ have C++ workload installed, and compile and debug from there.</p>
 <p>Install the necessary packages (Note: This was from 2022)</p>
 <pre><code>sudo apt-get update
 sudo apt install git build-essential cmake qt5-base qt5-multimedia</code></pre>
-<p>If this does not work, you might want to try the following (from
-https://github.com/RupertAvery/ET-3400/issues/13)</p>
+<p>If this does not work, you might want to try the following (from <a
+href="https://github.com/RupertAvery/ET-3400/issues/13">https://github.com/RupertAvery/ET-3400/issues/13</a>)</p>
 <pre><code>apt-get install cmake-dbgsym cmake-qt-gui-dbgsym cmake
 apt-get install qt5ct
 apt-get install qtbase5-dev
