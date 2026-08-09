@@ -1,225 +1,265 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc 3.10.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>README</title>
   <style>
-/* github-markdown.css
+    /* github-markdown.css
    A GitHub-flavored Markdown stylesheet for use with pandoc's HTML output
    (e.g. via `-c github-markdown.css` or injected through a header include
    and used with wkhtmltopdf). Mimics GitHub's rendered .md appearance:
    fonts, spacing, headings, code blocks, tables, blockquotes, etc. */
 
-body {
-  margin: 0 auto;
-  color: #1f2328;
-  background-color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
-    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  font-size: 16px;
-  line-height: 1.5;
-  word-wrap: break-word;
-}
+    body {
+      margin: 0 auto;
+      color: #1f2328;
+      background-color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+        Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+      font-size: 16px;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
 
-/* Headings */
-h1, h2, h3, h4, h5, h6 {
-  margin-top: 24px;
-  margin-bottom: 16px;
-  font-weight: 600;
-  line-height: 1.25;
-}
+    /* Headings */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      margin-top: 24px;
+      margin-bottom: 16px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
 
-h1 {
-  font-size: 2em;
-  padding-bottom: 0.3em;
-  border-bottom: 1px solid #d1d9e0;
-}
+    h1 {
+      font-size: 2em;
+      padding-bottom: 0.3em;
+      border-bottom: 1px solid #d1d9e0;
+    }
 
-h2 {
-  font-size: 1.5em;
-  padding-bottom: 0.3em;
-  border-bottom: 1px solid #d1d9e0;
-}
+    h2 {
+      font-size: 1.5em;
+      padding-bottom: 0.3em;
+      border-bottom: 1px solid #d1d9e0;
+    }
 
-h3 { font-size: 1.25em; }
-h4 { font-size: 1em; }
-h5 { font-size: 0.875em; }
-h6 {
-  font-size: 0.85em;
-  color: #59636e;
-}
+    h3 {
+      font-size: 1.25em;
+    }
 
-/* Paragraphs and lists */
-p {
-  margin-top: 0;
-  margin-bottom: 16px;
-}
+    h4 {
+      font-size: 1em;
+    }
 
-ul, ol {
-  margin-top: 0;
-  margin-bottom: 16px;
-  padding-left: 2em;
-}
+    h5 {
+      font-size: 0.875em;
+    }
 
-li + li {
-  margin-top: 0.25em;
-}
+    h6 {
+      font-size: 0.85em;
+      color: #59636e;
+    }
 
-li > p {
-  margin-top: 16px;
-}
+    /* Paragraphs and lists */
+    p {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
 
-/* Links */
-a {
-  color: #0969da;
-  text-decoration: none;
-}
+    ul,
+    ol {
+      margin-top: 0;
+      margin-bottom: 16px;
+      padding-left: 2em;
+    }
 
-a:hover {
-  text-decoration: underline;
-}
+    li+li {
+      margin-top: 0.25em;
+    }
 
-/* Blockquotes */
-blockquote {
-  margin: 0 0 16px 0;
-  padding: 0 1em;
-  color: #59636e;
-  border-left: 0.25em solid #d1d9e0;
-}
+    li>p {
+      margin-top: 16px;
+    }
 
-blockquote > :first-child { margin-top: 0; }
-blockquote > :last-child { margin-bottom: 0; }
+    /* Links */
+    a {
+      color: #0969da;
+      text-decoration: none;
+    }
 
-/* Horizontal rule */
-hr {
-  height: 0.25em;
-  padding: 0;
-  margin: 24px 0;
-  background-color: #d1d9e0;
-  border: 0;
-}
+    a:hover {
+      text-decoration: underline;
+    }
 
-/* Inline code */
-code, tt {
-  padding: 0.2em 0.4em;
-  margin: 0;
-  font-size: 85%;
-  white-space: break-spaces;
-  background-color: #818b981f;
-  border-radius: 6px;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    "Liberation Mono", monospace;
-}
+    /* Blockquotes */
+    blockquote {
+      margin: 0 0 16px 0;
+      padding: 0 1em;
+      color: #59636e;
+      border-left: 0.25em solid #d1d9e0;
+    }
 
-/* Code blocks */
-pre {
-  padding: 16px;
-  overflow: auto;
-  font-size: 85%;
-  line-height: 1.45;
-  background-color: #f6f8fa;
-  border-radius: 6px;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    "Liberation Mono", monospace;
-}
+    blockquote> :first-child {
+      margin-top: 0;
+    }
 
-pre code, pre tt {
-  padding: 0;
-  margin: 0;
-  background-color: transparent;
-  border: 0;
-  font-size: 100%;
-  white-space: pre;
-}
+    blockquote> :last-child {
+      margin-bottom: 0;
+    }
 
-/* Tables */
-table {
-  border-spacing: 0;
-  border-collapse: collapse;
-  margin-top: 0;
-  margin-bottom: 16px;
-  width: max-content;
-  max-width: 100%;
-}
+    /* Horizontal rule */
+    hr {
+      height: 0.25em;
+      padding: 0;
+      margin: 24px 0;
+      background-color: #d1d9e0;
+      border: 0;
+    }
 
-table th, table td {
-  padding: 6px 13px;
-  border: 1px solid #d1d9e0;
-}
+    /* Inline code */
+    code,
+    tt {
+      padding: 0.2em 0.4em;
+      margin: 0;
+      font-size: 85%;
+      white-space: break-spaces;
+      background-color: #818b981f;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+        "Liberation Mono", monospace;
+    }
 
-table th {
-  font-weight: 600;
-  background-color: #f6f8fa;
-}
+    /* Code blocks */
+    pre {
+      padding: 16px;
+      overflow: auto;
+      font-size: 85%;
+      line-height: 1.45;
+      background-color: #f6f8fa;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+        "Liberation Mono", monospace;
+    }
 
-table tr {
-  background-color: #ffffff;
-  border-top: 1px solid #d1d9e0;
-}
+    pre code,
+    pre tt {
+      padding: 0;
+      margin: 0;
+      background-color: transparent;
+      border: 0;
+      font-size: 100%;
+      white-space: pre;
+    }
 
-table tr:nth-child(2n) {
-  background-color: #f6f8fa;
-}
+    /* Tables */
+    table {
+      border-spacing: 0;
+      border-collapse: collapse;
+      margin-top: 0;
+      margin-bottom: 16px;
+      width: max-content;
+      max-width: 100%;
+    }
 
-/* Images */
-img {
-  max-width: 100%;
-  box-sizing: content-box;
-  background-color: #ffffff;
-}
+    table th,
+    table td {
+      padding: 6px 13px;
+      border: 1px solid #d1d9e0;
+    }
 
-/* Task lists (GFM) */
-ul.task-list, ol.task-list {
-  list-style: none;
-  padding-left: 1.2em;
-}
+    table th {
+      font-weight: 600;
+      background-color: #f6f8fa;
+    }
 
-li.task-list-item {
-  list-style-type: none;
-}
+    table tr {
+      background-color: #ffffff;
+      border-top: 1px solid #d1d9e0;
+    }
 
-input[type="checkbox"] {
-  margin-right: 0.5em;
-}
+    table tr:nth-child(2n) {
+      background-color: #f6f8fa;
+    }
 
-/* Definition lists */
-dl {
-  padding: 0;
-}
+    /* Images */
+    img {
+      max-width: 100%;
+      box-sizing: content-box;
+      background-color: #ffffff;
+    }
 
-dl dt {
-  padding: 0;
-  margin-top: 16px;
-  font-size: 1em;
-  font-style: italic;
-  font-weight: 600;
-}
+    /* Task lists (GFM) */
+    ul.task-list,
+    ol.task-list {
+      list-style: none;
+      padding-left: 1.2em;
+    }
 
-dl dd {
-  padding: 0 16px;
-  margin-bottom: 16px;
-}
+    li.task-list-item {
+      list-style-type: none;
+    }
 
-/* Keyboard keys */
-kbd {
-  display: inline-block;
-  padding: 3px 5px;
-  font-size: 11px;
-  line-height: 10px;
-  color: #1f2328;
-  vertical-align: middle;
-  background-color: #f6f8fa;
-  border: 1px solid #d1d9e0;
-  border-radius: 6px;
-  box-shadow: inset 0 -1px 0 #d1d9e0;
-}
+    input[type="checkbox"] {
+      margin-right: 0.5em;
+    }
+
+    /* Definition lists */
+    dl {
+      padding: 0;
+    }
+
+    dl dt {
+      padding: 0;
+      margin-top: 16px;
+      font-size: 1em;
+      font-style: italic;
+      font-weight: 600;
+    }
+
+    dl dd {
+      padding: 0 16px;
+      margin-bottom: 16px;
+    }
+
+    /* Keyboard keys */
+    kbd {
+      display: inline-block;
+      padding: 3px 5px;
+      font-size: 11px;
+      line-height: 10px;
+      color: #1f2328;
+      vertical-align: middle;
+      background-color: #f6f8fa;
+      border: 1px solid #d1d9e0;
+      border-radius: 6px;
+      box-shadow: inset 0 -1px 0 #d1d9e0;
+    }
+
+    .speed-values>table {
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    .speed-values>table th:first-of-type {
+    }
+
+    .speed-values>table th:nth-of-type(2) {
+    }
+
+    .speed-values>table th:nth-of-type(3) {
+      width: 70%;
+    }
 
   </style>
 </head>
-<body>
-<h1 id="et-3400-emulator">ET-3400 Emulator</h1>
+
+<body><h1 id="et-3400-emulator">ET-3400 Emulator</h1>
 <p>This is an emulator for the Heathkit ET-3400 Trainer built in
 C++.</p>
 <p>This is a port of my emulator built in C# (<a
@@ -239,7 +279,8 @@ that has made this emulator much more accurate and useful.</p>
 information, programs, listings and other files, please join the
 group.</p>
 <h1 id="command-line-arguments">Command Line Arguments</h1>
-<p>Here are the optional command line arguments:</p>
+<p>The application accepts optional command line arguments for
+convenience.</p>
 <pre><code>Usage: ET-3400.exe [options] [file]
 
 Options:
@@ -252,17 +293,47 @@ Options:
 
   &lt;file&gt;               Load RAM contents from file (.s19, .obj)</code></pre>
 <p>The speed argument accepts the following formats:</p>
-<pre><code>n             - a percentage e.g. -s 25 will set the clock rate at 25% of 471kHz (see note 2)
-n[k|M]Hz      - the speed of the clock specified in Hz, kHz or MHz (case insensitive)
-                      e.g. -s 1000hz will set the clock to 1000Hz
-                           -s 1Mhz will set the clock to 1MHz </code></pre>
-<p>Notes:</p>
-<ol type="1">
-<li><p>See <a href="#labels">Labels</a> for a description of this
-feature</p></li>
-<li><p>The default clock speed of 471 kHz was suggested by Rick
-Nungester from his analysis of the ET-3400 schematic diagram.</p></li>
-</ol>
+<div class="speed-values">
+<table>
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 35%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n</code></td>
+<td>a percentage</td>
+<td><code>-s 25</code> - sets the clock rate at 25% of 471kHz (<em>see
+note 2</em>)</td>
+</tr>
+<tr>
+<td><code>n[k\|M]Hz</code></td>
+<td>a value specified in Hertz</td>
+<td><code>-s 1000hz</code> - sets the clock to 1000Hz <br/>
+<code>-s 1Mhz</code> - sets the clock to 1MHz</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Notes:</strong></p>
+<p><code>n</code> is a positive integer</p>
+<p><sup>1</sup> See <a href="#labels">Labels</a> for a description of
+this feature <br/> <sup>2</sup> The default clock speed of 471 kHz was
+suggested by Rick Nungester from his analysis of the ET-3400 schematic
+diagram.</p>
 <h1 id="whats-emulated">What’s emulated</h1>
 <ul>
 <li>Motorola 8-bit 6800 CPU running at 471kHz</li>
@@ -975,7 +1046,7 @@ have C++ workload installed, and compile and debug from there.</p>
 <li>cmake</li>
 <li>Qt libraries</li>
 </ul>
-<h2 id="installation">Installation</h2>
+<h3 id="installation">Installation</h3>
 <p>Install the necessary packages (Note: This was from 2022)</p>
 <pre><code>sudo apt-get update
 sudo apt install git build-essential cmake qt5-base qt5-multimedia</code></pre>
@@ -994,5 +1065,28 @@ cmake ..
 make</code></pre>
 <p>The executable <code>ET-3400</code> will be created in the
 <code>build</code> directory.</p>
+<h2 id="building-readme.pdf">Building Readme.PDF</h2>
+<p>The PDF is built from the README markdown and uses styles in
+<code>header.html</code> to mimic github markdown styling. We use pandoc
+to convert README.md to body.html, then concatenate the header, body and
+footer htmls into readme.html. Finally, we use wkhtmltopdf to render the
+html to a PDF.</p>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li>pandoc <a
+href="https://pandoc.org/installing.html">https://pandoc.org/installing.html</a></li>
+<li>wkhtmltopdf <a
+href="https://wkhtmltopdf.org/downloads.html">https://wkhtmltopdf.org/downloads.html</a></li>
+</ul>
+<h3 id="steps">Steps</h3>
+<ol type="1">
+<li>Install the required programs and set your PATH variable to include
+the path to the binaries.</li>
+<li>Run <code>makedoc.bat</code></li>
+</ol>
+<h3 id="notes">Notes</h3>
+<p>If you get a popup saying “waiting for printer connection” you can
+simply cancel it. That is just wkhtmltopdf querying the default system
+printer.</p>
 </body>
 </html>
