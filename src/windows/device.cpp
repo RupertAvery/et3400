@@ -6,7 +6,7 @@ DeviceDialog::DeviceDialog() : QDialog(0, Qt::WindowTitleHint | Qt::WindowSystem
 {
     setupUi(this);
 
-    setFixedSize(QSize(350, 250));
+    setFixedSize(QSize(350, 350));
     setWindowTitle("Add Device");
 }
 
@@ -120,7 +120,7 @@ void DeviceDialog::retranslateUi(QDialog *Dialog)
     address_label->setText(QApplication::translate("Dialog", "Address Pattern", nullptr));
     start_label->setText(QApplication::translate("Dialog", "Start", nullptr));
     end_label->setText(QApplication::translate("Dialog", "End", nullptr));
-    description_label->setText(QApplication::translate("Dialog", "16-bit address pattern using 0, 1, or X per bit.", nullptr));
+    description_label->setText(QApplication::translate("Dialog", "16-bit address bit pattern:\n\n0 - Active Low\n1 - Active High\nX - Don't Care", nullptr));
 
 } // retranslateUi
 
@@ -130,18 +130,24 @@ void DeviceDialog::setDeviceInfo(DeviceInfo info, DeviceDialogMode mode)
     {
         setWindowTitle("Edit Device");
     }
+
     name_edit->setText(info.name);
 
     QString pattern = QString::fromLatin1(info.bit_pattern.pattern);
+
     for (int i = pattern.length() - 4; i > 0; i -= 4)
         pattern.insert(i, ' ');
+
     address_edit->setText(pattern);
+    if (mode == DeviceDialogMode::AddDevice)
+    {
+        BitPattern bp = parse_pattern(address_edit->text().toUtf8().constData());
+        info.bit_pattern.start = bp.start;
+        info.bit_pattern.end = bp.end;
+    }
+
     start_value->setText(toHex(info.bit_pattern.start));
     end_value->setText(toHex(info.bit_pattern.end));
-
-    // BitPattern bp = parse_pattern(info.bit_pattern.pattern);
-    // start_value->setText(toHex(bp.start));
-    // end_value->setText(toHex(bp.end));
 
     name_edit->setFocus();
     name_edit->setSelection(0, info.name.length());
