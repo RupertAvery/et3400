@@ -22,7 +22,7 @@ void LabelManager::addLabels(std::vector<Label> *labels)
 
 	while (current != labels->end())
 	{
-		if (isValid(current->comment, current->start, current->end) && !hasCollision(&(*current), current->start, current->end))
+		if (isValid(current->comment, current->start, current->end))
 		{
 			addLabel(*current);
 		}
