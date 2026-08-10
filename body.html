@@ -18,7 +18,8 @@ that has made this emulator much more accurate and useful.</p>
 information, programs, listings and other files, please join the
 group.</p>
 <h1 id="command-line-arguments">Command Line Arguments</h1>
-<p>Here are the optional command line arguments:</p>
+<p>The application accepts optional command line arguments for
+convenience.</p>
 <pre><code>Usage: ET-3400.exe [options] [file]
 
 Options:
@@ -31,17 +32,42 @@ Options:
 
   &lt;file&gt;               Load RAM contents from file (.s19, .obj)</code></pre>
 <p>The speed argument accepts the following formats:</p>
-<pre><code>n             - a percentage e.g. -s 25 will set the clock rate at 25% of 471kHz (see note 2)
-n[k|M]Hz      - the speed of the clock specified in Hz, kHz or MHz (case insensitive)
-                      e.g. -s 1000hz will set the clock to 1000Hz
-                           -s 1Mhz will set the clock to 1MHz </code></pre>
-<p>Notes:</p>
-<ol type="1">
-<li><p>See <a href="#labels">Labels</a> for a description of this
-feature</p></li>
-<li><p>The default clock speed of 471 kHz was suggested by Rick
-Nungester from his analysis of the ET-3400 schematic diagram.</p></li>
-</ol>
+<div class="speed-values">
+<table>
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 35%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>n</code></td>
+<td>a percentage</td>
+<td><code>-s 25</code> - sets the clock rate at 25% of 471kHz (<em>see
+note 2</em>)</td>
+</tr>
+<tr>
+<td><code>n[k\|M]Hz</code></td>
+<td>a value specified in Hertz</td>
+<td><code>-s 1000hz</code> - sets the clock to 1000Hz <br/>
+<code>-s 1Mhz</code> - sets the clock to 1MHz</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Notes:</strong></p>
+<p><code>n</code> is a positive integer</p>
+<p><sup>1</sup> See <a href="#labels">Labels</a> for a description of
+this feature <br/> <sup>2</sup> The default clock speed of 471 kHz was
+suggested by Rick Nungester from his analysis of the ET-3400 schematic
+diagram.</p>
 <h1 id="whats-emulated">What’s emulated</h1>
 <ul>
 <li>Motorola 8-bit 6800 CPU running at 471kHz</li>
@@ -754,7 +780,7 @@ have C++ workload installed, and compile and debug from there.</p>
 <li>cmake</li>
 <li>Qt libraries</li>
 </ul>
-<h2 id="installation">Installation</h2>
+<h3 id="installation">Installation</h3>
 <p>Install the necessary packages (Note: This was from 2022)</p>
 <pre><code>sudo apt-get update
 sudo apt install git build-essential cmake qt5-base qt5-multimedia</code></pre>
@@ -773,3 +799,26 @@ cmake ..
 make</code></pre>
 <p>The executable <code>ET-3400</code> will be created in the
 <code>build</code> directory.</p>
+<h2 id="building-readme.pdf">Building Readme.PDF</h2>
+<p>The PDF is built from the README markdown and uses styles in
+<code>header.html</code> to mimic github markdown styling. We use pandoc
+to convert README.md to body.html, then concatenate the header, body and
+footer htmls into readme.html. Finally, we use wkhtmltopdf to render the
+html to a PDF.</p>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li>pandoc <a
+href="https://pandoc.org/installing.html">https://pandoc.org/installing.html</a></li>
+<li>wkhtmltopdf <a
+href="https://wkhtmltopdf.org/downloads.html">https://wkhtmltopdf.org/downloads.html</a></li>
+</ul>
+<h3 id="steps">Steps</h3>
+<ol type="1">
+<li>Install the required programs and set your PATH variable to include
+the path to the binaries.</li>
+<li>Run <code>makedoc.bat</code></li>
+</ol>
+<h3 id="notes">Notes</h3>
+<p>If you get a popup saying “waiting for printer connection” you can
+simply cancel it. That is just wkhtmltopdf querying the default system
+printer.</p>

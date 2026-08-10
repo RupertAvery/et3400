@@ -14,7 +14,7 @@ For more information on the kit itself as well as access to the information, pro
 
 # Command Line Arguments
 
-Here are the optional command line arguments:
+The application accepts optional command line arguments for convenience.
 
 ```
 Usage: ET-3400.exe [options] [file]
@@ -32,18 +32,22 @@ Options:
 
 The speed argument accepts the following formats:
 
-```
-n             - a percentage e.g. -s 25 will set the clock rate at 25% of 471kHz (see note 2)
-n[k|M]Hz      - the speed of the clock specified in Hz, kHz or MHz (case insensitive)
-                      e.g. -s 1000hz will set the clock to 1000Hz
-                           -s 1Mhz will set the clock to 1MHz 
-```
+<div class="speed-values">
 
-Notes:
+| Value       | Description  | Example            |           
+|-------------|--------------|-------------| 
+| `n`         | a percentage | `-s 25` - sets the clock rate at 25% of 471kHz (_see note 2_)           
+| `n[k\|M]Hz` | a value specified in Hertz | `-s 1000hz` - sets the clock to 1000Hz <br/> `-s 1Mhz` - sets the clock to 1MHz 
 
-1. See [Labels](#labels) for a description of this feature 
+</div>
+                           
 
-2. The default clock speed of 471 kHz was suggested by Rick Nungester from his analysis of the ET-3400 schematic diagram.
+**Notes:**
+
+`n` is a positive integer
+
+<sup>1</sup> See [Labels](#labels) for a description of this feature <br/> 
+<sup>2</sup> The default clock speed of 471 kHz was suggested by Rick Nungester from his analysis of the ET-3400 schematic diagram.
 
 # What's emulated
 
@@ -532,7 +536,6 @@ CMake should launch msbuild for you.
 
 You can also open the `.sln` file in Visual Studio if you have C++ workload installed, and compile and debug from there.
 
-
 ## Linux
 
 ### Requiremments
@@ -543,7 +546,7 @@ You can also open the `.sln` file in Visual Studio if you have C++ workload inst
 * Qt libraries
 
 
-## Installation
+### Installation
 
 Install the necessary packages (Note: This was from 2022)
 
@@ -578,3 +581,22 @@ make
 ```
 
 The executable `ET-3400` will be created in the `build` directory.
+
+
+## Building Readme.PDF
+
+The PDF is built from the README markdown and uses styles in `header.html` to mimic github markdown styling. We use pandoc to convert README.md to body.html, then concatenate the header, body and footer htmls into readme.html. Finally, we use wkhtmltopdf to render the html to a PDF.
+
+### Requirements
+
+* pandoc [https://pandoc.org/installing.html](https://pandoc.org/installing.html)
+* wkhtmltopdf [https://wkhtmltopdf.org/downloads.html](https://wkhtmltopdf.org/downloads.html)
+
+### Steps
+
+1. Install the required programs and set your PATH variable to include the path to the binaries.
+2. Run `makedoc.bat`
+
+### Notes
+
+If you get a popup saying "waiting for printer connection" you can simply cancel it. That is just wkhtmltopdf querying the default system printer.
