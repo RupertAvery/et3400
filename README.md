@@ -38,7 +38,6 @@ The speed argument accepts the following formats:
 |-------------|--------------|-------------| 
 | `n`         | a percentage | `-s 25` - sets the clock rate at 25% of 471kHz (_see note 2_)           
 | `n[k\|M]Hz` | a value specified in Hertz | `-s 1000hz` - sets the clock to 1000Hz <br/> `-s 1Mhz` - sets the clock to 1MHz 
-|           |              |            
 
 </div>
                            
