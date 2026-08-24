@@ -155,7 +155,7 @@ void MemoryView::bufferDraw()
 	int ascent = m_fm->ascent();
 	int descent = m_fm->descent();
 
-	for (int line = offset; line < offset + visible_items && (start + (line * 8) < end); line++)
+	for (int line = offset; line < offset + visible_items && (start + (line * 8) <= end); line++)
 	{
 		int address = start + line * 8;
 
@@ -227,7 +227,7 @@ void MemoryView::bufferDraw()
 		while (i < 8)
 		{
 			painter.setPen(darkred);
-			painter.drawText(address_col_width + i * data_cell_width, y, QString("%1").arg(0, 2, 16, QChar('0')).toUpper());
+			painter.drawText(address_col_width + i * data_cell_width, y, "XX");
 			i++;
 		}
 

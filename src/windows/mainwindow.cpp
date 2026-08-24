@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
   QAction *settings_action = new QAction("&Settings", this);
   QAction *about_action = new QAction("&About", this);
   QAction *tips_action = new QAction("Show &Tips", this);
+  QAction *io_action = new QAction("&LED and DIP I/O", this);
 
   QAction *openRam_action = new QAction("&Load RAM", this);
   openRam_action->setShortcut(Qt::CTRL + Qt::Key_O);
@@ -49,6 +50,10 @@ MainWindow::MainWindow(QWidget *parent)
   config_menu = menuBar()->addMenu("&Config");
   config_menu->addAction(settings_action);
 
+  QMenu *others_menu;
+  others_menu = menuBar()->addMenu("&Others");
+  others_menu->addAction(io_action);
+
   QMenu *help_menu;
   help_menu = menuBar()->addMenu("&Help");
   help_menu->addAction(about_action);
@@ -69,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(settings_action, &QAction::triggered, this, &MainWindow::show_settings);
   connect(about_action, &QAction::triggered, this, &MainWindow::show_about);
   connect(tips_action, &QAction::triggered, this, &MainWindow::show_tips);
+  connect(io_action, &QAction::triggered, this, &MainWindow::show_io);
 
   // Layout
   QGridLayout *mainLayout = new QGridLayout;
@@ -163,6 +169,46 @@ void MainWindow::show_debugger()
   }
 }
 
+void MainWindow::show_io()
+{
+  if (io_dialog == nullptr)
+  {
+    io_dialog = new IODialog(this);
+    io_dialog->setEmu(emu, &settings);
+    io_dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(io_dialog, &QObject::destroyed, this, [this]()
+            {
+              io_dialog = nullptr;
+              if (debugger_dialog != nullptr)
+              {
+                debugger_dialog->update_devices();
+              }
+            });
+
+    connect(io_dialog, &IODialog::devices_changed, this, [this]()
+            {
+              if (debugger_dialog != nullptr)
+              {
+                debugger_dialog->update_devices();
+                debugger_dialog->refresh();
+              }
+            });
+
+    io_dialog->show();
+
+    if (debugger_dialog != nullptr)
+    {
+      debugger_dialog->update_devices();
+    }
+  }
+  else
+  {
+    io_dialog->raise();
+    io_dialog->activateWindow();
+  }
+}
+
 void MainWindow::show_about()
 {
   AboutDialog dialog;
@@ -235,6 +281,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
   if (debugger_dialog)
     debugger_dialog->close(); // saves debugger geometry, resumes emu if paused
+
+  if (io_dialog)
+    io_dialog->close(); // unmaps the LED/DIP devices while the emulator is still alive
 
   if (emu)
     emu->stop();
@@ -441,7 +490,13 @@ void MainWindow::execute_emu()
   { emu->reset(); };
 
   emu->on_render_frame = [this]
-  { display->update_display(); };
+  {
+    display->update_display();
+    if (io_dialog != nullptr)
+    {
+      io_dialog->refresh();
+    }
+  };
 
   LOG_DEBUG << "Initializing and starting emulator";
   emu->init();

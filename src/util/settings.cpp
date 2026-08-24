@@ -19,6 +19,9 @@ Settings load_settings()
 {
     Settings settings{false, false, true, true, false, true, 471000, -1, -1, false, -1, -1, -1, -1};
 
+    settings.ioLEDAddress = 0x4000;
+    settings.ioDIPAddress = 0x4001;
+
     bool success;
     QString settingsFile = getSettingsPath(success);
 
@@ -88,6 +91,12 @@ Settings load_settings()
                 settings.heatMapDecay = value.toInt();
             else if (key == "FirstDebuggerOpen")
                 settings.firstDebuggerOpen = value == "true";
+            else if (key == "IOVisible")
+                settings.ioVisible = value == "true";
+            else if (key == "IOLEDAddress")
+                settings.ioLEDAddress = value.toInt();
+            else if (key == "IODIPAddress")
+                settings.ioDIPAddress = value.toInt();
             else if (key == "DeviceCount")
             {
                 settings.devices.resize(value.toInt());
@@ -161,7 +170,9 @@ void save_settings(Settings *settings)
     out << "ShowBit0DisplayWrites=" << (settings->showBit0DisplayWrites ? "true" : "false") << NEWLINE;
     out << "HeatMapDecay=" << settings->heatMapDecay << NEWLINE;
     out << "FirstDebuggerOpen=" << (settings->firstDebuggerOpen ? "true" : "false") << NEWLINE;
-
+    out << "IOVisible=" << (settings->ioVisible ? "true" : "false") << NEWLINE;
+    out << "IOLEDAddress=" << settings->ioLEDAddress << NEWLINE;
+    out << "IODIPAddress=" << settings->ioDIPAddress << NEWLINE;
     out << "DeviceCount=" << settings->devices.size() << NEWLINE;
 
     for (size_t i = 0; i < settings->devices.size(); i++)

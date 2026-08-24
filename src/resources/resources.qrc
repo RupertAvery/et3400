@@ -1,12 +1,16 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource>
-        <file>images/hr_on.png</file>
-        <file>images/hr_off.png</file>
-        <file>images/vt_on.png</file>
-        <file>images/vt_off.png</file>
-        <file>images/dp_on.png</file>
         <file>images/dp_off.png</file>
+        <file>images/dp_on.png</file>
+        <file>images/hr_off.png</file>
+        <file>images/hr_on.png</file>
+        <file>images/vt_off.png</file>
+        <file>images/vt_on.png</file>
+        <file>images/led_off.png</file>
+        <file>images/led_on.png</file>
+        <file>images/dip_off.png</file>
+        <file>images/dip_on.png</file>
         <file>buttons/0.bmp</file>
         <file>buttons/1.bmp</file>
         <file>buttons/2.bmp</file>

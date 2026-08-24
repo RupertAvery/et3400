@@ -36,6 +36,9 @@ struct Settings
     bool showBit0DisplayWrites;
     int heatMapDecay;
     bool firstDebuggerOpen;
+    bool ioVisible;
+    int ioLEDAddress;
+    int ioDIPAddress;
     std::vector<DeviceSetting> devices;
 };
 

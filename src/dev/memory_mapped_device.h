@@ -62,8 +62,4 @@ struct mapped_memory_block
     memory_mapped_device *device;
 };
 
-class io_device : public memory_mapped_device
-{
-};
-
 #endif // MEMORY_MAPPED_DEVICE_H

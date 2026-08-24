@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.16)
 set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
 project(et3400 VERSION 1.1.0)
 
+# Optional prerelease tag, appended to the version string as "1.01.0-<tag>".
+# Leave empty for a normal release build.
+# set(PROJECT_PRERELEASE "")
+set(PROJECT_PRERELEASE "20260824")
+
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -16,9 +21,11 @@ find_package(Threads REQUIRED)
 set(WIDGETS_SRC 
     src/widgets/colors.cpp
     src/widgets/display.cpp 
-    src/widgets/keypad.cpp 
-    src/widgets/memory_view.cpp 
     src/widgets/disassembly_view.cpp 
+    src/widgets/dip_array.cpp 
+    src/widgets/keypad.cpp 
+    src/widgets/led_array.cpp 
+    src/widgets/memory_view.cpp 
     src/widgets/status_view.cpp
     src/widgets/register.cpp
     )
@@ -42,6 +49,8 @@ set(WINDOWS_SRC
     src/windows/remove_label.cpp 
     src/windows/tips.cpp 
     src/windows/goto.cpp 
+    src/windows/io.cpp
+    src/windows/io_settings.cpp
     )
 
 set(DEVSRC 
@@ -51,6 +60,7 @@ set(DEVSRC
     src/dev/memory_dev.cpp 
     src/dev/keypad_dev.cpp 
     src/dev/display_dev.cpp
+    src/dev/io_dev.cpp
     src/dev/mc6820.cpp
     src/dev/rs232.cpp
     )

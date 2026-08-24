@@ -9,11 +9,25 @@
 
 QString getVersion()
 {
+    QString version;
+
     if (VERSION_PATCH > 0)
     {
-        return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR, 2, 10, QChar('0')).arg(VERSION_PATCH);
+        version = QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR, 2, 10, QChar('0')).arg(VERSION_PATCH);
     }
-    return QString("%1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR, 2, 10, QChar('0'));
+    else
+    {
+        version = QString("%1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR, 2, 10, QChar('0'));
+    }
+
+    QString prerelease = QString(VERSION_PRERELEASE);
+
+    if (!prerelease.isEmpty())
+    {
+        version.append("-").append(prerelease);
+    }
+
+    return version;
 }
 
 QString toHex(int value, int width)

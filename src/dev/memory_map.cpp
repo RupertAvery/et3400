@@ -100,20 +100,35 @@ void MemoryMapManager::unmap(memory_mapped_device *device)
     int block = device->get_start() / BLOCK_SIZE;
     // int block_end = device->get_end() / BLOCK_SIZE;
 
+    LOG_DEBUG << "Trying to unmap device " << QString::fromStdString(device->name) << " from block " << block;
+
     // If the device is in the slot, free the slot
     if (blocks[block].device == device)
     {
-        blocks[block].device = NULL;
+        LOG_DEBUG << "Block " << block << " matches the device";
+        LOG_DEBUG << "Unmapped device " << QString::fromStdString(device->name) << " from block " << block;
+
+        blocks[block].device = device->next;
     }
     else
     {
+        LOG_DEBUG << "Block " << block << " did not match the device, crawling the chain...";
+
         // look for the device in the chain
         memory_mapped_device *current_device = blocks[block].device;
+
+        if (current_device == NULL)
+        {
+            LOG_DEBUG << "No device found!";
+            return;
+        }
 
         while (current_device->next != NULL)
         {
             if (current_device->next == device)
             {
+                LOG_DEBUG << "Found device " << QString::fromStdString(current_device->name);
+
                 current_device->next = device->next;
                 break;
             }
@@ -121,6 +136,9 @@ void MemoryMapManager::unmap(memory_mapped_device *device)
             current_device = current_device->next;
         }
     }
+
+    // the device is no longer part of any chain
+    device->next = NULL;
 }
 
 uint8_t MemoryMapManager::read(offs_t addr)
