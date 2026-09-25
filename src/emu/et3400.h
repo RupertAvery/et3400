@@ -25,6 +25,14 @@ public:
 	void stop();
 	void reset();
 
+	// IRQ is active low: the line stays low until it is released
+	void pull_irq_low();
+	void release_irq();
+
+	// NMI is active low and edge triggered: it fires once per high-to-low transition
+	void pull_nmi_low();
+	void release_nmi();
+
 	void halt();
 	void step();
 	void resume();

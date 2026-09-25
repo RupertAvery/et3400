@@ -5,7 +5,7 @@ project(et3400 VERSION 1.1.0)
 # Optional prerelease tag, appended to the version string as "1.01.0-<tag>".
 # Leave empty for a normal release build.
 # set(PROJECT_PRERELEASE "")
-set(PROJECT_PRERELEASE "20260824")
+set(PROJECT_PRERELEASE "20260925")
 
 
 set(CMAKE_CXX_STANDARD 17)

@@ -113,6 +113,11 @@ void DebuggerDialog::refresh()
 	}
 }
 
+void DebuggerDialog::io_refresh()
+{
+    led_array->update_display();
+}
+
 void DebuggerDialog::reset(bool checked)
 {
 	emu_ptr->reset();
@@ -327,6 +332,37 @@ void DebuggerDialog::set_settings(Settings *settings)
 
 	if (settings->debuggerX >= 0 && settings->debuggerY >= 0)
 		move(settings->debuggerX, settings->debuggerY);
+
+	create_io_devices();
+}
+
+void DebuggerDialog::create_io_devices()
+{
+	led_device = new io_device("LED Array", settings->ioLEDAddress, 1, false);
+	dip_device = new io_device("DIP Array", settings->ioDIPAddress, 1, true);
+
+	led_array->set_device(led_device);
+	dip_array->set_device(dip_device);
+
+	emu_ptr->memory_map->map(led_device);
+	emu_ptr->memory_map->map(dip_device);
+
+	update_devices();
+}
+
+void DebuggerDialog::destroy_io_devices()
+{
+	emu_ptr->memory_map->unmap(led_device);
+	emu_ptr->memory_map->unmap(dip_device);
+
+	led_array->set_device(nullptr);
+	dip_array->set_device(nullptr);
+
+	delete led_device;
+	delete dip_device;
+
+	led_device = nullptr;
+	dip_device = nullptr;
 }
 
 void DebuggerDialog::set_parent_window(MainWindow *parent)
@@ -427,10 +463,14 @@ void DebuggerDialog::resizeEvent(QResizeEvent *event)
 
 void DebuggerDialog::closeEvent(QCloseEvent *event)
 {
+	destroy_io_devices();
+
 	if (labels_dialog)
 		labels_dialog->close();
+
 	if (breakpoints_dialog)
 		breakpoints_dialog->close();
+
 	if (settings)
 	{
 		settings->debuggerX = pos().x();
@@ -438,8 +478,10 @@ void DebuggerDialog::closeEvent(QCloseEvent *event)
 		settings->debuggerWidth = width();
 		settings->debuggerHeight = height();
 	}
+
 	if (emu_ptr && !emu_ptr->get_running())
 		emu_ptr->resume();
+
 	QDialog::closeEvent(event);
 }
 
@@ -677,4 +719,55 @@ void DebuggerDialog::show_devices_dialog()
 void DebuggerDialog::exit()
 {
 	close();
+}
+
+
+void DebuggerDialog::show_io_settings()
+{
+    if (emu_ptr == nullptr)
+        return;
+
+    IOSettingsDialog *io_settings_dialog = new IOSettingsDialog(this);
+
+    io_settings_dialog->address_in_use = [this](offs_t address)
+    {
+        return address_in_use(address);
+    };
+
+    io_settings_dialog->setIOSettings(IOSettingsInfo({(offs_t)settings->ioLEDAddress, (offs_t)settings->ioDIPAddress}));
+
+    if (io_settings_dialog->exec() == QDialog::Accepted)
+    {
+        IOSettingsInfo info = io_settings_dialog->getIOSettings();
+
+        if (info.led_address != settings->ioLEDAddress || info.dip_address != settings->ioDIPAddress)
+        {
+            settings->ioLEDAddress = info.led_address;
+            settings->ioDIPAddress = info.dip_address;
+
+            destroy_io_devices();
+            create_io_devices();
+
+            save_settings();
+
+            update_devices();
+        }
+    }
+
+    io_settings_dialog->deleteLater();
+}
+
+
+bool DebuggerDialog::address_in_use(offs_t address)
+{
+    for (auto *device : emu_ptr->memory_map->get_block_devices())
+    {
+        if (device == led_device || device == dip_device)
+            continue;
+
+        if (address >= device->get_start() && address <= device->get_end())
+            return true;
+    }
+
+    return false;
 }

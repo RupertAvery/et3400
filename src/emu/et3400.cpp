@@ -177,6 +177,32 @@ void et3400emu::reset()
     device->reset_line = 0;
 }
 
+void et3400emu::pull_irq_low()
+{
+    device->m_irq_state[M6800_IRQ_LINE] = ASSERT_LINE;
+}
+
+void et3400emu::release_irq()
+{
+    device->m_irq_state[M6800_IRQ_LINE] = CLEAR_LINE;
+}
+
+void et3400emu::pull_nmi_low()
+{
+    // only the falling edge latches an NMI
+    if (!device->m_nmi_state)
+    {
+        device->m_nmi_pending = true;
+    }
+
+    device->m_nmi_state = ASSERT_LINE;
+}
+
+void et3400emu::release_nmi()
+{
+    device->m_nmi_state = CLEAR_LINE;
+}
+
 int et3400emu::get_cycles()
 {
     return device->m_icount;

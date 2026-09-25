@@ -29,6 +29,14 @@ void IODialog::create_devices()
 
     emu->memory_map->map(led_device);
     emu->memory_map->map(dip_device);
+
+    update_status_bar();
+}
+
+void IODialog::update_status_bar()
+{
+    led_status->setText(led_device == nullptr ? "LED: -" : QString("LED: %1").arg(toHex(led_device->get_start())));
+    dip_status->setText(dip_device == nullptr ? "DIP: -" : QString("DIP: %1").arg(toHex(dip_device->get_start())));
 }
 
 void IODialog::destroy_devices()
@@ -99,8 +107,27 @@ void IODialog::setupUi(QDialog *Dialog)
     device_layout->addWidget(dip_array, 0, Qt::AlignLeft | Qt::AlignTop);
     device_layout->addStretch(1);
 
+    status_bar = new QStatusBar(this);
+    status_bar->setSizeGripEnabled(false);
+
+    led_status = new QLabel(status_bar);
+    led_status->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    led_status->setLineWidth(1);
+    led_status->setMargin(2);
+
+    dip_status = new QLabel(status_bar);
+    dip_status->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    dip_status->setLineWidth(1);
+    dip_status->setMargin(2);
+
+    status_bar->addWidget(led_status, 1);
+    status_bar->addWidget(dip_status, 1);
+
     mainLayout->addWidget(toolbar);
     mainLayout->addLayout(device_layout);
+    mainLayout->addWidget(status_bar);
+
+    update_status_bar();
 
     connect(settings_action, &QAction::triggered, this, &IODialog::show_io_settings);
 

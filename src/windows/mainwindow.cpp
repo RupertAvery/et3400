@@ -22,7 +22,6 @@ MainWindow::MainWindow(QWidget *parent)
   QAction *settings_action = new QAction("&Settings", this);
   QAction *about_action = new QAction("&About", this);
   QAction *tips_action = new QAction("Show &Tips", this);
-  QAction *io_action = new QAction("&LED and DIP I/O", this);
 
   QAction *openRam_action = new QAction("&Load RAM", this);
   openRam_action->setShortcut(Qt::CTRL + Qt::Key_O);
@@ -50,10 +49,6 @@ MainWindow::MainWindow(QWidget *parent)
   config_menu = menuBar()->addMenu("&Config");
   config_menu->addAction(settings_action);
 
-  QMenu *others_menu;
-  others_menu = menuBar()->addMenu("&Others");
-  others_menu->addAction(io_action);
-
   QMenu *help_menu;
   help_menu = menuBar()->addMenu("&Help");
   help_menu->addAction(about_action);
@@ -74,7 +69,6 @@ MainWindow::MainWindow(QWidget *parent)
   connect(settings_action, &QAction::triggered, this, &MainWindow::show_settings);
   connect(about_action, &QAction::triggered, this, &MainWindow::show_about);
   connect(tips_action, &QAction::triggered, this, &MainWindow::show_tips);
-  connect(io_action, &QAction::triggered, this, &MainWindow::show_io);
 
   // Layout
   QGridLayout *mainLayout = new QGridLayout;
@@ -183,8 +177,7 @@ void MainWindow::show_io()
               if (debugger_dialog != nullptr)
               {
                 debugger_dialog->update_devices();
-              }
-            });
+              } });
 
     connect(io_dialog, &IODialog::devices_changed, this, [this]()
             {
@@ -192,8 +185,7 @@ void MainWindow::show_io()
               {
                 debugger_dialog->update_devices();
                 debugger_dialog->refresh();
-              }
-            });
+              } });
 
     io_dialog->show();
 
@@ -492,6 +484,10 @@ void MainWindow::execute_emu()
   emu->on_render_frame = [this]
   {
     display->update_display();
+    if (debugger_dialog != nullptr)
+    {
+      debugger_dialog->io_refresh();
+    }
     if (io_dialog != nullptr)
     {
       io_dialog->refresh();

@@ -25,6 +25,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QPushButton>
 
 class MainWindow : public QMainWindow
 {

@@ -8,6 +8,8 @@
 #include <QDialog>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QLabel>
+#include <QStatusBar>
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -38,15 +40,21 @@ protected:
 private:
     QVBoxLayout *mainLayout = nullptr;
     QToolBar *toolbar = nullptr;
+    QStatusBar *status_bar = nullptr;
+    QLabel *led_status = nullptr;
+    QLabel *dip_status = nullptr;
     QAction *settings_action = nullptr;
-    LEDArray *led_array = nullptr;
-    DIPArray *dip_array = nullptr;
     et3400emu *emu = nullptr;
     Settings *settings = nullptr;
+
+    LEDArray *led_array = nullptr;
+    DIPArray *dip_array = nullptr;
+
     io_device *led_device = nullptr;
     io_device *dip_device = nullptr;
 
     void create_devices();
+    void update_status_bar();
     void destroy_devices();
     bool address_in_use(offs_t address);
     void setupUi(QDialog *Dialog);

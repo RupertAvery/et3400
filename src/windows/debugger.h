@@ -48,6 +48,10 @@
 #include "labels.h"
 #include "breakpoints.h"
 #include "devices.h"
+#include "../widgets/dip_array.h"
+#include "../widgets/led_array.h"
+#include "../dev/io_dev.h"
+#include "io_settings.h"
 
 class MainWindow;
 
@@ -94,6 +98,7 @@ public:
 	void set_parent_window(MainWindow *parent);
 	void update_button_state();
 	void refresh();
+	void io_refresh();
 	void after_load_ram();
 	void after_load_rom();
 
@@ -239,6 +244,8 @@ private:
 	QGroupBox *memory_groupBox = nullptr;
 	QGroupBox *disassembly_groupBox = nullptr;
 	QGroupBox *status_groupBox = nullptr;
+	QGroupBox *io_groupBox = nullptr;
+	QGroupBox *interrupt_groupBox = nullptr;
 
 	LabelsDialog *labels_dialog = nullptr;
 	BreakpointsDialog *breakpoints_dialog = nullptr;
@@ -258,10 +265,24 @@ private:
 	QToolButton *create_settings_menu(QToolBar *toolbar);
 
 	QGroupBox *create_status_group();
+	QGroupBox *create_interrupt_group();
+	QGroupBox *create_io_group();
 	QGroupBox *create_disassembly_group();
 	QGroupBox *create_memory_group();
 
+	void create_io_devices();
+	void destroy_io_devices();
+
 	QString get_error_message(int reason);
+
+	LEDArray *led_array = nullptr;
+	DIPArray *dip_array = nullptr;
+
+	io_device *led_device = nullptr;
+	io_device *dip_device = nullptr;
+
+	void show_io_settings();
+	bool address_in_use(offs_t address);
 };
 
 #endif // DEBUGGER_H
