@@ -2,6 +2,15 @@
 #define SETTINGS_INI_H
 
 #include <QString>
+#include <vector>
+
+class et3400emu;
+
+struct DeviceSetting
+{
+    QString name;
+    QString bit_pattern;
+};
 
 struct Settings
 {
@@ -27,10 +36,14 @@ struct Settings
     bool showBit0DisplayWrites;
     int heatMapDecay;
     bool firstDebuggerOpen;
+    bool ioVisible;
+    int ioLEDAddress;
+    int ioDIPAddress;
+    std::vector<DeviceSetting> devices;
 };
 
 Settings load_settings();
 void save_settings(Settings *settings);
-
+void build_and_save_settings(Settings *settings, et3400emu *emu_ptr);
 
 #endif // SETTINGS_INI_H

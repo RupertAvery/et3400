@@ -11,6 +11,7 @@
 #include "settings.h"
 #include "tips.h"
 #include "file.h"
+#include "io.h"
 #include "save.h"
 
 #include <fstream>
@@ -24,6 +25,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QPushButton>
 
 class MainWindow : public QMainWindow
 {
@@ -67,6 +69,7 @@ private:
   Keypad *keypad = nullptr;
   SettingsDialog *settings_dialog = nullptr;
   DebuggerDialog *debugger_dialog = nullptr;
+  IODialog *io_dialog = nullptr;
   et3400emu *emu = nullptr;
   uint16_t start_address = 0;
   bool has_start_address = false;
@@ -80,10 +83,12 @@ private:
   void show_about();
   void show_settings();
   void show_debugger();
+  void show_io();
   void show_tips();
   void updatecps();
   void fps();
   void autostart_sequence();
+  void load_devices();
 
 };
 

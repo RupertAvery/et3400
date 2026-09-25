@@ -40,6 +40,7 @@ public:
     virtual offs_t get_start() { return 0; }
     virtual offs_t get_end() { return 0; }
     virtual offs_t get_size() { return get_end() - get_start() + 1; }
+    virtual bool is_custom() { return false; }
     virtual void load(offs_t addr, uint8_t *data, size_t size) {}
     void set_settings(Settings *settings) { this->settings = settings; }
 
@@ -59,10 +60,6 @@ protected:
 struct mapped_memory_block
 {
     memory_mapped_device *device;
-};
-
-class io_device : public memory_mapped_device
-{
 };
 
 #endif // MEMORY_MAPPED_DEVICE_H

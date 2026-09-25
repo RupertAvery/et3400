@@ -250,6 +250,12 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     swap_view_action->setShortcut(QKeySequence(Qt::Key_F8));
     connect(swap_view_action, &QAction::triggered, this, &DebuggerDialog::swap_views);
 
+    QAction *show_io_action = new QAction("I/O Settings", this);
+    connect(show_io_action, &QAction::triggered, this, &DebuggerDialog::show_io_settings);
+
+    QAction *show_devices_action = new QAction("&Custom Devices", this);
+    connect(show_devices_action, &QAction::triggered, this, &DebuggerDialog::show_devices_dialog);
+
     view_menu->addAction(show_labels_action);
     view_menu->addAction(show_breakpoints_action);
     view_menu->addAction(goto_label_action);
@@ -264,6 +270,9 @@ QToolButton *DebuggerDialog::create_view_menu(QToolBar *toolbar)
     view_menu->addAction(swap_view_action);
     view_menu->addSeparator();
     view_menu->addAction(save_view_action);
+    view_menu->addSeparator();
+    view_menu->addAction(show_io_action);
+    view_menu->addAction(show_devices_action);
 
     view_button->setMenu(view_menu);
 
@@ -316,6 +325,66 @@ QGroupBox *DebuggerDialog::create_status_group()
             { QMessageBox::warning(this, "Edit Register", get_error_message(reason)); });
 
     return status_groupBox;
+}
+
+QGroupBox *DebuggerDialog::create_interrupt_group()
+{
+    QGroupBox *interrupt_groupBox = new QGroupBox("Interrupts", this);
+
+    QHBoxLayout *interrupt_groupBox_layout = new QHBoxLayout(this);
+
+    interrupt_groupBox_layout->setMargin(10);
+    interrupt_groupBox->setLayout(interrupt_groupBox_layout);
+    interrupt_groupBox->setFixedWidth(200);
+
+    QPushButton *irq_button = new QPushButton("IRQ", this);
+    irq_button->setFixedSize(QSize(50, 30));
+    irq_button->setToolTip("Hold to pull the CPU IRQ line low");
+
+    // the button behaves like a momentary switch: low while held, high on release
+    connect(irq_button, &QPushButton::pressed, this, [this]()
+            { emu_ptr->pull_irq_low(); });
+
+    connect(irq_button, &QPushButton::released, this, [this]()
+            { emu_ptr->release_irq(); });
+
+    QPushButton *nmi_button = new QPushButton("NMI", this);
+    nmi_button->setFixedSize(QSize(50, 30));
+    nmi_button->setToolTip("Hold to pull the CPU NMI line low");
+
+    connect(nmi_button, &QPushButton::pressed, this, [this]()
+            { emu_ptr->pull_nmi_low(); });
+
+    connect(nmi_button, &QPushButton::released, this, [this]()
+            { emu_ptr->release_nmi(); });
+
+    interrupt_groupBox_layout->setSpacing(6);
+    interrupt_groupBox_layout->setContentsMargins(0, 10, 0, 10);
+    interrupt_groupBox_layout->addWidget(irq_button);
+    interrupt_groupBox_layout->addWidget(nmi_button);
+
+    return interrupt_groupBox;
+}
+
+QGroupBox *DebuggerDialog::create_io_group()
+{
+    QGroupBox *io_groupBox = new QGroupBox("I/O", this);
+
+    QVBoxLayout *io_groupBox_layout = new QVBoxLayout(this);
+
+    io_groupBox_layout->setMargin(10);
+    io_groupBox->setLayout(io_groupBox_layout);
+    io_groupBox->setFixedWidth(200);
+
+    led_array = new LEDArray(this);
+    dip_array = new DIPArray(this);
+
+    io_groupBox_layout->setSpacing(6);
+    io_groupBox_layout->setContentsMargins(10, 10, 10, 10);
+    io_groupBox_layout->addWidget(led_array);
+    io_groupBox_layout->addWidget(dip_array);
+
+    return io_groupBox;
 }
 
 QGroupBox *DebuggerDialog::create_disassembly_group()
@@ -385,7 +454,7 @@ QGroupBox *DebuggerDialog::create_memory_group()
                 set_heat_map_persist_action->blockSignals(false);
 
                 settings->showHeatMap = enabled;
-                save_settings(settings); });
+                save_settings(); });
 
     connect(memory_view, &MemoryView::on_heat_map_change, this, [this](bool enabled, int decay)
             {
@@ -404,7 +473,7 @@ QGroupBox *DebuggerDialog::create_memory_group()
                 settings->showHeatMap = enabled;
                 settings->heatMapDecay = decay;
 
-                save_settings(settings); });
+                save_settings(); });
 
     connect(memory_view, &MemoryView::on_show_in_disassembly, this, [this](offs_t address)
             {
@@ -464,13 +533,21 @@ void DebuggerDialog::setupUI()
     QToolBar *shortcut_toolbar = create_shortcuts_toolbar();
 
     status_groupBox = create_status_group();
+    interrupt_groupBox = create_interrupt_group();
+    io_groupBox = create_io_group();
     disassembly_groupBox = create_disassembly_group();
     memory_groupBox = create_memory_group();
 
     QWidget *panels = new QWidget(this);
     QHBoxLayout *panels_layout = new QHBoxLayout(this);
 
-    panels_layout->addWidget(status_groupBox);
+    QVBoxLayout *multi_layout = new QVBoxLayout(this);
+
+    multi_layout->addWidget(status_groupBox);
+    multi_layout->addWidget(interrupt_groupBox);
+    multi_layout->addWidget(io_groupBox);
+
+    panels_layout->addLayout(multi_layout);
     panels_layout->addWidget(disassembly_groupBox);
     panels_layout->addWidget(memory_groupBox);
     panels_layout->setMargin(10);
@@ -478,6 +555,7 @@ void DebuggerDialog::setupUI()
 
     labels_dialog = new LabelsDialog(this);
     breakpoints_dialog = new BreakpointsDialog(this);
+    devices_dialog = new DevicesDialog(this);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(toolbar);

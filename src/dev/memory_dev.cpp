@@ -11,7 +11,7 @@ memory_device::memory_device(std::string name, offs_t start, size_t size, bool r
     this->size = size;
     this->name = name;
     end = start + size - 1;
-    memory = (uint8_t *)malloc(size);
+    memory = (uint8_t *)calloc(size, 1);
     next = NULL;
     can_disassemble = true;
 };

@@ -47,6 +47,11 @@
 #include "clear_ram.h"
 #include "labels.h"
 #include "breakpoints.h"
+#include "devices.h"
+#include "../widgets/dip_array.h"
+#include "../widgets/led_array.h"
+#include "../dev/io_dev.h"
+#include "io_settings.h"
 
 class MainWindow;
 
@@ -93,6 +98,7 @@ public:
 	void set_parent_window(MainWindow *parent);
 	void update_button_state();
 	void refresh();
+	void io_refresh();
 	void after_load_ram();
 	void after_load_rom();
 
@@ -111,6 +117,8 @@ public:
 	void load_breakpoints();
 	void save_breakpoints();
 
+	void update_devices();
+
 	void exit();
 
 	void show_tip();
@@ -123,6 +131,11 @@ public:
 
 	et3400emu *emu_ptr = nullptr;
 	DisassemblyView *disassembly_view = nullptr;
+
+	void save_settings()
+	{
+		build_and_save_settings(settings, emu_ptr);
+	}
 
 protected:
 	void keyPressEvent(QKeyEvent *event) override;
@@ -231,13 +244,17 @@ private:
 	QGroupBox *memory_groupBox = nullptr;
 	QGroupBox *disassembly_groupBox = nullptr;
 	QGroupBox *status_groupBox = nullptr;
+	QGroupBox *io_groupBox = nullptr;
+	QGroupBox *interrupt_groupBox = nullptr;
 
 	LabelsDialog *labels_dialog = nullptr;
 	BreakpointsDialog *breakpoints_dialog = nullptr;
+	DevicesDialog *devices_dialog = nullptr;
 
 	void show_labels_dialog();
 	void show_breakpoints_dialog();
 	void show_save_view_dialog();
+	void show_devices_dialog();
 
 	QToolBar *create_menu_toolbar();
 	QToolBar *create_shortcuts_toolbar();
@@ -248,10 +265,24 @@ private:
 	QToolButton *create_settings_menu(QToolBar *toolbar);
 
 	QGroupBox *create_status_group();
+	QGroupBox *create_interrupt_group();
+	QGroupBox *create_io_group();
 	QGroupBox *create_disassembly_group();
 	QGroupBox *create_memory_group();
 
+	void create_io_devices();
+	void destroy_io_devices();
+
 	QString get_error_message(int reason);
+
+	LEDArray *led_array = nullptr;
+	DIPArray *dip_array = nullptr;
+
+	io_device *led_device = nullptr;
+	io_device *dip_device = nullptr;
+
+	void show_io_settings();
+	bool address_in_use(offs_t address);
 };
 
 #endif // DEBUGGER_H
