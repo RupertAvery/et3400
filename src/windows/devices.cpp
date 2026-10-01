@@ -106,13 +106,22 @@ void DevicesDialog::show_edit_device()
 	custom_device *device = reinterpret_cast<custom_device *>(devices_table->item(row, 0)->data(Qt::UserRole).value<quintptr>());
 
 	DeviceDialog *device_dialog = new DeviceDialog();
+	device_dialog->has_collision = [this, device](offs_t start, offs_t end)
+	{
+		return debugger->emu_ptr->memory_map->has_collision(start, end, device);
+	};
+
 	device_dialog->setDeviceInfo(DeviceInfo({QString::fromStdString(device->name), device->get_bit_pattern()}), DeviceDialogMode::EditDevice);
 
 	if (device_dialog->exec() == QDialog::Accepted)
 	{
 		DeviceInfo device_info = device_dialog->getDeviceInfo();
 		device->name = device_info.name.toUtf8().constData();
+
+		// the device is chained by its start block, so remap it when the range changes
+		debugger->emu_ptr->memory_map->unmap(device);
 		device->set_bit_pattern(device_info.bit_pattern);
+		debugger->emu_ptr->memory_map->map(device);
 		populate_devices_table();
 		debugger->save_settings();
 		debugger->update_devices();

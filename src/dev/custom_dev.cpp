@@ -11,7 +11,7 @@ custom_device::custom_device(std::string name, BitPattern bit_pattern, bool read
     this->name = name;
 
     next = NULL;
-    can_disassemble = true;
+  	can_disassemble = false;
 };
 
 custom_device::~custom_device()

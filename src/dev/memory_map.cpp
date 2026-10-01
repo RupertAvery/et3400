@@ -15,7 +15,7 @@ MemoryMapManager::~MemoryMapManager()
 {
 }
 
-bool MemoryMapManager::has_collision(offs_t start, offs_t end)
+bool MemoryMapManager::has_collision(offs_t start, offs_t end, memory_mapped_device *exclude)
 {
     int block_start = start / BLOCK_SIZE;
     int block_end = end / BLOCK_SIZE;
@@ -26,7 +26,7 @@ bool MemoryMapManager::has_collision(offs_t start, offs_t end)
 
         while (current_device != NULL)
         {
-            if (start <= current_device->get_end() && end >= current_device->get_start())
+            if (current_device != exclude && start <= current_device->get_end() && end >= current_device->get_start())
             {
                 return true;
             }

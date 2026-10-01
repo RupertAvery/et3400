@@ -56,6 +56,8 @@ The speed argument accepts the following formats:
 * Hex Keypad with 16 buttons (0-F) + Reset button
 * 512B RAM
 * 1KB Monitor ROM
+* Interrupt Triggers for IRQ and NMI
+* LED and DIP switch arrays
 
 The built-in ROM contains the Monitor program designed for the Heathkit ET-3400 Trainer, which interfaces with the keypad and display, and allows viewing and editing memory to enter and execute programs, and view CPU registers.
 
@@ -118,9 +120,15 @@ Pressing the "Debugger" menu item in the main window will display the debugger d
 
 The debugger lets you pause, single-step through instructions, and inspect CPU state, disassembly and memory.
 
-The disassembly view also allows you to add labels and set breakpoints.
+The Debugger contains the following sections:
 
-## A Note on Single-Step and Breakpoints
+* [Status Pane](#status-pane)
+* [Disassembly Pane](#disassembly-pane)
+* [Memory Pane](#memory-pane)
+* [Interrupts](#interrupts-pane)
+* [I/O](#io-pane)
+
+### A Note on Single-Step and Breakpoints
 
 While the Debugger has single-step and breakpoints, these are not the same as and should not be confused with the Single-Step and Breakpoints on the ET-3400 interface.
 
@@ -213,11 +221,17 @@ When the emulator is paused — either manually or at a breakpoint — the next 
 
 Use the View > Refresh (Ctrl+R) function to update the disassembly view. This will run the disassembler over memory again, updating any values that have may have changed.
 
+The Disassembly Pane allows you to add labels and set breakpoints.
+
 ### Memory Pane
+
+The Memory Pane lets you inspect and edit memory. It also has a heat map feature that allows you to visualize live changes to memory.
 
 At the top of the pane is a dropdown containing the list of memory-mapped devices, including the Keypad and Display devices.
 
 - RAM
+- LED Array
+- DIP Array
 - Keypad
 - Display
 - Monitor ROM
@@ -227,6 +241,34 @@ Selecting one of these will display the raw byte contents of the selected device
 The Display device does not actually have memory - it represents the last bytes written to the addresses indicated. To understand how the Display device works, please see [How the Display works](documentation/display_device.md) 
 
 Likewise, the Keypad device reflects the current values of the lines that are decoded at the keypad address. These are data lines that are kept high at logic level 1 and are pulled low to logic level 0 when a key is held down.
+
+### Interrupts Pane
+
+This section contains the buttons for triggering IRQ and NMI interrupts.
+
+Pressing the buttons simulate pulling the respective lines low, and releasing the buttons will return the line high.
+
+The IRQ line is only checked if the CPU is in a wait state, i.e. after executing the `WAI` instruction. 
+
+Executing `WAI` immediately pushes the registers onto the stack and places the CPU in a wait state, which  you can only exit with one of the interrupts or resetting the CPU.
+
+Pulling the IRQ line loq while the CPU is in a wait state will set the program counter to the NMI vector stored at `$FFFE`, which is `$00F7`
+
+Pulling the NMI line low while the CPU is executing will complete the current instruction and push the registers onto the stack before setting the program counter to the NMI vector stored at `$FFFC`, which is `$00FD`
+
+### I/O Pane
+
+This section houses the LED Array and DIP Array.
+
+On a physical ET-3400, these would need to be manually addressed and connected to data lines in order to access programmatically.
+
+On the emulator, these are automatically set up as memory-mapped input (read-only) and output (write-only) devices. Each device is mapped to one byte of memory.
+
+The default mapping for these devices are `$4000` for the LEDs and `$4001` for the DIP switches.
+
+The mapped address can be changed via **View > I/O Settings**.
+
+The devices can be selected in the Memory Pane, and the LEDs can be written to by updating the value, while the DIP switches can be read from in real time.
 
 ## Breakpoints
 

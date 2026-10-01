@@ -20,7 +20,7 @@ public:
     memory_mapped_device *try_get_block_device(std::string device_name);
     std::vector<memory_mapped_device *> get_block_devices();
     std::vector<custom_device *> get_custom_devices();
-    bool has_collision(offs_t start, offs_t end);
+    bool has_collision(offs_t start, offs_t end, memory_mapped_device *exclude = nullptr);
 
     uint8_t read(offs_t addr);
     void write(offs_t addr, uint8_t data);

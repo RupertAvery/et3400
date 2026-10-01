@@ -75,6 +75,8 @@ diagram.</p>
 <li>Hex Keypad with 16 buttons (0-F) + Reset button</li>
 <li>512B RAM</li>
 <li>1KB Monitor ROM</li>
+<li>Interrupt Triggers for IRQ and NMI</li>
+<li>LED and DIP switch arrays</li>
 </ul>
 <p>The built-in ROM contains the Monitor program designed for the
 Heathkit ET-3400 Trainer, which interfaces with the keypad and display,
@@ -173,10 +175,16 @@ should be exactly 1024 bytes to fit in the ROM address space.</p>
 debugger dialog.</p>
 <p>The debugger lets you pause, single-step through instructions, and
 inspect CPU state, disassembly and memory.</p>
-<p>The disassembly view also allows you to add labels and set
-breakpoints.</p>
-<h2 id="a-note-on-single-step-and-breakpoints">A Note on Single-Step and
-Breakpoints</h2>
+<p>The Debugger contains the following sections:</p>
+<ul>
+<li><a href="#status-pane">Status Pane</a></li>
+<li><a href="#disassembly-pane">Disassembly Pane</a></li>
+<li><a href="#memory-pane">Memory Pane</a></li>
+<li><a href="#interrupts-pane">Interrupts</a></li>
+<li><a href="#io-pane">I/O</a></li>
+</ul>
+<h3 id="a-note-on-single-step-and-breakpoints">A Note on Single-Step and
+Breakpoints</h3>
 <p>While the Debugger has single-step and breakpoints, these are not the
 same as and should not be confused with the Single-Step and Breakpoints
 on the ET-3400 interface.</p>
@@ -300,11 +308,17 @@ the next instruction to be executed is highlighted in yellow.</p>
 <p>Use the View &gt; Refresh (Ctrl+R) function to update the disassembly
 view. This will run the disassembler over memory again, updating any
 values that have may have changed.</p>
+<p>The Disassembly Pane allows you to add labels and set
+breakpoints.</p>
 <h3 id="memory-pane">Memory Pane</h3>
+<p>The Memory Pane lets you inspect and edit memory. It also has a heat
+map feature that allows you to visualize live changes to memory.</p>
 <p>At the top of the pane is a dropdown containing the list of
 memory-mapped devices, including the Keypad and Display devices.</p>
 <ul>
 <li>RAM</li>
+<li>LED Array</li>
+<li>DIP Array</li>
 <li>Keypad</li>
 <li>Display</li>
 <li>Monitor ROM</li>
@@ -319,6 +333,37 @@ href="documentation/display_device.md">How the Display works</a></p>
 that are decoded at the keypad address. These are data lines that are
 kept high at logic level 1 and are pulled low to logic level 0 when a
 key is held down.</p>
+<h3 id="interrupts-pane">Interrupts Pane</h3>
+<p>This section contains the buttons for triggering IRQ and NMI
+interrupts.</p>
+<p>Pressing the buttons simulate pulling the respective lines low, and
+releasing the buttons will return the line high.</p>
+<p>The IRQ line is only checked if the CPU is in a wait state,
+i.e. after executing the <code>WAI</code> instruction.</p>
+<p>Executing <code>WAI</code> immediately pushes the registers onto the
+stack and places the CPU in a wait state, which you can only exit with
+one of the interrupts or resetting the CPU.</p>
+<p>Pulling the IRQ line loq while the CPU is in a wait state will set
+the program counter to the NMI vector stored at <code>$FFFE</code>,
+which is <code>$00F7</code></p>
+<p>Pulling the NMI line low while the CPU is executing will complete the
+current instruction and push the registers onto the stack before setting
+the program counter to the NMI vector stored at <code>$FFFC</code>,
+which is <code>$00FD</code></p>
+<h3 id="io-pane">I/O Pane</h3>
+<p>This section houses the LED Array and DIP Array.</p>
+<p>On a physical ET-3400, these would need to be manually addressed and
+connected to data lines in order to access programmatically.</p>
+<p>On the emulator, these are automatically set up as memory-mapped
+input (read-only) and output (write-only) devices. Each device is mapped
+to one byte of memory.</p>
+<p>The default mapping for these devices are <code>$4000</code> for the
+LEDs and <code>$4001</code> for the DIP switches.</p>
+<p>The mapped address can be changed via <strong>View &gt; I/O
+Settings</strong>.</p>
+<p>The devices can be selected in the Memory Pane, and the LEDs can be
+written to by updating the value, while the DIP switches can be read
+from in real time.</p>
 <h2 id="breakpoints">Breakpoints</h2>
 <p>NOTE: This section describes the debugger feature, not the ET-3400
 software breakpoints.</p>
